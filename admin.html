@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>لوحة تحرير SPORT 22</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800&family=Cairo:wght@600;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+/* Layout: newspaper front page. Wordmark with a jersey-number block is the one bold move; fixture-style date tiles mark the feed. */
+:root {
+  --bg: #F2F4F7;
+  --surface: #FFFFFF;
+  --ink: #0B1220;
+  --muted: #566074;
+  --line: #D6DBE3;
+  --accent: #1747E0;
+  --accent-ink: #FFFFFF;
+  --warn: #A84F08;
+  --warn-bg: #FBEEDF;
+  --ok: #0B7A4B;
+  --ok-bg: #E3F1EA;
+  --logo: 'Barlow Condensed', 'Arial Narrow', Impact, sans-serif;
+  --display: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+  --body: 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A0F18;
+    --surface: #121A27;
+    --ink: #E8ECF3;
+    --muted: #93A0B5;
+    --line: #223049;
+    --accent: #7399FF;
+    --accent-ink: #0A0F18;
+    --warn: #F2A862;
+    --warn-bg: #2E2114;
+    --ok: #4FD39A;
+    --ok-bg: #12301F;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A0F18;
+  --surface: #121A27;
+  --ink: #E8ECF3;
+  --muted: #93A0B5;
+  --line: #223049;
+  --accent: #7399FF;
+  --accent-ink: #0A0F18;
+  --warn: #F2A862;
+  --warn-bg: #2E2114;
+  --ok: #4FD39A;
+  --ok-bg: #12301F;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.8;
+  padding-block: 0 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1080px; margin: 0 auto; }
+a { color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Masthead */
+.mast { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; padding-block: 18px 14px; }
+.logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; direction: ltr; font-family: var(--logo); font-style: italic; font-weight: 800; line-height: 1; text-transform: uppercase; }
+.logo .w-sport { font-size: clamp(2.2rem, 7vw, 3.1rem); letter-spacing: .01em; }
+.logo .w-num { font-size: clamp(2.2rem, 7vw, 3.1rem); background: var(--accent); color: var(--accent-ink); padding: .04em .2em .02em; }
+.tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.search { width: 14rem; max-width: 100%; border: 1.5px solid var(--line); background: var(--surface); padding: 6px 12px; line-height: 1.6; }
+.search:focus { border-color: var(--accent); }
+.deskLink { font-weight: 600; text-decoration: none; border: 1.5px solid var(--ink); padding: 5px 14px; line-height: 1.6; }
+.deskLink:hover { background: var(--ink); color: var(--bg); }
+.cats { display: flex; gap: 2px; overflow-x: auto; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); scrollbar-width: thin; }
+.cats a { white-space: nowrap; text-decoration: none; padding: 9px 14px; font-weight: 600; font-size: .9375rem; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.cats a:hover { color: var(--accent); }
+.cats a[aria-current="page"] { border-bottom-color: var(--accent); color: var(--accent); }
+
+/* Shared bits */
+.tag { font-size: .8125rem; font-weight: 600; color: var(--accent); letter-spacing: .02em; text-decoration: none; }
+.meta { font-size: .8125rem; color: var(--muted); }
+.sec { font-family: var(--display); font-weight: 800; font-size: 1.25rem; margin: 0 0 8px; line-height: 1.5; }
+.btn { display: inline-block; border: 1.5px solid var(--ink); background: transparent; padding: 6px 18px; cursor: pointer; font-weight: 600; text-decoration: none; line-height: 1.6; }
+.btn:hover { background: var(--ink); color: var(--bg); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.1); background: var(--accent); color: var(--accent-ink); }
+.btn.danger { border-color: var(--warn); color: var(--warn); }
+.btn.danger:hover { background: var(--warn); color: var(--bg); }
+.btn[disabled] { opacity: .55; cursor: default; }
+.empty { border: 1.5px dashed var(--line); padding: 22px; color: var(--muted); margin-block: 28px; }
+.empty p { margin: 0 0 12px; }
+.note { font-size: .875rem; color: var(--muted); margin: 0 0 12px; }
+
+/* Front page */
+.front { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 32px; padding-block: 28px; border-bottom: 1px solid var(--line); }
+.lead h1 { font-family: var(--display); font-weight: 800; font-size: clamp(1.8rem, 5vw, 2.9rem); line-height: 1.4; margin: 6px 0 12px; text-wrap: balance; }
+.lead h1 a { text-decoration: none; }
+.lead h1 a:hover { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; }
+.lead .sum { color: var(--muted); font-size: 1.125rem; margin: 0 0 10px; max-width: 44rem; }
+.side { display: flex; flex-direction: column; border-top: 2px solid var(--ink); }
+.side .item { padding-block: 14px; border-bottom: 1px solid var(--line); }
+.side h3 { font-family: var(--display); font-weight: 600; font-size: 1.1875rem; line-height: 1.55; margin: 2px 0 2px; text-wrap: balance; }
+.side h3 a, .feed h3 a { text-decoration: none; }
+.side h3 a:hover, .feed h3 a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.feedHead { padding-top: 26px; }
+.feed { list-style: none; margin: 0; padding: 0; }
+.feed li { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: 16px; padding-block: 16px; border-bottom: 1px solid var(--line); }
+.stamp { text-align: center; border: 1.5px solid var(--ink); align-self: start; line-height: 1; padding-block: 8px 6px; background: var(--surface); }
+.stamp b { display: block; font-family: var(--logo); font-style: italic; font-weight: 800; font-size: 1.9rem; font-variant-numeric: tabular-nums; }
+.stamp span { display: block; font-size: .75rem; color: var(--muted); margin-top: 3px; }
+.feed h3 { font-family: var(--display); font-weight: 600; font-size: 1.25rem; line-height: 1.55; margin: 0; text-wrap: balance; }
+.feed p { margin: 2px 0 0; color: var(--muted); font-size: .9375rem; line-height: 1.75; }
+.pageHead { padding-block: 26px 4px; }
+.pageHead h1 { font-family: var(--display); font-weight: 800; font-size: clamp(1.6rem, 4.4vw, 2.3rem); margin: 0; line-height: 1.4; }
+
+/* Article */
+.article { max-width: 42rem; padding-top: 26px; }
+.article h1 { font-family: var(--display); font-weight: 800; font-size: clamp(1.8rem, 4.8vw, 2.7rem); line-height: 1.4; margin: 4px 0 8px; text-wrap: balance; }
+.article .meta { margin-bottom: 22px; }
+.article p { margin: 0 0 1.1em; font-size: 1.1875rem; line-height: 2; }
+.article p.first { font-weight: 500; font-size: 1.25rem; }
+.articleActions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.more { margin-top: 36px; }
+
+/* Desk */
+.deskGrid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 28px; padding-top: 24px; align-items: start; }
+.panel { background: var(--surface); border: 1px solid var(--line); padding: 18px 20px; }
+.panel + .panel { margin-top: 20px; }
+.panel h2 { font-family: var(--display); font-weight: 800; font-size: 1.15rem; margin: 0 0 10px; line-height: 1.5; }
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; min-width: 0; }
+.field label { font-weight: 600; font-size: .9375rem; }
+.field input, .field select, .field textarea { background: var(--bg); border: 1.5px solid var(--line); padding: 8px 12px; width: 100%; min-width: 0; line-height: 1.8; }
+.field textarea { resize: vertical; min-height: 260px; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+.row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+.count { font-size: .8125rem; color: var(--muted); display: flex; justify-content: space-between; gap: 12px; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.checks { position: sticky; top: 16px; }
+.checks ul { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.checks li { display: grid; grid-template-columns: 1.4rem minmax(0, 1fr); gap: 8px; font-size: .9375rem; line-height: 1.7; padding: 8px 10px; }
+.checks li.bad { background: var(--warn-bg); }
+.checks li.good { background: var(--ok-bg); }
+.mk { width: 1.4rem; height: 1.4rem; border-radius: 50%; display: grid; place-items: center; font-size: .8125rem; font-weight: 700; line-height: 1; margin-top: .2rem; }
+.good .mk { background: var(--ok); color: var(--bg); }
+.bad .mk { background: var(--warn); color: var(--bg); }
+.sum2 { font-weight: 600; margin: 0; }
+.manage { list-style: none; padding: 0; margin: 0; }
+.manage li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: center; padding-block: 10px; border-bottom: 1px solid var(--line); }
+.manage .t { font-weight: 600; min-width: 0; }
+.manage .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.manage .btn { padding: 3px 14px; font-size: .875rem; }
+.busy { padding: 60px 0; text-align: center; color: var(--muted); font-size: 1.125rem; }
+
+/* Footer */
+.foot { margin-top: 44px; padding-top: 18px; border-top: 2px solid var(--ink); display: flex; gap: 12px 28px; flex-wrap: wrap; justify-content: space-between; font-size: .875rem; color: var(--muted); }
+.foot nav { display: flex; gap: 8px 18px; flex-wrap: wrap; }
+.foot a { color: var(--ink); }
+
+.toast { position: fixed; inset-inline: 0; bottom: 0; display: flex; justify-content: center; padding: 16px max(16px, env(safe-area-inset-left, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)); pointer-events: none; }
+.toast div { background: var(--ink); color: var(--bg); padding: 9px 20px; font-weight: 500; }
+@media (max-width: 820px) {
+  .front, .deskGrid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .checks { position: static; }
+  .row2 { grid-template-columns: minmax(0, 1fr); }
+  .feed li { grid-template-columns: 3.4rem minmax(0, 1fr); gap: 12px; }
+  .manage li { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: no-preference) { .btn, .deskLink { transition: background .15s, color .15s; } }
+
+
+.bar { display: flex; gap: 10px 14px; flex-wrap: wrap; align-items: center; padding: 12px 16px; background: var(--surface); border: 1px solid var(--line); margin-bottom: 8px; }
+.bar .grow { flex: 1 1 14rem; min-width: 0; }
+.chip { font-size: .8125rem; font-weight: 600; padding: 2px 10px; background: var(--ok-bg); color: var(--ok); }
+.chip.dirty { background: var(--warn-bg); color: var(--warn); }
+.filebtn { position: relative; overflow: hidden; }
+.filebtn input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+
+.prev:empty { display: none; }
+.prev img { display: block; max-width: 100%; max-height: 220px; margin-top: 8px; border: 1px solid var(--line); }
+.mediaBox { margin-top: 6px; }
+
+</style>
+</head>
+<body>
+<div id="root" dir="rtl" lang="ar"></div>
+<script>
+(function () {
+  'use strict';
+  var CATS = [
+    { slug: 'news', name: 'الأخبار' },
+    { slug: 'transfers', name: 'الانتقالات' },
+    { slug: 'reports', name: 'تقارير المباريات' },
+    { slug: 'analysis', name: 'تحليلات' },
+    { slug: 'opinion', name: 'مقالات الرأي' }
+  ];
+  /* ---------- helpers ---------- */
+  function $(s) { return document.querySelector(s); }
+  function h(tag, attrs) {
+    var e = document.createElement(tag);
+    attrs = attrs || {};
+    Object.keys(attrs).forEach(function (k) {
+      var v = attrs[k];
+      if (v === false || v == null) return;
+      if (k === 'class') e.className = v;
+      else if (k.indexOf('on') === 0) e.addEventListener(k.slice(2), v);
+      else e.setAttribute(k, v === true ? '' : v);
+    });
+    for (var i = 2; i < arguments.length; i++) {
+      [].concat(arguments[i]).forEach(function (c) {
+        if (c == null || c === false) return;
+        e.append(c.nodeType ? c : document.createTextNode(String(c)));
+      });
+    }
+    return e;
+  }
+  function lsGet(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+  function lsSet(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function catName(slug) { for (var i = 0; i < CATS.length; i++) if (CATS[i].slug === slug) return CATS[i].name; return 'الأخبار'; }
+  function fmt(ms, o) { try { return new Date(ms).toLocaleDateString('ar-EG-u-nu-latn', o); } catch (e) { return ''; } }
+  function fmtLong(ms) { return fmt(ms, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
+  function fmtTime(ms) { try { return new Date(ms).toLocaleTimeString('ar-EG-u-nu-latn', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
+  function paras(t) { return String(t || '').split(/\n+/).map(function (s) { return s.trim(); }).filter(Boolean); }
+  function words(s) { return s.match(/[ء-ي0-9]+/g) || []; }
+  function summary(a) {
+    var p = paras(a.body)[0] || '';
+    if (p.length <= 170) return p;
+    var cut = p.slice(0, 170), i = cut.lastIndexOf(' ');
+    return (i > 90 ? cut.slice(0, i) : cut) + '...';
+  }
+  function shrink(file) {
+    return new Promise(function (res, rej) {
+      var rd = new FileReader();
+      rd.onerror = rej;
+      rd.onload = function () {
+        var img = new Image();
+        img.onerror = rej;
+        img.onload = function () {
+          var w = img.naturalWidth, ht = img.naturalHeight, k = Math.min(1, 1200 / Math.max(w, ht));
+          var c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(ht * k);
+          var cx = c.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, c.width, c.height);
+          cx.drawImage(img, 0, 0, c.width, c.height);
+          res(c.toDataURL('image/jpeg', 0.8));
+        };
+        img.src = rd.result;
+      };
+      rd.readAsDataURL(file);
+    });
+  }
+  function newId() { return 'n' + Date.now().toString(36); }
+  var toastTimer;
+  function toast(msg) {
+    var box = $('#toast'); if (!box) return;
+    box.firstChild.textContent = msg; box.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { box.hidden = true; }, 3200);
+  }
+
+  
+  var DATA = { site: { tagline: 'أخبار وتقارير وتحليلات رياضية', about: '', links: [] }, articles: [] };
+  var state = { canWrite: true, q: '', confirm: null, dirty: false, loaded: false };
+  function sorted() { return DATA.articles.slice().sort(function (a, b) { return (b.date || 0) - (a.date || 0); }); }
+  function find(id) { for (var i = 0; i < DATA.articles.length; i++) if (DATA.articles[i].id === id) return DATA.articles[i]; return null; }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function articleHref(a) { return 'index.html#a-' + a.id; }
+  /* ---------- checker (same rules we practised) ---------- */
+  var OPINION = ['رائع','رائعة','مذهل','مذهلة','مخيب','مخيبة','تاريخي','تاريخية','مستحق','مستحقة','ممتاز','ممتازة','مهزلة','صدمة','بجدارة','حلو','خرافي','أسطوري','كارثي','كارثة'];
+  var FIX = { 'الاهلي':'الأهلي','الجونه':'الجونة','الدقيقه':'الدقيقة','المباراه':'المباراة','بنتيجه':'بنتيجة','ماليه':'مالية','ثنائيه':'ثنائية','ثلاثيه':'ثلاثية','نظيفه':'نظيفة','امس':'أمس','الاربعاء':'الأربعاء','الاحد':'الأحد','احمد':'أحمد','اصابة':'إصابة','الاصابة':'الإصابة','الاعب':'اللاعب','ذالك':'ذلك','مواجة':'مواجهة','مبارايات':'مباريات','الي':'إلى','انه':'أنه','الاهداف':'الأهداف','الاول':'الأول','اعلن':'أعلن','اكد':'أكد','اوضح':'أوضح','اضاف':'أضاف','ادرك':'أدرك','ايضا':'أيضاً','صفحتة':'صفحته','اسابيع':'أسابيع' };
+  var VERBS = /(قال|وقال|صرح|وصرح|أكد|وأكد|أوضح|وأوضح|أعلن|وأعلن|أضاف|وأضاف|يقول|تصريح|تصريحات)/;
+  function analyze(title, body) {
+    var t = title.trim(), b = body.trim();
+    if (!t && !b) return null;
+    var out = [];
+    function add(ok, msg) { out.push({ ok: ok, msg: msg }); }
+    var all = t + '\n' + b;
+    var quotes = /"[^"]*"|“[^”]*”/g;
+    var outside = all.replace(quotes, ' ');
+    if (t) {
+      var n = words(t).length;
+      add(n >= 6 && n <= 10, n >= 6 && n <= 10 ? 'العنوان ' + n + ' كلمات، وهو ضمن المطلوب.' : 'العنوان ' + n + ' كلمات. المطلوب من 6 إلى 10.');
+      if (/\.\s*$|!/.test(t)) add(false, 'احذف النقطة أو علامة التعجب من العنوان.');
+    }
+    if (b) {
+      var lead = paras(b)[0] || '';
+      var ln = words(lead.split(/\.(?:\s|$)/)[0]).length;
+      add(ln <= 30, ln <= 30 ? 'المقدمة ' + ln + ' كلمة.' : 'المقدمة ' + ln + ' كلمة. اجعلها أقل من 30 وابدأ بأهم معلومة.');
+      var longs = b.split(/[.؟!]+\s|\n+/).filter(function (s) { return words(s).length > 35; }).length;
+      if (longs) add(false, 'في النص ' + longs + ' جملة أطول من 35 كلمة. اقسمها إلى جملتين.');
+    }
+    if (/[^\S\n][،.:؛!؟]/.test(all)) add(false, 'توجد مسافة قبل علامة ترقيم. العلامة تلتصق بالكلمة التي قبلها.');
+    if (/[،؛](?=\S)|:(?=[^\s\d])|\.(?=[ء-ي])/.test(all)) add(false, 'علامة ترقيم بلا مسافة بعدها.');
+    if (/!/.test(b)) add(false, 'علامة التعجب ممنوعة في الخبر.');
+    if (/["”]\s*\./.test(all)) add(false, 'النقطة تأتي داخل علامتي التنصيص في آخر التصريح.');
+    if ((all.match(/"/g) || []).length % 2 === 1) add(false, 'علامات التنصيص غير متوازنة.');
+    var m, unattr = 0;
+    quotes.lastIndex = 0;
+    while ((m = quotes.exec(all)) !== null) {
+      if (!VERBS.test(all.slice(Math.max(0, m.index - 70), m.index))) unattr++;
+    }
+    if (unattr) add(false, 'تصريح بلا ذكر قائله. اكتب من قال قبل علامات التنصيص.');
+    var op = OPINION.filter(function (w) { return words(outside).indexOf(w) !== -1; });
+    if (op.length) add(false, 'ألفاظ رأي خارج التصريحات: ' + op.join('، ') + '.');
+    var found = [], seen = {};
+    words(all).forEach(function (w) { if (FIX[w] && !seen[w]) { seen[w] = 1; found.push(w + ' ← ' + FIX[w]); } });
+    if (found.length) add(false, 'إملاء: ' + found.join('، '));
+    if (out.every(function (x) { return x.ok; }) && b) out.push({ ok: true, msg: 'لا ملاحظات آلية. راجع المعلومات على مصدرها قبل النشر.' });
+    return out;
+  }
+
+  
+  /* ---------- views ---------- */
+  function articleHref(a) { return '#a-' + a.id; }
+  function stamp(ms) { return h('div', { class: 'stamp', 'aria-hidden': 'true' }, h('b', null, fmt(ms, { day: 'numeric' })), h('span', null, fmt(ms, { month: 'long' }))); }
+  function catTag(a) { return h('a', { class: 'tag', href: '#c-' + (a.cat || 'news') }, catName(a.cat)); }
+  function feedItem(a) {
+    return h('li', null, stamp(a.date),
+      h('div', null, catTag(a),
+        h('h3', null, h('a', { href: articleHref(a) }, a.title)),
+        h('p', null, summary(a))));
+  }
+  function emptyBox(text) {
+    return h('div', { class: 'empty' }, h('p', null, text),
+      state.canWrite ? h('a', { class: 'btn primary', href: '#write' }, 'اكتب أول خبر') : null);
+  }
+  function homeView() {
+    var list = sorted(), box = document.createDocumentFragment();
+    if (state.q) {
+      var q = state.q;
+      var res = list.filter(function (a) { return (a.title + ' ' + a.body).indexOf(q) !== -1; });
+      box.append(h('div', { class: 'pageHead' }, h('h1', null, 'نتائج البحث عن: ' + q)));
+      box.append(res.length ? h('ul', { class: 'feed' }, res.map(feedItem)) : emptyBox('لا توجد مواد تطابق بحثك.'));
+      return box;
+    }
+    if (!list.length) { box.append(emptyBox('لم تُنشر مواد بعد.')); return box; }
+    var lead = list[0], side = list.slice(1, 4), rest = list.slice(4);
+    box.append(h('section', { class: 'front' },
+      h('article', { class: 'lead' }, catTag(lead),
+        h('h1', null, h('a', { href: articleHref(lead) }, lead.title)),
+        h('p', { class: 'sum' }, summary(lead)),
+        h('div', { class: 'meta' }, fmtLong(lead.date))),
+      side.length ? h('div', { class: 'side' }, side.map(function (a) {
+        return h('div', { class: 'item' }, catTag(a), h('h3', null, h('a', { href: articleHref(a) }, a.title)), h('div', { class: 'meta' }, fmt(a.date, { day: 'numeric', month: 'long' })));
+      })) : null));
+    if (rest.length) {
+      box.append(h('h2', { class: 'sec feedHead' }, 'آخر المواد'));
+      box.append(h('ul', { class: 'feed' }, rest.map(feedItem)));
+    }
+    return box;
+  }
+  function catView(slug) {
+    var list = sorted().filter(function (a) { return a.cat === slug; });
+    var box = document.createDocumentFragment();
+    box.append(h('div', { class: 'pageHead' }, h('h1', null, catName(slug))));
+    box.append(list.length ? h('ul', { class: 'feed' }, list.map(feedItem)) : emptyBox('لا توجد مواد في هذا القسم بعد.'));
+    return box;
+  }
+  function articleView(id) {
+    var a = find(id);
+    if (!a) return emptyBox('هذه المادة غير موجودة. ربما حُذفت أو تغير رابطها.');
+    var ps = paras(a.body);
+    var others = sorted().filter(function (x) { return x.id !== a.id; });
+    var same = others.filter(function (x) { return x.cat === a.cat; });
+    var more = (same.length ? same : others).slice(0, 3);
+    var box = document.createDocumentFragment();
+    box.append(h('article', { class: 'article' }, catTag(a),
+      h('h1', null, a.title),
+      h('div', { class: 'meta' }, (a.author ? a.author + ' · ' : '') + fmtLong(a.date) + ' · ' + fmtTime(a.date)),
+      ps.map(function (p, i) { return h('p', { class: i === 0 ? 'first' : null }, p); }),
+      state.canWrite ? h('div', { class: 'articleActions' }, h('a', { class: 'btn', href: '#write-' + a.id }, 'تعديل المادة')) : null));
+    if (more.length) {
+      box.append(h('section', { class: 'more' }, h('h2', { class: 'sec' }, 'اقرأ أيضاً'), h('ul', { class: 'feed' }, more.map(feedItem))));
+    }
+    return box;
+  }
+  function aboutView() {
+    var box = document.createDocumentFragment();
+    box.append(h('div', { class: 'pageHead' }, h('h1', null, 'عن الموقع')));
+    box.append(h('div', { class: 'article' }, paras(DATA.site.about).map(function (p) { return h('p', null, p); })));
+    return box;
+  }
+
+  
+  /* Desk: manage articles and settings */
+  function deskView() {
+    var box = document.createDocumentFragment(), list = sorted();
+    box.append(h('div', { class: 'pageHead' }, h('h1', null, 'غرفة التحرير')));
+    var rows = h('ul', { class: 'manage' });
+    list.forEach(function (a) {
+      var del = h('button', { class: 'btn danger', type: 'button' }, state.confirm === a.id ? 'تأكيد الحذف' : 'حذف');
+      del.addEventListener('click', function () {
+        if (state.confirm !== a.id) { state.confirm = a.id; renderMain(); return; }
+        state.confirm = null;
+        var next = clone(DATA); next.articles = next.articles.filter(function (x) { return x.id !== a.id; });
+        commit(next, '#desk', 'تم حذف المادة');
+      });
+      rows.append(h('li', null,
+        h('div', { class: 't' }, a.title, h('div', { class: 'meta' }, catName(a.cat) + ' · ' + fmt(a.date, { day: 'numeric', month: 'long', year: 'numeric' }))),
+        h('div', { class: 'btns' }, h('a', { class: 'btn', href: 'index.html#a-' + a.id, target: '_blank' }, 'عرض'), h('a', { class: 'btn', href: '#write-' + a.id }, 'تعديل'), del)));
+    });
+    box.append(h('section', { class: 'panel' }, h('h2', null, 'المواد المنشورة (' + list.length + ')'),
+      h('p', { class: 'note' }, 'التعديلات تُحفظ هنا مؤقتاً. بعد ما تخلص، اضغط "نزّل articles.json" وارفع الملف على الاستضافة مكان القديم.'),
+      h('div', { class: 'actions' }, h('a', { class: 'btn primary', href: '#write' }, 'خبر جديد')),
+      list.length ? rows : h('p', { class: 'note' }, 'لا توجد مواد.')));
+    var tag = h('input', { id: 'st-tag', type: 'text', value: DATA.site.tagline || '' });
+    var about = h('textarea', { id: 'st-about' }); about.value = DATA.site.about || '';
+    about.style.minHeight = '120px';
+    var links = h('textarea', { id: 'st-links', placeholder: 'فيسبوك | https://...' });
+    links.value = (DATA.site.links || []).map(function (l) { return l.label + ' | ' + l.url; }).join('\n');
+    links.style.minHeight = '90px';
+    var save = h('button', { class: 'btn primary', type: 'button' }, 'احفظ الإعدادات');
+    save.addEventListener('click', function () {
+      var next = clone(DATA);
+      next.site.tagline = tag.value.trim();
+      next.site.about = about.value.trim();
+      next.site.links = links.value.split('\n').map(function (ln) {
+        var parts = ln.split('|'); var url = (parts[1] || '').trim(); var label = (parts[0] || '').trim();
+        return /^https?:\/\//.test(url) ? { label: label || url, url: url } : null;
+      }).filter(Boolean);
+      commit(next, '#desk', 'تم حفظ الإعدادات');
+    });
+    box.append(h('section', { class: 'panel' }, h('h2', null, 'إعدادات الموقع'),
+      h('div', { class: 'field' }, h('label', { for: 'st-tag' }, 'الوصف تحت الاسم'), tag),
+      h('div', { class: 'field' }, h('label', { for: 'st-about' }, 'نص صفحة "عن الموقع"'), about),
+      h('div', { class: 'field' }, h('label', { for: 'st-links' }, 'روابط حساباتك (سطر لكل رابط: الاسم | الرابط)'), links),
+      h('div', { class: 'actions' }, save)));
+    return box;
+  }
+
+  
+  /* Writer */
+  function writeView(editId) {
+    var existing = editId ? find(editId) : null;
+    if (editId && !existing) return emptyBox('لا توجد مادة بهذا الرابط.');
+    var key = 's22-draft-' + (editId || 'new');
+    var draft = lsGet(key, null) || {};
+    var linesOf = function (ls) { return (ls || []).map(function (l) { return l.label + ' | ' + l.url; }).join('\n'); };
+    var init = existing ? { cat: existing.cat, title: existing.title, author: existing.author || '', body: existing.body, image: existing.image || '', video: existing.video || '', links: linesOf(existing.links) } : { cat: draft.cat || 'news', title: draft.title || '', author: draft.author || lsGet('s22-author', '') || '', body: draft.body || '', image: draft.image || '', video: draft.video || '', links: draft.links || '' };
+    var cat = h('select', { id: 'w-cat' }, CATS.map(function (c) { return h('option', { value: c.slug }, c.name); }));
+    cat.value = init.cat;
+    var ttl = h('input', { id: 'w-ttl', type: 'text', autocomplete: 'off', placeholder: 'عنوان بفعل مضارع ومعلومة' }); ttl.value = init.title;
+    var au = h('input', { id: 'w-au', type: 'text', autocomplete: 'off', placeholder: 'اسمك' }); au.value = init.author;
+    var bdy = h('textarea', { id: 'w-bdy', placeholder: 'الفقرة الأولى هي المقدمة. افصل بين الفقرات بسطر فارغ.' }); bdy.value = init.body;
+
+    var imgVal = init.image || '';
+    var PH = 'رابط صورة، أو مسار زي images/photo1.jpg';
+    var imgUrl = h('input', { id: 'w-img', type: 'text', dir: 'ltr', autocomplete: 'off', placeholder: PH });
+    var imgPrev = h('div', { class: 'prev' });
+    var imgFile = h('input', { type: 'file', accept: 'image/*', id: 'w-imgfile', 'aria-label': 'اختر صورة من جهازك' });
+    var imgClear = h('button', { class: 'btn', type: 'button' }, 'إزالة الصورة');
+    var vid = h('input', { id: 'w-vid', type: 'text', dir: 'ltr', autocomplete: 'off', placeholder: 'رابط يوتيوب أو فيميو، أو مسار ملف زي videos/clip.mp4' }); vid.value = init.video || '';
+    var lnk = h('textarea', { id: 'w-lnk', placeholder: 'المصدر | https://...' }); lnk.value = init.links || ''; lnk.style.minHeight = '90px';
+    function drawPrev() {
+      imgPrev.replaceChildren();
+      if (imgVal) {
+        var im = h('img', { alt: 'معاينة الصورة', src: imgVal });
+        im.addEventListener('error', function () { imgPrev.replaceChildren(h('p', { class: 'note' }, 'المعاينة مش ظاهرة هنا. لو المسار زي images/photo.jpg فالمعاينة بتشتغل بس لو الفولدر جنب admin.html، لكن الصورة هتظهر عادي على الموقع بعد الرفع.')); });
+        imgPrev.append(im);
+      }
+      imgClear.hidden = !imgVal;
+    }
+    function drawImg() {
+      var isData = /^data:image\//i.test(imgVal);
+      imgUrl.value = isData ? '' : imgVal;
+      imgUrl.placeholder = isData ? 'صورة مرفوعة من جهازك (محفوظة داخل الملف)' : PH;
+      drawPrev();
+    }
+    imgUrl.addEventListener('input', function () { imgVal = imgUrl.value.trim(); drawPrev(); onInput(); });
+    imgClear.addEventListener('click', function () { imgVal = ''; drawImg(); onInput(); });
+    imgFile.addEventListener('change', function () {
+      var f = imgFile.files && imgFile.files[0]; if (!f) return;
+      shrink(f).then(function (d) { imgVal = d; drawImg(); onInput(); toast('تم تجهيز الصورة (' + Math.round(d.length * 0.75 / 1024) + ' ك.ب)'); })
+        .catch(function () { toast('تعذر قراءة الصورة.'); });
+      imgFile.value = '';
+    });
+    function readLinks() {
+      return lnk.value.split('\n').map(function (ln) {
+        ln = ln.trim(); if (!ln) return null;
+        var i = ln.indexOf('|'), label = i < 0 ? '' : ln.slice(0, i).trim(), url = (i < 0 ? ln : ln.slice(i + 1)).trim();
+        return /^https?:\/\//i.test(url) ? { label: label || url, url: url } : null;
+      }).filter(Boolean);
+    }
+    function applyMedia(a) {
+      var im = imgVal.trim(), v = vid.value.trim(), ls = readLinks();
+      if (im) a.image = im; else delete a.image;
+      if (v) a.video = v; else delete a.video;
+      if (ls.length) a.links = ls; else delete a.links;
+    }
+    drawImg();
+    var count = h('div', { class: 'count' }, h('span', { id: 'w-wc' }), h('span', null, 'الفقرة الأولى هي المقدمة'));
+    var checks = h('aside', { class: 'panel checks', 'aria-live': 'polite' });
+    function run() {
+      var res = analyze(ttl.value, bdy.value);
+      count.firstChild.textContent = words(bdy.value).length + ' كلمة في النص';
+      checks.replaceChildren(h('h2', null, 'فحص سريع'));
+      if (!res) checks.append(h('p', { class: 'note' }, 'ابدأ بالكتابة وستظهر الملاحظات هنا.'));
+      else {
+        var bad = res.filter(function (x) { return !x.ok; }).length;
+        checks.append(h('p', { class: 'sum2' }, bad ? 'عدد الملاحظات: ' + bad : 'لا توجد ملاحظات'));
+        checks.append(h('ul', null, res.map(function (x) {
+          return h('li', { class: x.ok ? 'good' : 'bad' }, h('span', { class: 'mk', 'aria-hidden': 'true' }, x.ok ? '✓' : '!'), h('span', null, x.msg));
+        })));
+      }
+      checks.append(h('p', { class: 'note', style: 'margin-top:14px' }, 'العنوان بفعل مضارع، والمقدمة والنص بفعل ماضٍ. الفحص آلي، ولا يغني عن مراجعتك للمعلومات.'));
+    }
+    var t;
+    function onInput() { run(); clearTimeout(t); t = setTimeout(function () { lsSet(key, { cat: cat.value, title: ttl.value, author: au.value, body: bdy.value, image: /^data:/i.test(imgVal) ? '' : imgVal, video: vid.value, links: lnk.value }); }, 500); }
+    [ttl, au, bdy, vid, lnk].forEach(function (e) { e.addEventListener('input', onInput); }); cat.addEventListener('change', onInput);
+    var pub = h('button', { class: 'btn primary', type: 'button' }, existing ? 'احفظ التعديل' : 'احفظ المادة');
+    pub.addEventListener('click', function () {
+      var title = ttl.value.trim(), body = bdy.value.trim();
+      if (!title || !body) { toast('اكتب العنوان والنص أولاً.'); return; }
+      var next = clone(DATA), id;
+      if (existing) {
+        id = existing.id;
+        next.articles.forEach(function (a) { if (a.id === id) { a.cat = cat.value; a.title = title; a.author = au.value.trim(); a.body = body; a.updated = Date.now(); applyMedia(a); } });
+      } else {
+        id = newId();
+        var na = { id: id, cat: cat.value, title: title, author: au.value.trim(), body: body, date: Date.now() };
+        applyMedia(na);
+        next.articles.push(na);
+      }
+      lsSet('s22-author', au.value.trim());
+      pub.disabled = true;
+      commit(next, '#a-' + id, existing ? 'تم حفظ التعديل' : 'تم حفظ المادة').then(function (ok) { if (!ok) pub.disabled = false; else lsSet(key, null); });
+    });
+    var box = document.createDocumentFragment();
+    box.append(h('div', { class: 'pageHead' }, h('h1', null, existing ? 'تعديل مادة' : 'مادة جديدة')));
+    box.append(h('div', { class: 'deskGrid' },
+      h('section', { class: 'panel' },
+        h('div', { class: 'row2' },
+          h('div', { class: 'field' }, h('label', { for: 'w-cat' }, 'القسم'), cat),
+          h('div', { class: 'field' }, h('label', { for: 'w-au' }, 'الكاتب'), au)),
+        h('div', { class: 'field' }, h('label', { for: 'w-ttl' }, 'العنوان'), ttl),
+        h('div', { class: 'field' }, h('label', { for: 'w-bdy' }, 'النص'), bdy, count),
+        h('div', { class: 'field' }, h('label', { for: 'w-img' }, 'صورة الخبر (اختياري)'), imgUrl,
+          h('div', { class: 'actions mediaBox' }, h('span', { class: 'btn filebtn' }, 'اختر صورة من جهازك', imgFile), imgClear),
+          imgPrev,
+          h('p', { class: 'note', style: 'margin:6px 0 0' }, 'الصورة اللي بتختارها من جهازك بتتصغّر تلقائي وتتخزن جوه articles.json. لو عندك صور كتير، الأفضل ترفعها على GitHub في فولدر images وتكتب مسارها هنا.')),
+        h('div', { class: 'field' }, h('label', { for: 'w-vid' }, 'فيديو (اختياري)'), vid,
+          h('p', { class: 'note', style: 'margin:6px 0 0' }, 'رابط يوتيوب أو فيميو بيتعرض جوه الخبر، وكمان ملف mp4 (رابط أو مسار زي videos/clip.mp4). أي رابط تاني بيظهر كزرار "شاهد الفيديو".')),
+        h('div', { class: 'field' }, h('label', { for: 'w-lnk' }, 'روابط ذات صلة (اختياري)'), lnk,
+          h('p', { class: 'note', style: 'margin:6px 0 0' }, 'سطر لكل رابط بالشكل: الاسم | الرابط. وتقدر كمان تحط رابط جوه النص نفسه بالشكل [اسم الرابط](https://...)، وأي رابط مكتوب عادي في النص بيتحوّل لرابط قابل للضغط.')),
+        h('div', { class: 'actions' }, pub, h('a', { class: 'btn', href: '#desk' }, 'رجوع'))),
+      checks));
+    run();
+    return box;
+  }
+
+  
+
+  var BACKUP = 's22-admin-backup';
+  function commit(next, hash, flash) {
+    DATA = next; state.dirty = true; lsSet(BACKUP, DATA);
+    toast((flash || 'تم الحفظ') + '. نزّل الملف وارفعه على الاستضافة ليظهر للزوار.');
+    if (location.hash === '#desk') renderAll(); else location.hash = '#desk';
+    return Promise.resolve(true);
+  }
+  function download() {
+    var blob = new Blob([JSON.stringify(DATA, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a'); a.href = url; a.download = 'articles.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 2000);
+    state.dirty = false; renderBar();
+  }
+  function load(d) {
+    DATA = { site: d.site || {}, articles: d.articles || [] };
+    state.loaded = true; state.dirty = false; renderAll();
+  }
+  var elBar, elMain;
+  function renderBar() {
+    var file = h('input', { type: 'file', accept: 'application/json,.json', id: 'openfile', 'aria-label': 'افتح articles.json' });
+    file.addEventListener('change', function () {
+      var f = file.files && file.files[0]; if (!f) return;
+      var rd = new FileReader();
+      rd.onload = function () { try { load(JSON.parse(rd.result)); toast('تم فتح الملف'); } catch (e) { toast('الملف غير صالح.'); } };
+      rd.readAsText(f);
+    });
+    elBar.replaceChildren(
+      h('span', { class: 'chip' + (state.dirty ? ' dirty' : ''), role: 'status' }, state.dirty ? 'تعديلات لم تُنزَّل بعد' : 'لا تعديلات جديدة'),
+      h('span', { class: 'grow' }),
+      h('span', { class: 'btn filebtn' }, 'افتح articles.json', file),
+      h('button', { class: 'btn primary', type: 'button', onclick: download }, 'نزّل articles.json'));
+  }
+  function route() {
+    var hs = location.hash.replace(/^#/, ''), m;
+    if (hs === 'write') return { name: 'write', id: null };
+    if ((m = /^write-(.+)$/.exec(hs))) return { name: 'write', id: m[1] };
+    return { name: 'desk' };
+  }
+  function renderMain() {
+    var r = route();
+    elMain.replaceChildren();
+    if (!state.loaded) {
+      elMain.append(h('div', { class: 'empty' },
+        h('p', null, 'لم يُحمَّل ملف المواد بعد. إن كان الموقع مرفوعاً فسيُحمَّل تلقائياً. وإلا اضغط "افتح articles.json" وأختر الملف الذي معك.')));
+      return;
+    }
+    elMain.append(r.name === 'write' ? writeView(r.id) : deskView());
+    document.title = 'لوحة تحرير SPORT 22';
+  }
+  function renderAll() { renderBar(); renderMain(); }
+  function build() {
+    var root = document.getElementById('root');
+    elBar = h('div', { class: 'bar' });
+    elMain = h('main', { id: 'main' });
+    root.replaceChildren(h('div', { class: 'wrap' },
+      h('header', { class: 'mast' },
+        h('a', { class: 'logo', href: 'index.html', 'aria-label': 'SPORT 22' }, h('span', { class: 'w-sport' }, 'Sport'), h('span', { class: 'w-num' }, '22')),
+        h('div', { class: 'tools' }, h('strong', null, 'لوحة التحرير'))),
+      elBar, elMain),
+      h('div', { class: 'toast', id: 'toast', hidden: true, role: 'status' }, h('div')));
+  }
+  window.addEventListener('hashchange', function () { state.confirm = null; renderAll(); window.scrollTo(0, 0); });
+  window.addEventListener('beforeunload', function (e) { if (state.dirty) { e.preventDefault(); e.returnValue = ''; } });
+  build(); renderAll();
+  fetch('articles.json', { cache: 'no-cache' })
+    .then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
+    .then(function (d) { load(d); })
+    .catch(function () {
+      var b = lsGet(BACKUP, null);
+      if (b) { load(b); state.dirty = true; renderBar(); toast('تم استرجاع نسخة محفوظة على هذا الجهاز.'); }
+    });
+})();
+</script>
+</body>
+</html>
