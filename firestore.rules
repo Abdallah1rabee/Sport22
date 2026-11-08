@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // الآراء: أي حد يكتب رأي جديد (بيظهر بعد موافقتك)، والقراءة للآراء الموافق عليها بس
+    match /comments/{id} {
+      allow read: if resource.data.approved == true;
+      allow create: if request.resource.data.approved == false
+        && request.resource.data.keys().hasOnly(['art','n','t','p','approved','ts'])
+        && request.resource.data.n is string && request.resource.data.n.size() > 0 && request.resource.data.n.size() <= 30
+        && request.resource.data.t is string && request.resource.data.t.size() >= 3 && request.resource.data.t.size() <= 500
+        && request.resource.data.art is string && request.resource.data.art.size() <= 60;
+      allow update, delete: if false;
+    }
+
+    // التوقعات: قراءة للكل، وتسجيل جديد بس (من غير تعديل)
+    match /predictions/{id} {
+      allow read: if true;
+      allow create: if request.resource.data.keys().hasOnly(['m','n','h','a','t'])
+        && request.resource.data.n is string && request.resource.data.n.size() > 0 && request.resource.data.n.size() <= 30
+        && request.resource.data.h is int && request.resource.data.h >= 0 && request.resource.data.h <= 20
+        && request.resource.data.a is int && request.resource.data.a >= 0 && request.resource.data.a <= 20;
+      allow update, delete: if false;
+    }
+
+    // عدادات التفاعلات والتصويت
+    match /counts/{id} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}

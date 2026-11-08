@@ -228,6 +228,20 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .lb li::before { content: counter(r); font-family: var(--logo); font-style: italic; font-weight: 800; font-size: 1.3rem; }
 @media (max-width: 820px) { .lb li { grid-template-columns: 1.6rem minmax(0, 1fr) auto; } .lb li .meta { display: none; } }
 
+/* Comments + article predictions */
+.cmts { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--line); }
+.cmform { background: var(--surface); border: 1px solid var(--line); padding: 14px 16px; display: grid; gap: 10px; margin-bottom: 8px; }
+.cmform input, .cmform textarea { background: var(--bg); border: 1.5px solid var(--line); padding: 8px 12px; width: 100%; min-width: 0; line-height: 1.8; }
+.cmform input:focus, .cmform textarea:focus { border-color: var(--accent); }
+.cmform textarea { resize: vertical; min-height: 5.5rem; }
+.cmform .btn { justify-self: start; }
+.cm { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.cm .who { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: .875rem; color: var(--muted); }
+.cm .who b { color: var(--ink); font-family: var(--display); }
+.cm .ptag { background: var(--ok-bg); color: var(--ok); font-size: .75rem; padding: 1px 8px; }
+.cm p { margin: 6px 0 0; line-height: 1.9; white-space: pre-wrap; overflow-wrap: anywhere; }
+.predbox { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--line); }
+
 /* Today's matches strip */
 .today { margin-top: 14px; }
 .today .thead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
@@ -251,6 +265,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 </head>
 <body>
 <div id="root"></div>
+<script src="firebase-config.js"></script>
 <script>
 (function () {
   'use strict';
@@ -349,7 +364,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
       h('ul', null, ls.map(function (l) { return h('li', null, h('a', { href: l.url, target: '_blank', rel: 'noopener noreferrer' }, l.label || l.url)); })));
   }
   /* ---------- Firebase: reactions, polls, predictions ---------- */
-  var FB_CONFIG = null; /* FB_CONFIG_HERE */
+  var FB_CONFIG = window.S22_FB || null;
   var fbDb = null, fbQueue = [], fbState = 'idle';
   function fbOn() { return !!FB_CONFIG; }
   function fbInit() {
@@ -575,6 +590,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
   
   var DATA = { site: {}, articles: [] };
+  var EXTRAS = { matches: [], polls: {} };
   var state = { canWrite: false, q: '', status: 'loading', confirm: null };
   function sorted() { return DATA.articles.slice().sort(function (a, b) { return (b.date || 0) - (a.date || 0); }); }
   function find(id) { for (var i = 0; i < DATA.articles.length; i++) if (DATA.articles[i].id === id) return DATA.articles[i]; return null; }
@@ -672,6 +688,77 @@ button, input, select, textarea { font: inherit; color: inherit; }
     box.append(list.length ? h('ul', { class: 'feed' }, list.map(feedItem)) : emptyBox('لا توجد مواد في هذا القسم بعد.'));
     return box;
   }
+  /* ---------- Article extras: match prediction + moderated comments ---------- */
+  function withPoll(a) {
+    var p = EXTRAS.polls && EXTRAS.polls[a.id];
+    if (a.poll || !p) return a;
+    var c = {}; Object.keys(a).forEach(function (k) { c[k] = a[k]; }); c.poll = p; return c;
+  }
+  function articleMatches(a) {
+    return (DATA.matches || []).filter(function (m) { return m && m.articleId === a.id && m.id && m.home && m.away && m.kickoff; });
+  }
+  function predEl(a) {
+    var ms = articleMatches(a);
+    if (!fbOn() || !ms.length) return null;
+    var wrap = h('div', null, h('div', { class: 'busy' }, 'جار التحميل...'));
+    var box = h('section', { class: 'predbox' }, h('h2', { class: 'sec' }, 'توقّع النتيجة'), wrap);
+    var all = null;
+    function draw() { wrap.replaceChildren.apply(wrap, ms.map(function (m) { return matchCard(m, all, draw); })); }
+    getPreds(function (p) {
+      if (p === null) { wrap.replaceChildren(h('p', { class: 'meta' }, 'تعذر تحميل التوقعات الآن.')); return; }
+      all = p; draw();
+    });
+    return box;
+  }
+  function relTime(ms) {
+    var d = Math.max(0, Date.now() - ms), m = Math.round(d / 60000);
+    if (m < 1) return 'الآن';
+    if (m < 60) return 'منذ ' + m + ' دقيقة';
+    var hh = Math.round(m / 60); if (hh < 24) return 'منذ ' + hh + ' ساعة';
+    return fmtLong(ms);
+  }
+  function commentsEl(a) {
+    if (!fbOn()) return null;
+    var list = h('div', { class: 'cmlist' }, h('p', { class: 'meta' }, 'جار التحميل...'));
+    var nm = h('input', { type: 'text', maxlength: '30', placeholder: 'اسمك', 'aria-label': 'اسمك', value: lsGet('s22-name', '') || '' });
+    var tx = h('textarea', { maxlength: '500', rows: '3', placeholder: 'اكتب رأيك بأدب...', 'aria-label': 'رأيك' });
+    var btn = h('button', { class: 'btn primary', type: 'button' }, 'نشر الرأي');
+    var head = h('h2', { class: 'sec' }, 'آراء القراء');
+    var box = h('section', { class: 'cmts' }, head,
+      h('div', { class: 'cmform' }, nm, tx, btn, h('p', { class: 'meta', style: 'margin:0' }, 'الآراء بتظهر بعد مراجعتها.')), list);
+    function show(items) {
+      head.textContent = 'آراء القراء' + (items.length ? ' (' + items.length + ')' : '');
+      if (!items.length) { list.replaceChildren(h('p', { class: 'meta' }, 'مفيش آراء لسه. كن أول من يعلّق.')); return; }
+      list.replaceChildren.apply(list, items.map(function (c) {
+        return h('div', { class: 'cm' },
+          h('div', { class: 'who' }, h('b', null, c.n || 'قارئ'), c.p ? h('span', { class: 'ptag' }, 'توقع: ' + c.p) : null, h('span', null, c.ts ? relTime(c.ts) : '')),
+          h('p', null, c.t || ''));
+      }));
+    }
+    fbLoad(function (db) {
+      db.collection('comments').where('art', '==', a.id).where('approved', '==', true).limit(100).get().then(function (s) {
+        var out = []; s.forEach(function (d) { var x = d.data(); x.ts = x.ts && x.ts.toMillis ? x.ts.toMillis() : 0; out.push(x); });
+        out.sort(function (x, y) { return y.ts - x.ts; }); show(out);
+      }).catch(function () { list.replaceChildren(h('p', { class: 'meta' }, 'تعذر تحميل الآراء الآن.')); });
+    });
+    btn.addEventListener('click', function () {
+      var n = nm.value.trim(), t = tx.value.trim(), last = lsGet('s22-lastc', 0) || 0;
+      if (!n || n.length > 30) { toast('اكتب اسمك (30 حرف بحد أقصى).'); return; }
+      if (t.length < 3 || t.length > 500) { toast('اكتب رأيك (من 3 لـ 500 حرف).'); return; }
+      if (Date.now() - last < 30000) { toast('استنى شوية قبل رأي جديد.'); return; }
+      var ms = articleMatches(a), pm = ms.length ? lsGet('s22-pm-' + ms[0].id, null) : null;
+      var doc = { art: a.id, n: n, t: t, approved: false, ts: firebase.firestore.FieldValue.serverTimestamp() };
+      if (pm) doc.p = pm.h + '-' + pm.a;
+      btn.disabled = true;
+      fbLoad(function (db) {
+        db.collection('comments').add(doc).then(function () {
+          lsSet('s22-name', n); lsSet('s22-lastc', Date.now()); tx.value = ''; btn.disabled = false;
+          toast('وصل رأيك. هيظهر بعد المراجعة.');
+        }).catch(function () { btn.disabled = false; toast('تعذر الإرسال. جرّب بعد شوية.'); });
+      });
+    });
+    return box;
+  }
   function articleView(id) {
     var a = find(id);
     if (!a) return emptyBox('هذه المادة غير موجودة. ربما حُذفت أو تغير رابطها.');
@@ -687,7 +774,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
       ps.map(function (p, i) { return h('p', { class: i === 0 ? 'first' : null }, linkify(p)); }),
       videoEl(a.video),
       refsEl(a),
-      engageEl(a),
+      predEl(a),
+      engageEl(withPoll(a)),
+      commentsEl(a),
       state.canWrite ? h('div', { class: 'articleActions' }, h('a', { class: 'btn', href: '#write-' + a.id }, 'تعديل المادة')) : null));
     if (more.length) {
       box.append(h('section', { class: 'more' }, h('h2', { class: 'sec' }, 'اقرأ أيضاً'), h('ul', { class: 'feed' }, more.map(feedItem))));
@@ -733,9 +822,17 @@ button, input, select, textarea { font: inherit; color: inherit; }
     .then(function (d) { TODAY = d; renderToday(); })
     .catch(function () {});
   setInterval(renderToday, 60000);
+  fetch('extras.json', { cache: 'no-cache' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      if (!d) return;
+      EXTRAS = { matches: d.matches || [], polls: d.polls || {} };
+      if (state.status === 'ready') { DATA.matches = (DATA.matches || []).concat(EXTRAS.matches); renderAll(); }
+    })
+    .catch(function () {});
   fetch('articles.json', { cache: 'no-cache' })
     .then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
-    .then(function (d) { DATA = { site: d.site || {}, articles: d.articles || [], matches: d.matches || [] }; state.status = 'ready'; renderAll(); track(); })
+    .then(function (d) { DATA = { site: d.site || {}, articles: d.articles || [], matches: (d.matches || []).concat(EXTRAS.matches) }; state.status = 'ready'; renderAll(); track(); })
     .catch(function () { state.status = 'error'; renderAll(); });
 })();
 </script>
