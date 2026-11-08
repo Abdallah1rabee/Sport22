@@ -247,12 +247,23 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .today .thead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
 .today h2 { font-family: var(--display); font-weight: 800; font-size: 1.05rem; margin: 0; line-height: 1.5; }
 .today .tnote { font-size: .75rem; color: var(--muted); }
-.tstrip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin; }
-.tm { flex: 0 0 12rem; border: 1.5px solid var(--ink); background: var(--surface); padding: 8px 12px; }
+.tstrip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin;  align-items: flex-start; }
+.tm { flex: 0 0 13.5rem; border: 1.5px solid var(--ink); background: var(--surface); padding: 8px 12px; }
 .tm .tc { font-size: .75rem; color: var(--muted); }
 .tm .tt { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; line-height: 1.7; }
 .tm .tt b { font-family: var(--logo); font-style: italic; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
 .tm .ts { font-size: .8125rem; margin-top: 4px; font-weight: 600; color: var(--accent); }
+.tm .tv { border-top: 1px dashed var(--line); margin-top: 8px; padding-top: 6px; }
+.tm .tvq { font-size: .75rem; color: var(--muted); font-weight: 600; margin-bottom: 5px; }
+.tm .tvb { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.tm .tvb button { border: 1.5px solid var(--ink); background: transparent; padding: 5px 2px; font-size: .75rem; font-weight: 600; line-height: 1.4; cursor: pointer; overflow-wrap: anywhere; }
+.tm .tvb button:hover { background: var(--bg); }
+.tm .tvr { position: relative; border: 1.5px solid var(--line); padding: 4px 2px; text-align: center; font-size: .75rem; font-weight: 600; overflow: hidden; line-height: 1.4; overflow-wrap: anywhere; }
+.tm .tvr i { position: absolute; inset-block: 0; inset-inline-start: 0; background: var(--accent); opacity: .18; }
+.tm .tvr b, .tm .tvr span { position: relative; display: block; }
+.tm .tvr b { font-size: .95rem; font-variant-numeric: tabular-nums; }
+.tm .tvr.me { border-color: var(--accent); }
+.tm .tvn { font-size: .6875rem; color: var(--muted); margin-top: 4px; }
 .tm.live { border-color: var(--warn); }
 .tm.live .ts { color: var(--warn); }
 .tm.ft .ts { color: var(--muted); }
@@ -555,6 +566,33 @@ button, input, select, textarea { font: inherit; color: inherit; }
   var TODAY = null;
   function cairoDay(ms) { try { return new Date(ms).toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' }); } catch (e) { return ''; } }
   function cairoTime(ms) { try { return new Date(ms).toLocaleTimeString('ar-EG-u-nu-latn', { hour: 'numeric', minute: '2-digit', timeZone: 'Africa/Cairo' }); } catch (e) { return ''; } }
+  var TV = {};
+  function tvKey(day, m) { return 'tv_' + day + '_' + String(m.home).replace(/[\s\/]+/g, '-') + '_' + String(m.away).replace(/[\s\/]+/g, '-'); }
+  function tvBox(key, m, open) {
+    if (!fbOn()) return null;
+    var mine = lsGet('s22-' + key, null);
+    if (TV[key] === undefined) { TV[key] = null; getCounts(key, function (x) { TV[key] = x || {}; renderToday(); }); }
+    var c = TV[key] || {}, t = (c.h || 0) + (c.d || 0) + (c.a || 0);
+    var opts = [{ k: 'h', l: m.home }, { k: 'd', l: 'تعادل' }, { k: 'a', l: m.away }];
+    if (open && !mine) {
+      return h('div', { class: 'tv' }, h('div', { class: 'tvq' }, 'مين هيفوز؟'),
+        h('div', { class: 'tvb' }, opts.map(function (o) {
+          var b = h('button', { type: 'button' }, o.l);
+          b.addEventListener('click', function () {
+            lsSet('s22-' + key, o.k);
+            var cc = TV[key] || (TV[key] = {}); cc[o.k] = (cc[o.k] || 0) + 1;
+            bump(key, o.k); renderToday();
+          });
+          return b;
+        })));
+    }
+    if (!t) return open ? null : null;
+    return h('div', { class: 'tv' }, h('div', { class: 'tvq' }, open ? 'توقعات الجمهور' : 'توقعات الجمهور قبل البداية'),
+      h('div', { class: 'tvb' }, opts.map(function (o) {
+        var p = Math.round((c[o.k] || 0) * 100 / t);
+        return h('div', { class: 'tvr' + (mine === o.k ? ' me' : '') }, h('i', { style: 'width:' + p + '%' }), h('b', null, p + '%'), h('span', null, o.l));
+      })), h('div', { class: 'tvn' }, t + ' صوت'));
+  }
   function renderToday() {
     if (!elToday) return;
     var d = TODAY, now = Date.now();
@@ -573,7 +611,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
         h('div', { class: 'tc' }, m.comp || ''),
         h('div', { class: 'tt' }, h('span', null, m.home), showScore ? h('b', null, String(m.hs)) : null),
         h('div', { class: 'tt' }, h('span', null, m.away), showScore ? h('b', null, String(m.as)) : null),
-        h('div', { class: 'ts' }, status));
+        h('div', { class: 'ts' }, status),
+        tvBox(tvKey(d.date, m), m, m.st !== 'ft' && now < m.time));
     });
     elToday.hidden = false;
     elToday.replaceChildren(
