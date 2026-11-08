@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SPORT 22</title>
+<meta name="description" content="SPORT 22 موقع رياضي يقدم الأخبار والتقارير والتحليلات.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="SPORT 22">
+<meta property="og:description" content="أخبار وتقارير وتحليلات رياضية.">
+<meta property="og:locale" content="ar_AR">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800&family=Cairo:wght@600;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+
+/* Layout: newspaper front page. Wordmark with a jersey-number block is the one bold move; fixture-style date tiles mark the feed. */
+:root {
+  --bg: #F2F4F7;
+  --surface: #FFFFFF;
+  --ink: #0B1220;
+  --muted: #566074;
+  --line: #D6DBE3;
+  --accent: #1747E0;
+  --accent-ink: #FFFFFF;
+  --warn: #A84F08;
+  --warn-bg: #FBEEDF;
+  --ok: #0B7A4B;
+  --ok-bg: #E3F1EA;
+  --logo: 'Barlow Condensed', 'Arial Narrow', Impact, sans-serif;
+  --display: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+  --body: 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A0F18;
+    --surface: #121A27;
+    --ink: #E8ECF3;
+    --muted: #93A0B5;
+    --line: #223049;
+    --accent: #7399FF;
+    --accent-ink: #0A0F18;
+    --warn: #F2A862;
+    --warn-bg: #2E2114;
+    --ok: #4FD39A;
+    --ok-bg: #12301F;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A0F18;
+  --surface: #121A27;
+  --ink: #E8ECF3;
+  --muted: #93A0B5;
+  --line: #223049;
+  --accent: #7399FF;
+  --accent-ink: #0A0F18;
+  --warn: #F2A862;
+  --warn-bg: #2E2114;
+  --ok: #4FD39A;
+  --ok-bg: #12301F;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.8;
+  padding-block: 0 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.wrap { max-width: 1080px; margin: 0 auto; }
+a { color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Masthead */
+.mast { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; padding-block: 18px 14px; }
+.logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; direction: ltr; font-family: var(--logo); font-style: italic; font-weight: 800; line-height: 1; text-transform: uppercase; }
+.logo .w-sport { font-size: clamp(2.2rem, 7vw, 3.1rem); letter-spacing: .01em; }
+.logo .w-num { font-size: clamp(2.2rem, 7vw, 3.1rem); background: var(--accent); color: var(--accent-ink); padding: .04em .2em .02em; }
+.tools { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.search { width: 14rem; max-width: 100%; border: 1.5px solid var(--line); background: var(--surface); padding: 6px 12px; line-height: 1.6; }
+.search:focus { border-color: var(--accent); }
+.deskLink { font-weight: 600; text-decoration: none; border: 1.5px solid var(--ink); padding: 5px 14px; line-height: 1.6; }
+.deskLink:hover { background: var(--ink); color: var(--bg); }
+.cats { display: flex; gap: 2px; overflow-x: auto; border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); scrollbar-width: thin; }
+.cats a { white-space: nowrap; text-decoration: none; padding: 9px 14px; font-weight: 600; font-size: .9375rem; border-bottom: 3px solid transparent; margin-bottom: -1px; }
+.cats a:hover { color: var(--accent); }
+.cats a[aria-current="page"] { border-bottom-color: var(--accent); color: var(--accent); }
+
+/* Shared bits */
+.tag { font-size: .8125rem; font-weight: 600; color: var(--accent); letter-spacing: .02em; text-decoration: none; }
+.meta { font-size: .8125rem; color: var(--muted); }
+.sec { font-family: var(--display); font-weight: 800; font-size: 1.25rem; margin: 0 0 8px; line-height: 1.5; }
+.btn { display: inline-block; border: 1.5px solid var(--ink); background: transparent; padding: 6px 18px; cursor: pointer; font-weight: 600; text-decoration: none; line-height: 1.6; }
+.btn:hover { background: var(--ink); color: var(--bg); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.primary:hover { filter: brightness(1.1); background: var(--accent); color: var(--accent-ink); }
+.btn.danger { border-color: var(--warn); color: var(--warn); }
+.btn.danger:hover { background: var(--warn); color: var(--bg); }
+.btn[disabled] { opacity: .55; cursor: default; }
+.empty { border: 1.5px dashed var(--line); padding: 22px; color: var(--muted); margin-block: 28px; }
+.empty p { margin: 0 0 12px; }
+.note { font-size: .875rem; color: var(--muted); margin: 0 0 12px; }
+
+/* Front page */
+.front { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 32px; padding-block: 28px; border-bottom: 1px solid var(--line); }
+.lead h1 { font-family: var(--display); font-weight: 800; font-size: clamp(1.8rem, 5vw, 2.9rem); line-height: 1.4; margin: 6px 0 12px; text-wrap: balance; }
+.lead h1 a { text-decoration: none; }
+.lead h1 a:hover { text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 2px; }
+.lead .sum { color: var(--muted); font-size: 1.125rem; margin: 0 0 10px; max-width: 44rem; }
+.side { display: flex; flex-direction: column; border-top: 2px solid var(--ink); }
+.side .item { padding-block: 14px; border-bottom: 1px solid var(--line); }
+.side h3 { font-family: var(--display); font-weight: 600; font-size: 1.1875rem; line-height: 1.55; margin: 2px 0 2px; text-wrap: balance; }
+.side h3 a, .feed h3 a { text-decoration: none; }
+.side h3 a:hover, .feed h3 a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.feedHead { padding-top: 26px; }
+.feed { list-style: none; margin: 0; padding: 0; }
+.feed li { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: 16px; padding-block: 16px; border-bottom: 1px solid var(--line); }
+.stamp { text-align: center; border: 1.5px solid var(--ink); align-self: start; line-height: 1; padding-block: 8px 6px; background: var(--surface); }
+.stamp b { display: block; font-family: var(--logo); font-style: italic; font-weight: 800; font-size: 1.9rem; font-variant-numeric: tabular-nums; }
+.stamp span { display: block; font-size: .75rem; color: var(--muted); margin-top: 3px; }
+.feed h3 { font-family: var(--display); font-weight: 600; font-size: 1.25rem; line-height: 1.55; margin: 0; text-wrap: balance; }
+.feed p { margin: 2px 0 0; color: var(--muted); font-size: .9375rem; line-height: 1.75; }
+.pageHead { padding-block: 26px 4px; }
+.pageHead h1 { font-family: var(--display); font-weight: 800; font-size: clamp(1.6rem, 4.4vw, 2.3rem); margin: 0; line-height: 1.4; }
+
+/* Article */
+.article { max-width: 42rem; padding-top: 26px; }
+.article h1 { font-family: var(--display); font-weight: 800; font-size: clamp(1.8rem, 4.8vw, 2.7rem); line-height: 1.4; margin: 4px 0 8px; text-wrap: balance; }
+.article .meta { margin-bottom: 22px; }
+.article p { margin: 0 0 1.1em; font-size: 1.1875rem; line-height: 2; }
+.article p.first { font-weight: 500; font-size: 1.25rem; }
+.articleActions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+.more { margin-top: 36px; }
+
+/* Desk */
+.deskGrid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 28px; padding-top: 24px; align-items: start; }
+.panel { background: var(--surface); border: 1px solid var(--line); padding: 18px 20px; }
+.panel + .panel { margin-top: 20px; }
+.panel h2 { font-family: var(--display); font-weight: 800; font-size: 1.15rem; margin: 0 0 10px; line-height: 1.5; }
+.field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; min-width: 0; }
+.field label { font-weight: 600; font-size: .9375rem; }
+.field input, .field select, .field textarea { background: var(--bg); border: 1.5px solid var(--line); padding: 8px 12px; width: 100%; min-width: 0; line-height: 1.8; }
+.field textarea { resize: vertical; min-height: 260px; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+.row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+.count { font-size: .8125rem; color: var(--muted); display: flex; justify-content: space-between; gap: 12px; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.checks { position: sticky; top: 16px; }
+.checks ul { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.checks li { display: grid; grid-template-columns: 1.4rem minmax(0, 1fr); gap: 8px; font-size: .9375rem; line-height: 1.7; padding: 8px 10px; }
+.checks li.bad { background: var(--warn-bg); }
+.checks li.good { background: var(--ok-bg); }
+.mk { width: 1.4rem; height: 1.4rem; border-radius: 50%; display: grid; place-items: center; font-size: .8125rem; font-weight: 700; line-height: 1; margin-top: .2rem; }
+.good .mk { background: var(--ok); color: var(--bg); }
+.bad .mk { background: var(--warn); color: var(--bg); }
+.sum2 { font-weight: 600; margin: 0; }
+.manage { list-style: none; padding: 0; margin: 0; }
+.manage li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: center; padding-block: 10px; border-bottom: 1px solid var(--line); }
+.manage .t { font-weight: 600; min-width: 0; }
+.manage .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+.manage .btn { padding: 3px 14px; font-size: .875rem; }
+.busy { padding: 60px 0; text-align: center; color: var(--muted); font-size: 1.125rem; }
+
+/* Footer */
+.foot { margin-top: 44px; padding-top: 18px; border-top: 2px solid var(--ink); display: flex; gap: 12px 28px; flex-wrap: wrap; justify-content: space-between; font-size: .875rem; color: var(--muted); }
+.foot nav { display: flex; gap: 8px 18px; flex-wrap: wrap; }
+.foot a { color: var(--ink); }
+
+.toast { position: fixed; inset-inline: 0; bottom: 0; display: flex; justify-content: center; padding: 16px max(16px, env(safe-area-inset-left, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)); pointer-events: none; }
+.toast div { background: var(--ink); color: var(--bg); padding: 9px 20px; font-weight: 500; }
+@media (max-width: 820px) {
+  .front, .deskGrid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .checks { position: static; }
+  .row2 { grid-template-columns: minmax(0, 1fr); }
+  .feed li { grid-template-columns: 3.4rem minmax(0, 1fr); gap: 12px; }
+  .manage li { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: no-preference) { .btn, .deskLink { transition: background .15s, color .15s; } }
+
+/* Media, links, thumbnails */
+.media { margin: 0 0 22px; }
+.media img { display: block; width: 100%; height: auto; max-height: 560px; object-fit: cover; background: var(--line); }
+.lead .media { margin: 0 0 14px; }
+.video { position: relative; aspect-ratio: 16 / 9; margin: 8px 0 24px; background: #000; }
+.video iframe, .video video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.video video { object-fit: contain; }
+.article p a { color: var(--accent); font-weight: 600; word-break: break-word; }
+.refs { margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--line); }
+.refs ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.refs a { color: var(--accent); font-weight: 600; word-break: break-word; }
+.feedRow { display: flex; gap: 14px; align-items: flex-start; }
+.feedRow > div { flex: 1; min-width: 0; }
+.thumb { display: block; flex: 0 0 7.5rem; width: 7.5rem; aspect-ratio: 4 / 3; object-fit: cover; background: var(--line); }
+@media (max-width: 820px) { .thumb { flex-basis: 5.5rem; width: 5.5rem; } }
+
+/* Engagement: reactions, polls, predictions */
+.engage { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--line); }
+.reacts { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 0 22px; }
+.react { border: 1.5px solid var(--ink); background: transparent; padding: 6px 14px; cursor: pointer; font-size: 1.15rem; line-height: 1.4; display: inline-flex; gap: 8px; align-items: center; }
+.react b { font-size: .9rem; font-variant-numeric: tabular-nums; }
+.react:hover { background: var(--surface); }
+.react.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.react[disabled] { cursor: default; }
+.poll, .match, .board { background: var(--surface); border: 1px solid var(--line); padding: 16px 18px; margin-bottom: 16px; }
+.poll h3, .match h3 { font-family: var(--display); font-size: 1.2rem; margin: 2px 0 10px; line-height: 1.6; }
+.opt { display: block; width: 100%; text-align: start; position: relative; border: 1.5px solid var(--ink); background: transparent; padding: 8px 14px; margin-bottom: 8px; cursor: pointer; overflow: hidden; }
+.opt.static { cursor: default; }
+.opt .fill { position: absolute; inset-block: 0; inset-inline-start: 0; background: var(--accent); opacity: .2; }
+.opt > span { position: relative; display: flex; justify-content: space-between; gap: 12px; }
+.opt.mine { border-color: var(--accent); font-weight: 600; }
+.pform { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 8px; }
+.pform input { border: 1.5px solid var(--line); background: var(--bg); padding: 6px 10px; min-width: 0; }
+.pform input[type=text] { flex: 1 1 10rem; }
+.pform .sc { display: flex; gap: 8px; align-items: center; flex-wrap: nowrap; }
+@media (max-width: 520px) { .pform input[type=text] { flex-basis: 100%; } }
+.pform input[type=number] { width: 4.5rem; text-align: center; }
+.final { font-weight: 600; margin: 0 0 8px; }
+.lb { list-style: none; margin: 0; padding: 0; counter-reset: r; }
+.lb li { counter-increment: r; display: grid; grid-template-columns: 2rem minmax(0, 1fr) auto auto; gap: 12px; padding-block: 8px; border-bottom: 1px solid var(--line); align-items: baseline; }
+.lb li::before { content: counter(r); font-family: var(--logo); font-style: italic; font-weight: 800; font-size: 1.3rem; }
+@media (max-width: 820px) { .lb li { grid-template-columns: 1.6rem minmax(0, 1fr) auto; } .lb li .meta { display: none; } }
+
+/* Today's matches strip */
+.today { margin-top: 14px; }
+.today .thead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.today h2 { font-family: var(--display); font-weight: 800; font-size: 1.05rem; margin: 0; line-height: 1.5; }
+.today .tnote { font-size: .75rem; color: var(--muted); }
+.tstrip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin; }
+.tm { flex: 0 0 12rem; border: 1.5px solid var(--ink); background: var(--surface); padding: 8px 12px; }
+.tm .tc { font-size: .75rem; color: var(--muted); }
+.tm .tt { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; line-height: 1.7; }
+.tm .tt b { font-family: var(--logo); font-style: italic; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
+.tm .ts { font-size: .8125rem; margin-top: 4px; font-weight: 600; color: var(--accent); }
+.tm.live { border-color: var(--warn); }
+.tm.live .ts { color: var(--warn); }
+.tm.ft .ts { color: var(--muted); }
+.dot { display: inline-block; width: .5rem; height: .5rem; border-radius: 50%; background: var(--warn); margin-inline-end: 6px; }
+@media (prefers-reduced-motion: no-preference) { .dot { animation: pulse 1.4s ease-in-out infinite; } @keyframes pulse { 50% { opacity: .25; } } }
+
+</style>
+<script>window.goatcounter = { no_onload: true };</script>
+<script data-goatcounter="https://sport22.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script>
+(function () {
+  'use strict';
+  var CATS = [
+    { slug: 'news', name: 'الأخبار' },
+    { slug: 'transfers', name: 'الانتقالات' },
+    { slug: 'reports', name: 'تقارير المباريات' },
+    { slug: 'analysis', name: 'تحليلات' },
+    { slug: 'opinion', name: 'مقالات الرأي' }
+  ];
+  /* ---------- helpers ---------- */
+  function $(s) { return document.querySelector(s); }
+  function h(tag, attrs) {
+    var e = document.createElement(tag);
+    attrs = attrs || {};
+    Object.keys(attrs).forEach(function (k) {
+      var v = attrs[k];
+      if (v === false || v == null) return;
+      if (k === 'class') e.className = v;
+      else if (k.indexOf('on') === 0) e.addEventListener(k.slice(2), v);
+      else e.setAttribute(k, v === true ? '' : v);
+    });
+    for (var i = 2; i < arguments.length; i++) {
+      [].concat(arguments[i]).forEach(function (c) {
+        if (c == null || c === false) return;
+        e.append(c.nodeType ? c : document.createTextNode(String(c)));
+      });
+    }
+    return e;
+  }
+  function lsGet(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+  function lsSet(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function catName(slug) { for (var i = 0; i < CATS.length; i++) if (CATS[i].slug === slug) return CATS[i].name; return 'الأخبار'; }
+  function fmt(ms, o) { try { return new Date(ms).toLocaleDateString('ar-EG-u-nu-latn', o); } catch (e) { return ''; } }
+  function fmtLong(ms) { return fmt(ms, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }); }
+  function fmtTime(ms) { try { return new Date(ms).toLocaleTimeString('ar-EG-u-nu-latn', { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } }
+  function paras(t) { return String(t || '').split(/\n+/).map(function (s) { return s.trim(); }).filter(Boolean); }
+  function words(s) { return s.match(/[ء-ي0-9]+/g) || []; }
+  function summary(a) {
+    var p = (paras(a.body)[0] || '').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/https?:\/\/\S+/g, '').trim();
+    if (p.length <= 170) return p;
+    var cut = p.slice(0, 170), i = cut.lastIndexOf(' ');
+    return (i > 90 ? cut.slice(0, i) : cut) + '...';
+  }
+  function safeUrl(u) {
+    u = String(u || '').trim();
+    if (!u) return '';
+    if (/^(https?:\/\/|data:image\/)/i.test(u)) return u;
+    if (/^[a-z][a-z0-9+.\-]*:/i.test(u) || /^\/\//.test(u)) return '';
+    return u;
+  }
+  function ytId(u) {
+    var m = /(?:youtu\.be\/|youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/|live\/))([\w\-]{11})/i.exec(u);
+    return m ? m[1] : '';
+  }
+  function videoEl(u) {
+    u = safeUrl(u);
+    if (!u || /^data:/i.test(u)) return null;
+    var y = ytId(u), v = /vimeo\.com\/(?:video\/)?(\d+)/i.exec(u);
+    if (y) return h('div', { class: 'video' }, h('iframe', { src: 'https://www.youtube-nocookie.com/embed/' + y, title: 'فيديو', loading: 'lazy', allowfullscreen: true, allow: 'accelerometer; encrypted-media; gyroscope; picture-in-picture; fullscreen', referrerpolicy: 'strict-origin-when-cross-origin' }));
+    if (v) return h('div', { class: 'video' }, h('iframe', { src: 'https://player.vimeo.com/video/' + v[1], title: 'فيديو', loading: 'lazy', allowfullscreen: true, allow: 'fullscreen; picture-in-picture' }));
+    if (/\.(mp4|webm|ogg)(\?.*)?$/i.test(u)) return h('div', { class: 'video' }, h('video', { src: u, controls: true, preload: 'metadata', playsinline: true }));
+    return h('p', null, h('a', { class: 'btn', href: u, target: '_blank', rel: 'noopener noreferrer' }, 'شاهد الفيديو'));
+  }
+  function imgEl(a, cls) {
+    var s = safeUrl(a.image);
+    if (!s) return null;
+    return h('img', { src: s, alt: a.title || '', loading: 'lazy', class: cls || null, onerror: function (e) { e.target.style.display = 'none'; } });
+  }
+  function figEl(a, link) {
+    var im = imgEl(a);
+    if (!im) return null;
+    return h('figure', { class: 'media' }, link ? h('a', { href: articleHref(a) }, im) : im);
+  }
+  function linkify(text) {
+    var out = [], re = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|https?:\/\/[^\s<>"]+/g, last = 0, m;
+    while ((m = re.exec(text)) !== null) {
+      if (m.index > last) out.push(text.slice(last, m.index));
+      if (m[1]) {
+        out.push(h('a', { href: m[2], target: '_blank', rel: 'noopener noreferrer' }, m[1]));
+      } else {
+        var url = m[0], trail = '', t = /[.,;:!?)\]،؛؟]+$/.exec(url);
+        if (t) { trail = t[0]; url = url.slice(0, -trail.length); }
+        out.push(h('a', { href: url, target: '_blank', rel: 'noopener noreferrer' }, url));
+        if (trail) out.push(trail);
+      }
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) out.push(text.slice(last));
+    return out;
+  }
+  function refsEl(a) {
+    var ls = (a.links || []).filter(function (l) { return /^https?:\/\//i.test(l.url || ''); });
+    if (!ls.length) return null;
+    return h('section', { class: 'refs' }, h('h2', { class: 'sec' }, 'روابط ذات صلة'),
+      h('ul', null, ls.map(function (l) { return h('li', null, h('a', { href: l.url, target: '_blank', rel: 'noopener noreferrer' }, l.label || l.url)); })));
+  }
+  /* ---------- Firebase: reactions, polls, predictions ---------- */
+  var FB_CONFIG = null; /* FB_CONFIG_HERE */
+  var fbDb = null, fbQueue = [], fbState = 'idle';
+  function fbOn() { return !!FB_CONFIG; }
+  function fbInit() {
+    try {
+      firebase.initializeApp(FB_CONFIG); fbDb = firebase.firestore(); fbState = 'ready';
+      var q = fbQueue; fbQueue = []; q.forEach(function (f) { f(fbDb); });
+    } catch (e) { fbState = 'error'; }
+  }
+  function fbLoad(cb) {
+    if (!FB_CONFIG || fbState === 'error') return;
+    if (fbState === 'ready') { cb(fbDb); return; }
+    fbQueue.push(cb);
+    if (fbState === 'loading') return;
+    fbState = 'loading';
+    if (window.firebase && window.firebase.firestore) { fbInit(); return; }
+    var base = 'https://www.gstatic.com/firebasejs/10.12.2/';
+    function add(src, done) { var e = document.createElement('script'); e.src = src; e.onload = done; e.onerror = function () { fbState = 'error'; }; document.head.appendChild(e); }
+    add(base + 'firebase-app-compat.js', function () { add(base + 'firebase-firestore-compat.js', fbInit); });
+  }
+  function deviceId() {
+    var d = lsGet('s22-dev', null);
+    if (!d) { d = Math.random().toString(36).slice(2, 10) + Date.now().toString(36); lsSet('s22-dev', d); }
+    return d;
+  }
+  var REACTS = [{ k: 'r1', e: '👍' }, { k: 'r2', e: '❤️' }, { k: 'r3', e: '😮' }, { k: 'r4', e: '😡' }];
+  function getCounts(id, cb) {
+    fbLoad(function (db) {
+      db.collection('counts').doc(id).get().then(function (s) { cb(s.exists ? s.data() : {}); }).catch(function () { cb(null); });
+    });
+  }
+  function bump(id, key) {
+    fbLoad(function (db) {
+      var o = {}; o[key] = firebase.firestore.FieldValue.increment(1);
+      db.collection('counts').doc(id).set(o, { merge: true }).catch(function () {});
+    });
+  }
+  function engageEl(a) {
+    if (!fbOn()) return null;
+    var poll = a.poll && a.poll.q && (a.poll.options || []).length >= 2 ? a.poll : null;
+    var row = h('div', { class: 'reacts', role: 'group', 'aria-label': 'ردود الفعل' });
+    var pbox = poll ? h('div', { class: 'poll' }) : null;
+    var box = h('section', { class: 'engage' }, h('h2', { class: 'sec' }, 'إيه رأيك؟'), row, pbox);
+    var counts = {}, myR = lsGet('s22-r-' + a.id, null), myP = lsGet('s22-p-' + a.id, null), peek = false;
+    function drawR() {
+      row.replaceChildren.apply(row, REACTS.map(function (r) {
+        var b = h('button', { class: 'react' + (myR === r.k ? ' on' : ''), type: 'button', 'aria-pressed': myR === r.k ? 'true' : 'false' }, h('span', null, r.e), h('b', null, String(counts[r.k] || 0)));
+        if (myR) b.disabled = true;
+        b.addEventListener('click', function () {
+          if (myR) return;
+          myR = r.k; lsSet('s22-r-' + a.id, r.k); counts[r.k] = (counts[r.k] || 0) + 1; drawR(); bump(a.id, r.k);
+        });
+        return b;
+      }));
+    }
+    function drawP() {
+      if (!poll) return;
+      var opts = poll.options.slice(0, 6), total = 0, show = myP !== null || peek;
+      opts.forEach(function (_, i) { total += counts['p' + i] || 0; });
+      var kids = [h('h3', null, poll.q)];
+      opts.forEach(function (t, i) {
+        var n = counts['p' + i] || 0, p = total ? Math.round(n * 100 / total) : 0;
+        if (show) {
+          kids.push(h('div', { class: 'opt static' + (myP === i ? ' mine' : '') }, h('div', { class: 'fill', style: 'width:' + p + '%' }), h('span', null, h('em', { style: 'font-style:normal' }, t), h('b', null, p + '%'))));
+        } else {
+          var b = h('button', { class: 'opt', type: 'button' }, h('span', null, t));
+          b.addEventListener('click', function () {
+            myP = i; lsSet('s22-p-' + a.id, i); counts['p' + i] = (counts['p' + i] || 0) + 1; drawP(); bump(a.id, 'p' + i);
+          });
+          kids.push(b);
+        }
+      });
+      if (show) kids.push(h('p', { class: 'meta' }, total + ' صوت'));
+      else {
+        var pk = h('button', { class: 'btn', type: 'button' }, 'شوف النتيجة');
+        pk.addEventListener('click', function () { peek = true; drawP(); });
+        kids.push(pk);
+      }
+      pbox.replaceChildren.apply(pbox, kids);
+    }
+    drawR(); drawP();
+    getCounts(a.id, function (c) { if (c) { counts = c; drawR(); drawP(); } });
+    return box;
+  }
+  function getPreds(cb) {
+    fbLoad(function (db) {
+      db.collection('predictions').limit(3000).get().then(function (s) { var out = []; s.forEach(function (d) { out.push(d.data()); }); cb(out); }).catch(function () { cb(null); });
+    });
+  }
+  function pts(p, r) {
+    if (!r) return 0;
+    if (p.h === r.h && p.a === r.a) return 3;
+    return Math.sign(p.h - p.a) === Math.sign(r.h - r.a) ? 1 : 0;
+  }
+  function pct(n, t) { return t ? Math.round(n * 100 / t) : 0; }
+  function distBox(m, mp) {
+    var t = mp.length, w = 0, d = 0, l = 0, sc = {};
+    mp.forEach(function (p) { if (p.h > p.a) w++; else if (p.h === p.a) d++; else l++; var k = p.h + ' - ' + p.a; sc[k] = (sc[k] || 0) + 1; });
+    var top = Object.keys(sc).sort(function (x, y) { return sc[y] - sc[x]; }).slice(0, 3);
+    function row(label, n) {
+      return h('div', { class: 'opt static' }, h('div', { class: 'fill', style: 'width:' + pct(n, t) + '%' }), h('span', null, h('em', { style: 'font-style:normal' }, label), h('b', null, pct(n, t) + '%')));
+    }
+    return h('div', null, h('p', { class: 'meta' }, t + ' توقع'), row('فوز ' + m.home, w), row('تعادل', d), row('فوز ' + m.away, l),
+      top.length ? h('p', { class: 'meta' }, 'أكتر النتائج توقعاً: ' + top.map(function (k) { return k + ' (' + sc[k] + ')'; }).join('، ')) : null);
+  }
+  function matchCard(m, all, redraw) {
+    var mp = all.filter(function (p) { return p.m === m.id; });
+    var mine = lsGet('s22-pm-' + m.id, null);
+    var open = !m.result && Date.now() < m.kickoff;
+    var card = h('article', { class: 'match' },
+      h('div', { class: 'meta' }, (m.comp ? m.comp + ' · ' : '') + fmtLong(m.kickoff) + ' · ' + fmtTime(m.kickoff)),
+      h('h3', null, m.home + ' ضد ' + m.away));
+    if (m.result) card.append(h('p', { class: 'final' }, 'النتيجة النهائية: ' + m.home + ' ' + m.result.h + ' - ' + m.result.a + ' ' + m.away));
+    if (mine) {
+      var s = m.result ? ' · ' + pts(mine, m.result) + ' نقطة' : '';
+      card.append(h('p', { class: 'final' }, 'توقعك: ' + mine.h + ' - ' + mine.a + s));
+    }
+    if (open && !mine) {
+      var nm = h('input', { type: 'text', maxlength: '30', placeholder: 'اسمك', 'aria-label': 'اسمك', value: lsGet('s22-name', '') || '' });
+      var gh = h('input', { type: 'number', min: '0', max: '20', inputmode: 'numeric', 'aria-label': 'أهداف ' + m.home, placeholder: '0' });
+      var ga = h('input', { type: 'number', min: '0', max: '20', inputmode: 'numeric', 'aria-label': 'أهداف ' + m.away, placeholder: '0' });
+      var btn = h('button', { class: 'btn primary', type: 'button' }, 'سجّل توقعي');
+      btn.addEventListener('click', function () {
+        var n = nm.value.trim(), x = parseInt(gh.value, 10), y = parseInt(ga.value, 10);
+        if (!n || n.length > 30) { toast('اكتب اسمك (30 حرف بحد أقصى).'); return; }
+        if (!(x >= 0 && x <= 20 && y >= 0 && y <= 20)) { toast('اكتب أهداف الفريقين (من 0 لـ 20).'); return; }
+        if (Date.now() >= m.kickoff) { toast('المباراة بدأت، التوقع اتقفل.'); redraw(); return; }
+        btn.disabled = true;
+        fbLoad(function (db) {
+          db.collection('predictions').doc(m.id + '_' + deviceId()).set({ m: m.id, n: n, h: x, a: y, t: firebase.firestore.FieldValue.serverTimestamp() })
+            .then(function () { lsSet('s22-pm-' + m.id, { h: x, a: y }); lsSet('s22-name', n); all.push({ m: m.id, n: n, h: x, a: y }); toast('تم تسجيل توقعك'); redraw(); })
+            .catch(function () { btn.disabled = false; toast('تعذر التسجيل. جرّب بعد شوية.'); });
+        });
+      });
+      card.append(h('div', { class: 'pform' }, nm, h('div', { class: 'sc' }, h('span', null, m.home), gh, h('span', null, '-'), ga, h('span', null, m.away)), btn));
+    } else if (mp.length) {
+      card.append(distBox(m, mp));
+    } else if (!open) {
+      card.append(h('p', { class: 'note' }, 'مفيش توقعات على المباراة دي.'));
+    }
+    if (open && mine && !mp.length) card.append(h('p', { class: 'note' }, 'تم تسجيل توقعك.'));
+    return card;
+  }
+  function leaderboard(all, ms) {
+    var res = {}; ms.forEach(function (m) { if (m.result) res[m.id] = m.result; });
+    var by = {};
+    all.forEach(function (p) {
+      var r = res[p.m]; if (!r) return;
+      var k = String(p.n || '').trim().toLowerCase(); if (!k) return;
+      var o = by[k] || (by[k] = { n: p.n, pts: 0, ex: 0, c: 0 }), s = pts(p, r);
+      o.pts += s; if (s === 3) o.ex++; o.c++;
+    });
+    var arr = Object.keys(by).map(function (k) { return by[k]; }).sort(function (a, b) { return b.pts - a.pts || b.ex - a.ex || a.c - b.c; }).slice(0, 10);
+    if (!arr.length) return null;
+    return h('section', { class: 'board' }, h('h2', { class: 'sec' }, 'أدق المتوقعين'),
+      h('ol', { class: 'lb' }, arr.map(function (o) { return h('li', null, h('span', null, o.n), h('b', null, o.pts + ' نقطة'), h('span', { class: 'meta' }, o.ex + ' نتيجة صح')); })),
+      h('p', { class: 'note' }, 'نتيجة صح = 3 نقاط، الفائز أو التعادل صح = نقطة.'));
+  }
+  function predictView() {
+    var box = document.createDocumentFragment();
+    box.append(h('div', { class: 'pageHead' }, h('h1', null, 'توقّع النتيجة')));
+    var ms = (DATA.matches || []).filter(function (m) { return m && m.id && m.home && m.away && m.kickoff; });
+    if (!fbOn()) { box.append(emptyBox('الميزة دي لسه مش متاحة.')); return box; }
+    if (!ms.length) { box.append(emptyBox('مفيش مباريات للتوقع دلوقتي. ارجع قريب.')); return box; }
+    var wrap = h('div', { style: 'padding-top:18px' }, h('div', { class: 'busy' }, 'جار التحميل...'));
+    box.append(wrap);
+    var done = false, all = null;
+    setTimeout(function () { if (!done) wrap.replaceChildren(h('div', { class: 'empty' }, h('p', null, 'تعذر التحميل الآن. حدّث الصفحة بعد قليل.'))); }, 9000);
+    function draw() {
+      var now = Date.now();
+      var openL = ms.filter(function (m) { return !m.result && now < m.kickoff; }).sort(function (a, b) { return a.kickoff - b.kickoff; });
+      var closedL = ms.filter(function (m) { return !(!m.result && now < m.kickoff); }).sort(function (a, b) { return b.kickoff - a.kickoff; });
+      var parts = [];
+      if (openL.length) parts.push(h('h2', { class: 'sec' }, 'مباريات مفتوحة للتوقع'));
+      openL.forEach(function (m) { parts.push(matchCard(m, all, draw)); });
+      var lb = leaderboard(all, ms); if (lb) parts.push(lb);
+      if (closedL.length) parts.push(h('h2', { class: 'sec' }, 'مباريات انتهت أو بدأت'));
+      closedL.forEach(function (m) { parts.push(matchCard(m, all, draw)); });
+      wrap.replaceChildren.apply(wrap, parts);
+    }
+    getPreds(function (p) {
+      done = true;
+      if (p === null) { wrap.replaceChildren(h('div', { class: 'empty' }, h('p', null, 'تعذر التحميل الآن. حدّث الصفحة بعد قليل.'))); return; }
+      all = p; draw();
+    });
+    return box;
+  }
+  /* ---------- Today's matches strip (reads today.json) ---------- */
+  var TODAY = null;
+  function cairoDay(ms) { try { return new Date(ms).toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' }); } catch (e) { return ''; } }
+  function cairoTime(ms) { try { return new Date(ms).toLocaleTimeString('ar-EG-u-nu-latn', { hour: 'numeric', minute: '2-digit', timeZone: 'Africa/Cairo' }); } catch (e) { return ''; } }
+  function renderToday() {
+    if (!elToday) return;
+    var d = TODAY, now = Date.now();
+    var list = d && Array.isArray(d.matches) ? d.matches.filter(function (m) { return m && m.home && m.away && m.time; }) : [];
+    if (!d || d.date !== cairoDay(now) || !list.length) { elToday.hidden = true; elToday.replaceChildren(); return; }
+    list.sort(function (a, b) { return a.time - b.time; });
+    var cards = list.map(function (m) {
+      var hasScore = typeof m.hs === 'number' && typeof m.as === 'number';
+      var cls = 'tm', status;
+      if (m.st === 'ft') { cls += ' ft'; status = 'انتهت'; }
+      else if (now < m.time) { status = 'الساعة ' + cairoTime(m.time); }
+      else if (now < m.time + 135 * 60000) { cls += ' live'; status = h('span', null, h('span', { class: 'dot', 'aria-hidden': 'true' }), 'جارية الآن'); hasScore = false; }
+      else { cls += ' ft'; status = 'انتهت'; hasScore = false; }
+      var showScore = hasScore && m.st === 'ft';
+      return h('div', { class: cls },
+        h('div', { class: 'tc' }, m.comp || ''),
+        h('div', { class: 'tt' }, h('span', null, m.home), showScore ? h('b', null, String(m.hs)) : null),
+        h('div', { class: 'tt' }, h('span', null, m.away), showScore ? h('b', null, String(m.as)) : null),
+        h('div', { class: 'ts' }, status));
+    });
+    elToday.hidden = false;
+    elToday.replaceChildren(
+      h('div', { class: 'thead' }, h('h2', null, 'مباريات اليوم'), h('span', { class: 'tnote' }, 'بتوقيت القاهرة')),
+      h('div', { class: 'tstrip' }, cards));
+  }
+  function newId() { return 'n' + Date.now().toString(36); }
+  var toastTimer;
+  function toast(msg) {
+    var box = $('#toast'); if (!box) return;
+    box.firstChild.textContent = msg; box.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { box.hidden = true; }, 3200);
+  }
+
+  
+  var DATA = { site: {}, articles: [] };
+  var state = { canWrite: false, q: '', status: 'loading', confirm: null };
+  function sorted() { return DATA.articles.slice().sort(function (a, b) { return (b.date || 0) - (a.date || 0); }); }
+  function find(id) { for (var i = 0; i < DATA.articles.length; i++) if (DATA.articles[i].id === id) return DATA.articles[i]; return null; }
+
+  var elNav, elMain, elFoot, elSearch, elToday;
+  function route() {
+    var hs = location.hash.replace(/^#/, ''), m;
+    if (!hs || hs === 'home') return { name: 'home' };
+    if ((m = /^a-(.+)$/.exec(hs))) return { name: 'article', id: m[1] };
+    if ((m = /^c-(.+)$/.exec(hs))) return { name: 'cat', slug: m[1] };
+    if (hs === 'about') return { name: 'about' };
+    if (hs === 'predict') return { name: 'predict' };
+    return { name: 'home' };
+  }
+  function build() {
+    var root = document.getElementById('root');
+    elSearch = h('input', { class: 'search', type: 'search', id: 'q', placeholder: 'ابحث في الموقع', 'aria-label': 'بحث' });
+    elSearch.addEventListener('input', function () {
+      state.q = elSearch.value.trim();
+      if (route().name !== 'home') { location.hash = '#home'; } else { renderMain(); }
+    });
+    elNav = h('nav', { class: 'cats', 'aria-label': 'الأقسام' });
+    elToday = h('section', { class: 'today', 'aria-label': 'مباريات اليوم', hidden: true });
+    elMain = h('main', { id: 'main' });
+    elFoot = h('footer', { class: 'foot' });
+    root.replaceChildren(
+      h('div', { class: 'wrap' },
+        h('header', { class: 'mast' },
+          h('a', { class: 'logo', href: '#home', 'aria-label': 'SPORT 22 - الرئيسية' }, h('span', { class: 'w-sport' }, 'Sport'), h('span', { class: 'w-num' }, '22')),
+          h('div', { class: 'tools' }, elSearch)),
+        elNav, elToday, elMain, elFoot),
+      h('div', { class: 'toast', id: 'toast', hidden: true, role: 'status' }, h('div')));
+  }
+  function renderNav() {
+    var r = route(), cur = r.name === 'cat' ? r.slug : (r.name === 'home' ? 'home' : '');
+    var links = [h('a', { href: '#home', 'aria-current': cur === 'home' ? 'page' : null }, 'الرئيسية')];
+    CATS.forEach(function (c) { links.push(h('a', { href: '#c-' + c.slug, 'aria-current': cur === c.slug ? 'page' : null }, c.name)); });
+    if (fbOn()) links.push(h('a', { href: '#predict', 'aria-current': r.name === 'predict' ? 'page' : null }, 'توقّع النتيجة'));
+    links.push(h('a', { href: '#about', 'aria-current': r.name === 'about' ? 'page' : null }, 'عن الموقع'));
+    elNav.replaceChildren.apply(elNav, links);
+  }
+  function renderFoot() {
+    var links = (DATA.site.links || []).filter(function (l) { return /^https?:\/\//.test(l.url || ''); })
+      .map(function (l) { return h('a', { href: l.url, target: '_blank', rel: 'noopener noreferrer' }, l.label || l.url); });
+    var parts = [h('span', null, 'SPORT 22 · ' + (DATA.site.tagline || ''))];
+    if (links.length) parts.push(h('nav', { 'aria-label': 'حساباتنا' }, links));
+    elFoot.replaceChildren.apply(elFoot, parts);
+  }
+  /* ---------- views ---------- */
+  function articleHref(a) { return '#a-' + a.id; }
+  function stamp(ms) { return h('div', { class: 'stamp', 'aria-hidden': 'true' }, h('b', null, fmt(ms, { day: 'numeric' })), h('span', null, fmt(ms, { month: 'long' }))); }
+  function catTag(a) { return h('a', { class: 'tag', href: '#c-' + (a.cat || 'news') }, catName(a.cat)); }
+  function feedItem(a) {
+    var im = imgEl(a, 'thumb');
+    return h('li', null, stamp(a.date),
+      h('div', { class: 'feedRow' },
+        h('div', null, catTag(a),
+          h('h3', null, h('a', { href: articleHref(a) }, a.title)),
+          h('p', null, summary(a))),
+        im ? h('a', { href: articleHref(a), tabindex: '-1', 'aria-hidden': 'true' }, im) : null));
+  }
+  function emptyBox(text) {
+    return h('div', { class: 'empty' }, h('p', null, text),
+      state.canWrite ? h('a', { class: 'btn primary', href: '#write' }, 'اكتب أول خبر') : null);
+  }
+  function homeView() {
+    var list = sorted(), box = document.createDocumentFragment();
+    if (state.q) {
+      var q = state.q;
+      var res = list.filter(function (a) { return (a.title + ' ' + a.body).indexOf(q) !== -1; });
+      box.append(h('div', { class: 'pageHead' }, h('h1', null, 'نتائج البحث عن: ' + q)));
+      box.append(res.length ? h('ul', { class: 'feed' }, res.map(feedItem)) : emptyBox('لا توجد مواد تطابق بحثك.'));
+      return box;
+    }
+    if (!list.length) { box.append(emptyBox('لم تُنشر مواد بعد.')); return box; }
+    var lead = list[0], side = list.slice(1, 4), rest = list.slice(4);
+    box.append(h('section', { class: 'front' },
+      h('article', { class: 'lead' }, figEl(lead, true), catTag(lead),
+        h('h1', null, h('a', { href: articleHref(lead) }, lead.title)),
+        h('p', { class: 'sum' }, summary(lead)),
+        h('div', { class: 'meta' }, fmtLong(lead.date))),
+      side.length ? h('div', { class: 'side' }, side.map(function (a) {
+        return h('div', { class: 'item' }, catTag(a), h('h3', null, h('a', { href: articleHref(a) }, a.title)), h('div', { class: 'meta' }, fmt(a.date, { day: 'numeric', month: 'long' })));
+      })) : null));
+    if (rest.length) {
+      box.append(h('h2', { class: 'sec feedHead' }, 'آخر المواد'));
+      box.append(h('ul', { class: 'feed' }, rest.map(feedItem)));
+    }
+    return box;
+  }
+  function catView(slug) {
+    var list = sorted().filter(function (a) { return a.cat === slug; });
+    var box = document.createDocumentFragment();
+    box.append(h('div', { class: 'pageHead' }, h('h1', null, catName(slug))));
+    box.append(list.length ? h('ul', { class: 'feed' }, list.map(feedItem)) : emptyBox('لا توجد مواد في هذا القسم بعد.'));
+    return box;
+  }
+  function articleView(id) {
+    var a = find(id);
+    if (!a) return emptyBox('هذه المادة غير موجودة. ربما حُذفت أو تغير رابطها.');
+    var ps = paras(a.body);
+    var others = sorted().filter(function (x) { return x.id !== a.id; });
+    var same = others.filter(function (x) { return x.cat === a.cat; });
+    var more = (same.length ? same : others).slice(0, 3);
+    var box = document.createDocumentFragment();
+    box.append(h('article', { class: 'article' }, catTag(a),
+      h('h1', null, a.title),
+      h('div', { class: 'meta' }, (a.author ? a.author + ' · ' : '') + fmtLong(a.date) + ' · ' + fmtTime(a.date)),
+      figEl(a, false),
+      ps.map(function (p, i) { return h('p', { class: i === 0 ? 'first' : null }, linkify(p)); }),
+      videoEl(a.video),
+      refsEl(a),
+      engageEl(a),
+      state.canWrite ? h('div', { class: 'articleActions' }, h('a', { class: 'btn', href: '#write-' + a.id }, 'تعديل المادة')) : null));
+    if (more.length) {
+      box.append(h('section', { class: 'more' }, h('h2', { class: 'sec' }, 'اقرأ أيضاً'), h('ul', { class: 'feed' }, more.map(feedItem))));
+    }
+    return box;
+  }
+  function aboutView() {
+    var box = document.createDocumentFragment();
+    box.append(h('div', { class: 'pageHead' }, h('h1', null, 'عن الموقع')));
+    box.append(h('div', { class: 'article' }, paras(DATA.site.about).map(function (p) { return h('p', null, p); })));
+    return box;
+  }
+
+  
+  function renderMain() {
+    var r = route();
+    elMain.replaceChildren();
+    if (state.status === 'loading') { elMain.append(h('div', { class: 'busy' }, 'جار التحميل...')); return; }
+    if (state.status === 'error') { elMain.append(h('div', { class: 'empty' }, h('p', null, 'تعذر تحميل مواد الموقع الآن. حدّث الصفحة بعد قليل.'))); return; }
+    var v, title = 'SPORT 22';
+    if (r.name === 'article') { v = articleView(r.id); var a = find(r.id); if (a) title = a.title + ' | SPORT 22'; }
+    else if (r.name === 'cat') { v = catView(r.slug); title = catName(r.slug) + ' | SPORT 22'; }
+    else if (r.name === 'about') { v = aboutView(); title = 'عن الموقع | SPORT 22'; }
+    else if (r.name === 'predict') { v = predictView(); title = 'توقّع النتيجة | SPORT 22'; }
+    else v = homeView();
+    document.title = title;
+    elMain.append(v);
+  }
+  function renderAll() { renderNav(); renderToday(); renderMain(); renderFoot(); }
+  /* Visit counter (GoatCounter): count every page view, including each article hash */
+  function track(n) {
+    var gc = window.goatcounter;
+    if (gc && typeof gc.count === 'function') {
+      try { gc.count({ path: location.pathname + location.hash, title: document.title }); } catch (e) {}
+    } else if ((n || 0) < 10) {
+      setTimeout(function () { track((n || 0) + 1); }, 500);
+    }
+  }
+  window.addEventListener('hashchange', function () { renderAll(); window.scrollTo(0, 0); track(); });
+  build(); renderAll();
+  fetch('today.json', { cache: 'no-cache' })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) { TODAY = d; renderToday(); })
+    .catch(function () {});
+  setInterval(renderToday, 60000);
+  fetch('articles.json', { cache: 'no-cache' })
+    .then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
+    .then(function (d) { DATA = { site: d.site || {}, articles: d.articles || [], matches: d.matches || [] }; state.status = 'ready'; renderAll(); track(); })
+    .catch(function () { state.status = 'error'; renderAll(); });
+})();
+</script>
+</body>
+</html>
