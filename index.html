@@ -243,17 +243,25 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .predbox { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--line); }
 
 /* Today's matches strip */
-.today { margin-top: 14px; }
-.today .thead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
-.today h2 { font-family: var(--display); font-weight: 800; font-size: 1.05rem; margin: 0; line-height: 1.5; }
+.today { margin-top: 16px; }
+.today .thead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.today h2 { font-family: var(--display); font-weight: 800; font-size: 1.15rem; margin: 0; line-height: 1.5; display: flex; align-items: center; gap: 8px; }
+.today h2::before { content: ''; width: .35rem; height: 1.1em; background: var(--accent); display: inline-block; }
 .today .tnote { font-size: .75rem; color: var(--muted); }
-.tstrip { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin;  align-items: flex-start; }
-.tm { flex: 0 0 13.5rem; border: 1.5px solid var(--ink); background: var(--surface); padding: 8px 12px; }
-.tm .tc { font-size: .75rem; color: var(--muted); }
-.tm .tt { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; line-height: 1.7; }
-.tm .tt b { font-family: var(--logo); font-style: italic; font-size: 1.15rem; font-variant-numeric: tabular-nums; }
-.tm .ts { font-size: .8125rem; margin-top: 4px; font-weight: 600; color: var(--accent); }
-.tm .tv { border-top: 1px dashed var(--line); margin-top: 8px; padding-top: 6px; }
+.tstrip { display: flex; gap: 12px; overflow-x: auto; padding: 2px 2px 10px; scrollbar-width: thin; scroll-snap-type: x proximity; align-items: flex-start; }
+.tm { flex: 0 0 16.5rem; scroll-snap-align: start; background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--ink); padding: 10px 12px 14px; }
+.tm .tc { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: .75rem; color: var(--muted); font-weight: 500; margin-bottom: 12px; }
+.tm .st { font-weight: 600; white-space: nowrap; }
+.tm .row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: start; gap: 6px; }
+.tm .team { display: flex; flex-direction: column; align-items: center; gap: 7px; text-align: center; min-width: 0; }
+.tm .team span { font-family: var(--display); font-weight: 600; font-size: .9rem; line-height: 1.35; overflow-wrap: anywhere; }
+.crest { width: 2.75rem; height: 2.75rem; border-radius: 50%; display: grid; place-items: center; flex: 0 0 auto; overflow: hidden; font-family: var(--display); font-weight: 800; font-size: 1.15rem; line-height: 1; color: #fff; }
+.crest.has { background: #fff; border: 1px solid var(--line); padding: 5px; }
+.crest img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.tm .mid { text-align: center; min-width: 3.4rem; padding-top: .55rem; }
+.tm .big { display: flex; justify-content: center; align-items: baseline; gap: 6px; font-family: var(--logo); font-style: italic; font-weight: 800; font-size: 1.75rem; line-height: 1; font-variant-numeric: tabular-nums; }
+.tm .big small { font-family: var(--body); font-style: normal; font-weight: 600; font-size: .75rem; color: var(--muted); }
+.tm .tv { border-top: 1px dashed var(--line); margin-top: 12px; padding-top: 8px; }
 .tm .tvq { font-size: .75rem; color: var(--muted); font-weight: 600; margin-bottom: 5px; }
 .tm .tvb { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
 .tm .tvb button { border: 1.5px solid var(--ink); background: transparent; padding: 5px 2px; font-size: .75rem; font-weight: 600; line-height: 1.4; cursor: pointer; overflow-wrap: anywhere; }
@@ -264,9 +272,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .tm .tvr b { font-size: .95rem; font-variant-numeric: tabular-nums; }
 .tm .tvr.me { border-color: var(--accent); }
 .tm .tvn { font-size: .6875rem; color: var(--muted); margin-top: 4px; }
-.tm.live { border-color: var(--warn); }
-.tm.live .ts { color: var(--warn); }
-.tm.ft .ts { color: var(--muted); }
+.tm.live { border-top-color: var(--warn); }
+.tm.live .st { color: var(--warn); }
+.tm.ft .st { color: var(--muted); }
 .dot { display: inline-block; width: .5rem; height: .5rem; border-radius: 50%; background: var(--warn); margin-inline-end: 6px; }
 @media (prefers-reduced-motion: no-preference) { .dot { animation: pulse 1.4s ease-in-out infinite; } @keyframes pulse { 50% { opacity: .25; } } }
 
@@ -563,7 +571,27 @@ button, input, select, textarea { font: inherit; color: inherit; }
     return box;
   }
   /* ---------- Today's matches strip (reads today.json) ---------- */
-  var TODAY = null;
+  var TODAY = null, TEAMS = {};
+  function cairoParts(ms) {
+    var o = {};
+    try { new Intl.DateTimeFormat('ar-EG-u-nu-latn', { hour: 'numeric', minute: '2-digit', timeZone: 'Africa/Cairo' }).formatToParts(new Date(ms)).forEach(function (p) { o[p.type] = p.value; }); } catch (e) {}
+    return o;
+  }
+  function hueOf(s) { var n = 0; for (var i = 0; i < s.length; i++) n = (n * 31 + s.charCodeAt(i)) % 360; return n; }
+  function crest(name) {
+    var c = h('span', { class: 'crest', 'aria-hidden': 'true' }), src = TEAMS[name];
+    function badge() {
+      c.className = 'crest'; c.style.background = 'hsl(' + hueOf(name) + ' 42% 34%)';
+      c.replaceChildren(document.createTextNode(String(name).trim().replace(/^ال/, '').charAt(0)));
+    }
+    if (src && /^[\w\-.\/]+$/.test(src) && src.indexOf('//') !== 0) {
+      c.className = 'crest has';
+      var im = h('img', { src: src, alt: '', loading: 'lazy' });
+      im.addEventListener('error', badge);
+      c.append(im);
+    } else badge();
+    return c;
+  }
   function cairoDay(ms) { try { return new Date(ms).toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' }); } catch (e) { return ''; } }
   function cairoTime(ms) { try { return new Date(ms).toLocaleTimeString('ar-EG-u-nu-latn', { hour: 'numeric', minute: '2-digit', timeZone: 'Africa/Cairo' }); } catch (e) { return ''; } }
   var TV = {};
@@ -600,18 +628,24 @@ button, input, select, textarea { font: inherit; color: inherit; }
     if (!d || d.date !== cairoDay(now) || !list.length) { elToday.hidden = true; elToday.replaceChildren(); return; }
     list.sort(function (a, b) { return a.time - b.time; });
     var cards = list.map(function (m) {
+      var cls = 'tm', stat, mid;
       var hasScore = typeof m.hs === 'number' && typeof m.as === 'number';
-      var cls = 'tm', status;
-      if (m.st === 'ft') { cls += ' ft'; status = 'انتهت'; }
-      else if (now < m.time) { status = 'الساعة ' + cairoTime(m.time); }
-      else if (now < m.time + 135 * 60000) { cls += ' live'; status = h('span', null, h('span', { class: 'dot', 'aria-hidden': 'true' }), 'جارية الآن'); hasScore = false; }
-      else { cls += ' ft'; status = 'انتهت'; hasScore = false; }
-      var showScore = hasScore && m.st === 'ft';
+      if (m.st === 'ft' || now >= m.time + 135 * 60000) {
+        cls += ' ft'; stat = 'انتهت';
+        mid = (m.st === 'ft' && hasScore) ? h('div', { class: 'big' }, h('span', null, String(m.hs)), h('span', null, '-'), h('span', null, String(m.as))) : h('div', { class: 'big' }, '×');
+      } else if (now < m.time) {
+        var t = cairoParts(m.time); stat = 'لم تبدأ';
+        mid = h('div', { class: 'big' }, (t.hour || '') + ':' + (t.minute || ''), t.dayPeriod ? h('small', null, t.dayPeriod) : null);
+      } else {
+        cls += ' live'; stat = h('span', null, h('span', { class: 'dot', 'aria-hidden': 'true' }), 'جارية الآن');
+        mid = h('div', { class: 'big' }, '×');
+      }
       return h('div', { class: cls },
-        h('div', { class: 'tc' }, m.comp || ''),
-        h('div', { class: 'tt' }, h('span', null, m.home), showScore ? h('b', null, String(m.hs)) : null),
-        h('div', { class: 'tt' }, h('span', null, m.away), showScore ? h('b', null, String(m.as)) : null),
-        h('div', { class: 'ts' }, status),
+        h('div', { class: 'tc' }, h('span', null, m.comp || ''), h('span', { class: 'st' }, stat)),
+        h('div', { class: 'row' },
+          h('div', { class: 'team' }, crest(m.home), h('span', null, m.home)),
+          h('div', { class: 'mid' }, mid),
+          h('div', { class: 'team' }, crest(m.away), h('span', null, m.away))),
         tvBox(tvKey(d.date, m), m, m.st !== 'ft' && now < m.time));
     });
     elToday.hidden = false;
@@ -856,7 +890,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
   }
   window.addEventListener('hashchange', function () { renderAll(); window.scrollTo(0, 0); track(); });
   build(); renderAll();
-  fetch('today.json', { cache: 'no-cache' })
+  fetch('teams.json', { cache: 'no-cache' })
+    .then(function (r) { return r.ok ? r.json() : {}; })
+    .catch(function () { return {}; })
+    .then(function (t) { TEAMS = t || {}; return fetch('today.json', { cache: 'no-cache' }); })
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (d) { TODAY = d; renderToday(); })
     .catch(function () {});
