@@ -243,13 +243,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .predbox { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--line); }
 
 /* Today's matches strip */
-.today { margin-top: 16px; background: #0b0b0b; color: #f2f2f2; padding: 14px 14px 16px; --surface: #171717; --ink: #f2f2f2; --line: #333; --muted: #a8a8a8; --bg: #0b0b0b; }
+.today { margin-top: 16px; }
 .today .thead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
 .today h2 { font-family: var(--display); font-weight: 800; font-size: 1.15rem; margin: 0; line-height: 1.5; display: flex; align-items: center; gap: 8px; }
 .today h2::before { content: ''; width: .35rem; height: 1.1em; background: var(--accent); display: inline-block; }
 .today .tnote { font-size: .75rem; color: var(--muted); }
 .tstrip { display: flex; gap: 12px; overflow-x: auto; padding: 2px 2px 10px; scrollbar-width: thin; scroll-snap-type: x proximity; align-items: flex-start; }
-.tm { flex: 0 0 16.5rem; scroll-snap-align: start; background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--ink); padding: 10px 12px 14px; }
+.tm { --surface: #0b0b0b; --ink: #f2f2f2; --line: #333; --muted: #a8a8a8; --bg: #1c1c1c; color: #f2f2f2; flex: 0 0 16.5rem; scroll-snap-align: start; background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--ink); padding: 10px 12px 14px; }
 .tm .tc { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: .75rem; color: var(--muted); font-weight: 500; margin-bottom: 12px; }
 .tm .st { font-weight: 600; white-space: nowrap; }
 .tm .row { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: start; gap: 6px; }
