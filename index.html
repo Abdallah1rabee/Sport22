@@ -244,6 +244,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 
 /* Today's matches strip */
 .today { margin-top: 16px; }
+.today .tsec + .tsec { margin-top: 18px; }
 .today .thead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
 .today h2 { font-family: var(--display); font-weight: 800; font-size: 1.15rem; margin: 0; line-height: 1.5; display: flex; align-items: center; gap: 8px; }
 .today h2::before { content: ''; width: .35rem; height: 1.1em; background: var(--accent); display: inline-block; }
@@ -623,12 +624,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
   }
   function renderToday() {
     if (!elToday) return;
-    var now = Date.now(), d = TODAY;
-    if (d && d.days && typeof d.days === 'object') { var dk = cairoDay(now); d = { date: dk, matches: d.days[dk] || [] }; }
-    var list = d && Array.isArray(d.matches) ? d.matches.filter(function (m) { return m && m.home && m.away && m.time; }) : [];
-    if (!d || d.date !== cairoDay(now) || !list.length) { elToday.hidden = true; elToday.replaceChildren(); return; }
-    list.sort(function (a, b) { return ((a.pri || 5) - (b.pri || 5)) || (a.time - b.time); });
-    var cards = list.map(function (m) {
+    var now = Date.now(), D = TODAY, DAY = 86400000;
+    var days = D && D.days && typeof D.days === 'object' ? D.days : (D && D.date ? (function () { var o = {}; o[D.date] = D.matches; return o; })() : {});
+    function mk(m, date) {
       var cls = 'tm', stat, mid;
       var hasScore = typeof m.hs === 'number' && typeof m.as === 'number';
       if (m.st === 'ft' || now >= m.time + 135 * 60000) {
@@ -647,12 +645,21 @@ button, input, select, textarea { font: inherit; color: inherit; }
           h('div', { class: 'team' }, crest(m.home), h('span', null, m.home)),
           h('div', { class: 'mid' }, mid),
           h('div', { class: 'team' }, crest(m.away), h('span', null, m.away))),
-        tvBox(tvKey(d.date, m), m, m.st !== 'ft' && now < m.time));
+        tvBox(tvKey(date, m), m, m.st !== 'ft' && now < m.time));
+    }
+    var parts = [];
+    [['أمس', -1], ['اليوم', 0], ['غدًا', 1]].forEach(function (sec) {
+      var date = cairoDay(now + sec[1] * DAY);
+      var list = (Array.isArray(days[date]) ? days[date] : []).filter(function (m) { return m && m.home && m.away && m.time; });
+      if (!list.length) return;
+      list.sort(function (a, b) { return ((a.pri || 5) - (b.pri || 5)) || (a.time - b.time); });
+      parts.push(h('div', { class: 'tsec' },
+        h('div', { class: 'thead' }, h('h2', null, 'مباريات ' + sec[0]), h('span', { class: 'tnote' }, 'بتوقيت القاهرة')),
+        h('div', { class: 'tstrip' }, list.map(function (m) { return mk(m, date); }))));
     });
+    if (!parts.length) { elToday.hidden = true; elToday.replaceChildren(); return; }
     elToday.hidden = false;
-    elToday.replaceChildren(
-      h('div', { class: 'thead' }, h('h2', null, 'مباريات اليوم'), h('span', { class: 'tnote' }, 'بتوقيت القاهرة')),
-      h('div', { class: 'tstrip' }, cards));
+    elToday.replaceChildren.apply(elToday, parts);
   }
   function newId() { return 'n' + Date.now().toString(36); }
   var toastTimer;
