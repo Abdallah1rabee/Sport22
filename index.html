@@ -248,14 +248,6 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .ttab { border: 1.5px solid var(--ink); background: transparent; color: var(--ink); font: inherit; font-weight: 700; font-size: .85rem; padding: 5px 12px; cursor: pointer; }
 .ttab.on { background: #0b0b0b; color: #fff; border-color: #0b0b0b; }
 .tempty { padding: 18px 12px; border: 1px dashed var(--line); color: var(--muted); font-size: .85rem; text-align: center; }
-.tm .tdet { margin-top: 10px; }
-.tm .tdbtn { background: none; border: 0; padding: 0; font: inherit; font-size: .75rem; font-weight: 600; color: #9db4ff; text-decoration: underline; cursor: pointer; }
-.tm .tdbox { margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 8px; font-size: .8rem; }
-.tm .tdh { font-weight: 700; color: var(--muted); font-size: .72rem; margin: 6px 0 3px; }
-.tm .tdr { display: flex; justify-content: space-between; gap: 8px; padding: 2px 0; }
-.tm .tdm { color: var(--muted); font-size: .72rem; }
-.tm .tds { display: grid; grid-template-columns: 2.2rem 1fr 2.2rem; text-align: center; padding: 2px 0; font-variant-numeric: tabular-nums; }
-.tm .tdn { color: var(--muted); }
 .today .thead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
 .today h2 { font-family: var(--display); font-weight: 800; font-size: 1.15rem; margin: 0; line-height: 1.5; display: flex; align-items: center; gap: 8px; }
 .today h2::before { content: ''; width: .35rem; height: 1.1em; background: var(--accent); display: inline-block; }
@@ -633,7 +625,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
         return h('div', { class: 'tvr' + (mine === o.k ? ' me' : '') }, h('i', { style: 'width:' + p + '%' }), h('b', null, p + '%'), h('span', null, o.l));
       })), h('div', { class: 'tvn' }, t + ' صوت'));
   }
-  var todayTab = null, DET = {};
+  var todayTab = null;
   function renderToday() {
     if (!elToday) return;
     var now = Date.now(), D = TODAY, DAY = 86400000;
@@ -657,28 +649,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
           h('div', { class: 'team' }, crest(m.home), h('span', null, m.home)),
           h('div', { class: 'mid' }, mid),
           h('div', { class: 'team' }, crest(m.away), h('span', null, m.away))),
-        tvBox(tvKey(date, m), m, m.st !== 'ft' && now < m.time),
-        detBox(tvKey(date, m), m));
-    }
-    function detBox(key, m) {
-      var open = !!DET[key];
-      var btn = h('button', { type: 'button', class: 'tdbtn', 'aria-expanded': open ? 'true' : 'false', onclick: function () { DET[key] = !DET[key]; renderToday(); } }, open ? 'إخفاء التفاصيل' : 'تفاصيل المباراة');
-      if (!open) return h('div', { class: 'tdet' }, btn);
-      var d = m.details, kids = [];
-      if (d && Array.isArray(d.scorers) && d.scorers.length) {
-        kids.push(h('div', { class: 'tdh' }, 'الأهداف'));
-        d.scorers.forEach(function (g) { kids.push(h('div', { class: 'tdr' }, h('span', null, (g.min ? g.min + "' " : '') + g.p), h('span', { class: 'tdm' }, g.team || ''))); });
-      }
-      if (d && Array.isArray(d.stats) && d.stats.length) {
-        kids.push(h('div', { class: 'tdh' }, 'الإحصائيات'));
-        d.stats.forEach(function (x) { kids.push(h('div', { class: 'tds' }, h('b', null, String(x.home)), h('span', null, x.label), h('b', null, String(x.away)))); });
-      }
-      if (d && Array.isArray(d.attacks) && d.attacks.length) {
-        kids.push(h('div', { class: 'tdh' }, 'أبرز الهجمات'));
-        d.attacks.forEach(function (x) { kids.push(h('div', { class: 'tdr' }, h('span', null, (x.min ? x.min + "' " : '') + x.t))); });
-      }
-      if (!kids.length) kids.push(h('div', { class: 'tdn' }, m.st === 'ft' || now >= m.time + 135 * 60000 ? 'تفاصيل المباراة لسه مش متاحة.' : 'التفاصيل هتظهر بعد انتهاء المباراة.'));
-      return h('div', { class: 'tdet' }, btn, h('div', { class: 'tdbox' }, kids));
+        tvBox(tvKey(date, m), m, m.st !== 'ft' && now < m.time));
     }
     var TABS = [['أمس', -1], ['اليوم', 0], ['غدًا', 1]];
     var lists = TABS.map(function (sec) {
