@@ -243,7 +243,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .predbox { margin-top: 30px; padding-top: 18px; border-top: 1px solid var(--line); }
 
 /* Today's matches strip */
-.today { margin-top: 16px; }
+.today { margin-top: 16px; background: #0b0b0b; color: #f2f2f2; padding: 14px 14px 16px; --surface: #171717; --ink: #f2f2f2; --line: #333; --muted: #a8a8a8; --bg: #0b0b0b; }
 .today .thead { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
 .today h2 { font-family: var(--display); font-weight: 800; font-size: 1.15rem; margin: 0; line-height: 1.5; display: flex; align-items: center; gap: 8px; }
 .today h2::before { content: ''; width: .35rem; height: 1.1em; background: var(--accent); display: inline-block; }
@@ -627,7 +627,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     if (d && d.days && typeof d.days === 'object') { var dk = cairoDay(now); d = { date: dk, matches: d.days[dk] || [] }; }
     var list = d && Array.isArray(d.matches) ? d.matches.filter(function (m) { return m && m.home && m.away && m.time; }) : [];
     if (!d || d.date !== cairoDay(now) || !list.length) { elToday.hidden = true; elToday.replaceChildren(); return; }
-    list.sort(function (a, b) { return a.time - b.time; });
+    list.sort(function (a, b) { return ((a.pri || 5) - (b.pri || 5)) || (a.time - b.time); });
     var cards = list.map(function (m) {
       var cls = 'tm', stat, mid;
       var hasScore = typeof m.hs === 'number' && typeof m.as === 'number';
