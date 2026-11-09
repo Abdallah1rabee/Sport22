@@ -623,7 +623,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
   }
   function renderToday() {
     if (!elToday) return;
-    var d = TODAY, now = Date.now();
+    var now = Date.now(), d = TODAY;
+    if (d && d.days && typeof d.days === 'object') { var dk = cairoDay(now); d = { date: dk, matches: d.days[dk] || [] }; }
     var list = d && Array.isArray(d.matches) ? d.matches.filter(function (m) { return m && m.home && m.away && m.time; }) : [];
     if (!d || d.date !== cairoDay(now) || !list.length) { elToday.hidden = true; elToday.replaceChildren(); return; }
     list.sort(function (a, b) { return a.time - b.time; });
