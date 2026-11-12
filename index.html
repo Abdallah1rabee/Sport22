@@ -248,6 +248,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .tm .tvr b { font-size: .95rem; font-variant-numeric: tabular-nums; }
 .tm .tvr.me { border-color: var(--accent); }
 .tm .tvn { font-size: .6875rem; color: var(--muted); margin-top: 4px; }
+.tm .tdet { margin-top: 10px; }
+.tm .tdbtn { background: none; border: 0; padding: 0; font: inherit; font-size: .75rem; font-weight: 600; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.tm .tdbox { margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 8px; font-size: .8rem; }
+.tm .tdh { font-weight: 700; color: var(--muted); font-size: .72rem; margin-bottom: 4px; }
+.tm .tdr { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr) auto; gap: 6px; padding: 3px 0; align-items: baseline; }
+.tm .tdmin { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+.tm .tdt { color: var(--muted); font-size: .72rem; }
 .tm.live { border-color: var(--warn); }
 .tm.live .st { color: var(--warn); }
 .tm.ft .st { color: var(--muted); }
@@ -598,6 +605,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
       })), h('div', { class: 'tvn' }, t + ' صوت'));
   }
   var todayTab = null;
+  var DET = {};
   function renderToday() {
     if (!elToday) return;
     var now = Date.now(), D = TODAY, DAY = 86400000;
@@ -621,7 +629,20 @@ button, input, select, textarea { font: inherit; color: inherit; }
           h('div', { class: 'team' }, crest(m.home), h('span', null, m.home)),
           h('div', { class: 'mid' }, mid),
           h('div', { class: 'team' }, crest(m.away), h('span', null, m.away))),
-        tvBox(tvKey(date, m), m, m.st !== 'ft' && now < m.time));
+        tvBox(tvKey(date, m), m, m.st !== 'ft' && now < m.time),
+        detBox(tvKey(date, m), m));
+    }
+    function detBox(key, m) {
+      var g = m.details && Array.isArray(m.details.goals) ? m.details.goals : null;
+      if (!g || !g.length) return null;
+      var open = !!DET[key];
+      var btn = h('button', { type: 'button', class: 'tdbtn', 'aria-expanded': open ? 'true' : 'false', onclick: function () { DET[key] = !DET[key]; renderToday(); } }, open ? 'إخفاء التفاصيل' : 'تفاصيل المباراة');
+      if (!open) return h('div', { class: 'tdet' }, btn);
+      var rows = g.slice().sort(function (x, y) { return (x.min || 0) - (y.min || 0); }).map(function (x) {
+        var note = x.og ? ' (عكسي)' : (x.pen ? ' (ركلة جزاء)' : '');
+        return h('div', { class: 'tdr' }, h('span', { class: 'tdmin' }, (x.min || '') + (x.add ? '+' + x.add : '') + "'"), h('span', { class: 'tdp' }, x.p + note), h('span', { class: 'tdt' }, x.team || ''));
+      });
+      return h('div', { class: 'tdet' }, btn, h('div', { class: 'tdbox' }, h('div', { class: 'tdh' }, 'الأهداف'), rows));
     }
     var TABS = [['أمس', -1], ['اليوم', 0], ['غدًا', 1]];
     var lists = TABS.map(function (sec) {
