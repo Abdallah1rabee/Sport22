@@ -249,6 +249,13 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .tm .tvr b { font-size: .95rem; font-variant-numeric: tabular-nums; }
 .tm .tvr.me { border-color: var(--accent); }
 .tm .tvn { font-size: .6875rem; color: var(--muted); margin-top: 4px; }
+.tm .tdet { margin-top: 10px; }
+.tm .tdbtn { background: none; border: 0; padding: 0; font: inherit; font-size: .75rem; font-weight: 600; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.tm .tdbox { margin-top: 8px; border-top: 1px dashed var(--line); padding-top: 8px; font-size: .78rem; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.tm .tdc { text-align: center; min-width: 0; }
+.tm .tdp { padding: 3px 0; line-height: 1.5; }
+.tm .tdp b { display: block; font-weight: 600; overflow-wrap: anywhere; }
+.tm .tdp span { display: block; color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; font-size: .74rem; }
 .tm.live { border-color: var(--warn); }
 .tm.live .st { color: var(--warn); }
 .tm.ft .st { color: var(--muted); }
@@ -599,6 +606,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
       })), h('div', { class: 'tvn' }, t + ' صوت'));
   }
   var todayTab = null;
+  var DET = {};
   function renderToday() {
     if (!elToday) return;
     var now = Date.now(), D = TODAY, DAY = 86400000;
@@ -622,7 +630,28 @@ button, input, select, textarea { font: inherit; color: inherit; }
           h('div', { class: 'team' }, crest(m.home), h('span', null, m.home)),
           h('div', { class: 'mid' }, mid),
           h('div', { class: 'team' }, crest(m.away), h('span', null, m.away))),
-        tvBox(tvKey(date, m), m, m.st !== 'ft' && now < m.time));
+        tvBox(tvKey(date, m), m, m.st !== 'ft' && now < m.time),
+        detBox(tvKey(date, m), m));
+    }
+    function detBox(key, m) {
+      var g = m.details && Array.isArray(m.details.goals) ? m.details.goals : null;
+      if (!g || !g.length) return null;
+      var open = !!DET[key];
+      var btn = h('button', { type: 'button', class: 'tdbtn', 'aria-expanded': open ? 'true' : 'false', onclick: function () { DET[key] = !DET[key]; renderToday(); } }, open ? 'إخفاء التفاصيل' : 'تفاصيل المباراة');
+      if (!open) return h('div', { class: 'tdet' }, btn);
+      function side(x) { return x.side === 'a' || (x.team && x.team === m.away) ? 'a' : 'h'; }
+      function col(sd) {
+        var order = [], by = {};
+        g.slice().sort(function (x, y) { return ((x.min || 0) + (x.add || 0) / 100) - ((y.min || 0) + (y.add || 0) / 100); }).forEach(function (x) {
+          if (side(x) !== sd) return;
+          var k = x.p; if (!by[k]) { by[k] = []; order.push(k); }
+          by[k].push((x.min || '') + (x.add ? '+' + x.add : '') + "'" + (x.og ? ' (عكسي)' : (x.pen ? ' (جزاء)' : '')));
+        });
+        return h('div', { class: 'tdc' }, order.map(function (k) {
+          return h('div', { class: 'tdp' }, h('b', null, k), h('span', null, by[k].join(' · ')));
+        }));
+      }
+      return h('div', { class: 'tdet' }, btn, h('div', { class: 'tdbox' }, col('h'), col('a')));
     }
     var TABS = [['أمس', -1], ['اليوم', 0], ['غدًا', 1]];
     var lists = TABS.map(function (sec) {
