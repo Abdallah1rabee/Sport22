@@ -704,7 +704,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
     elFoot.replaceChildren.apply(elFoot, parts);
   }
   /* ---------- views ---------- */
-  function articleHref(a) { return '#a-' + a.id; }
+  function articleHref(a) { return 'news/' + a.id + '/'; }
   function stamp(ms) { return h('div', { class: 'stamp', 'aria-hidden': 'true' }, h('b', null, fmt(ms, { day: 'numeric' })), h('span', null, fmt(ms, { month: 'long' }))); }
   function catTag(a) { return h('a', { class: 'tag', href: '#c-' + (a.cat || 'news') }, catName(a.cat)); }
   function feedItem(a) {

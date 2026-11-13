@@ -79,6 +79,7 @@ for a in arts:
 <div class="by">{e(a['author'])} · <time datetime="{iso(a['date'])}">{ar_date(a['date'])}</time></div>
 {fig}
 {paras}
+<p><a href="{BASE}#a-{a['id']}">💬 التفاعل والتعليقات على الخبر</a></p>
 <p><a href="{BASE}">← كل أخبار SPORT 22</a></p>
 </article></main>
 <footer><div class="w">© SPORT 22 · أخبار وتقارير وتحليلات رياضية</div></footer>
