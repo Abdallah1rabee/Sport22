@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /Sport22/admin.html
+
+Sitemap: https://abdallah1rabee.github.io/Sport22/sitemap.xml
