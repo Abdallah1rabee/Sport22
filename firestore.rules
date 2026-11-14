@@ -28,5 +28,35 @@ service cloud.firestore {
       allow read: if true;
       allow write: if true;
     }
+
+    // تحدي اليوم: نتيجة كل لاعب في كل يوم (مرة واحدة فقط، تتفتح ثم تُقفل)
+    match /quiz_days/{id} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && id == request.resource.data.date + '_' + request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid','n','team','date','pts','ct','cg','done'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.n is string && request.resource.data.n.size() > 0 && request.resource.data.n.size() <= 30
+        && request.resource.data.pts == 0 && request.resource.data.done == false;
+      allow update: if request.auth != null
+        && resource.data.uid == request.auth.uid && resource.data.done == false
+        && request.resource.data.done == true
+        && request.resource.data.uid == resource.data.uid && request.resource.data.date == resource.data.date
+        && request.resource.data.n == resource.data.n && request.resource.data.team == resource.data.team
+        && request.resource.data.pts is int && request.resource.data.pts >= 0 && request.resource.data.pts <= 90;
+      allow delete: if false;
+    }
+
+    // تحدي اليوم: مجموع نقاط كل لاعب وسلسلة أيامه
+    match /quiz_users/{uid} {
+      allow read: if true;
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['n','team','total','streak','last','wk','wkPts'])
+        && request.resource.data.n is string && request.resource.data.n.size() > 0 && request.resource.data.n.size() <= 30
+        && request.resource.data.total is int && request.resource.data.total >= 0
+        && request.resource.data.total <= (resource == null ? 90 : resource.data.total + 90)
+        && (resource == null || request.resource.data.total >= resource.data.total);
+      allow delete: if false;
+    }
   }
 }
