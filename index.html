@@ -747,7 +747,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
       h('button', { class: 'go', type: 'button' }, 'تثبيت'),
       h('button', { class: 'x', type: 'button', 'aria-label': 'إغلاق' }, '×'));
     elInstall.querySelector('.go').addEventListener('click', function () {
-      if (!installEv) return; installEv.prompt(); installEv.userChoice.then(function () { installEv = null; refreshInstall(); });
+      if (!installEv) return; trackEvent('install-click', 'ضغط زر تثبيت التطبيق'); installEv.prompt(); installEv.userChoice.then(function () { installEv = null; refreshInstall(); });
     });
     elInstall.querySelector('.x').addEventListener('click', function () {
       try { localStorage.setItem('s22-install-x', '1'); } catch (e) {} elInstall.hidden = true;
@@ -975,6 +975,16 @@ button, input, select, textarea { font: inherit; color: inherit; }
       setTimeout(function () { track((n || 0) + 1); }, 500);
     }
   }
+  /* أحداث التطبيق في GoatCounter (تظهر في قسم Events): فتح من التطبيق، ضغط تثبيت، تم التثبيت */
+  function trackEvent(name, title, n) {
+    var gc = window.goatcounter;
+    if (gc && typeof gc.count === 'function') { try { gc.count({ path: name, title: title, event: true }); } catch (e) {} }
+    else if ((n || 0) < 10) { setTimeout(function () { trackEvent(name, title, (n || 0) + 1); }, 500); }
+  }
+  try {
+    if (isStandalone() && !sessionStorage.getItem('s22-app-open')) { sessionStorage.setItem('s22-app-open', '1'); trackEvent('app-open', 'فتح من التطبيق'); }
+  } catch (e) {}
+  window.addEventListener('appinstalled', function () { trackEvent('app-install', 'تثبيت التطبيق'); });
   window.addEventListener('hashchange', function () { renderAll(); window.scrollTo(0, 0); track(); });
   build(); renderAll(); refreshInstall();
   if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) { window.addEventListener('load', function () { try { navigator.serviceWorker.register('sw.js').catch(function () {}); } catch (e) {} }); }
