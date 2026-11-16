@@ -5,6 +5,12 @@
 <meta name="google-site-verification" content="ZgCYQViCPi4uMiL4Ewf_hA4ml7kDB0d5JO9i_lR8DuQ" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>SPORT 22</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#10151B">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SPORT 22">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="description" content="SPORT 22 موقع رياضي يقدم الأخبار والتقارير والتحليلات.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="SPORT 22">
@@ -109,6 +115,12 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .article .meta { margin-bottom: 22px; }
 .article p { margin: 0 0 1.1em; font-size: 1.1875rem; line-height: 2; }
 .article p.first { font-weight: 500; font-size: 1.25rem; }
+.install { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; background: var(--surface); border: 1.5px solid var(--line); border-inline-start: 6px solid var(--accent); padding: 10px 14px; margin-block: 12px; font-size: .9375rem; }
+.install[hidden] { display: none; }
+.install span { flex: 1 1 14rem; }
+.install button { font: inherit; cursor: pointer; border: 0; }
+.install .go { background: var(--accent); color: var(--accent-ink); font-weight: 600; padding: 5px 18px; }
+.install .x { background: none; color: var(--muted); font-size: 1.25rem; line-height: 1; padding: 2px 8px; }
 .qbanner { display: flex; align-items: center; justify-content: space-between; gap: 12px 18px; flex-wrap: wrap; text-decoration: none; color: var(--ink); background: var(--surface); border: 1.5px solid var(--line); border-inline-start: 6px solid #E8590C; padding: 14px 18px; margin-block: 16px; }
 .qbanner:hover { border-color: #E8590C; }
 .qbanner b { display: block; font-family: var(--display); font-weight: 800; font-size: 1.15rem; line-height: 1.5; }
@@ -694,7 +706,21 @@ button, input, select, textarea { font: inherit; color: inherit; }
   function sorted() { return DATA.articles.slice().sort(function (a, b) { return (b.date || 0) - (a.date || 0); }); }
   function find(id) { for (var i = 0; i < DATA.articles.length; i++) if (DATA.articles[i].id === id) return DATA.articles[i]; return null; }
 
-  var elNav, elMain, elFoot, elSearch, elToday, elQuiz;
+  var elNav, elMain, elFoot, elSearch, elToday, elQuiz, elInstall;
+  var installEv = null;
+  function isStandalone() { return (window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone === true; }
+  function isIOS() { return /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream; }
+  function dismissed() { try { return localStorage.getItem('s22-install-x') === '1'; } catch (e) { return false; } }
+  function refreshInstall() {
+    if (!elInstall) return;
+    var can = !isStandalone() && !dismissed() && (installEv || isIOS());
+    elInstall.hidden = !can;
+    var go = elInstall.querySelector('.go'), msg = elInstall.querySelector('span');
+    if (installEv) { go.hidden = false; msg.textContent = 'ثبّت تطبيق SPORT 22 على موبايلك للوصول السريع للأخبار والنتائج.'; }
+    else { go.hidden = true; msg.textContent = 'لتثبيت التطبيق على الآيفون: اضغط زر المشاركة في Safari، ثم اختار "إضافة إلى الشاشة الرئيسية".'; }
+  }
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); installEv = e; refreshInstall(); });
+  window.addEventListener('appinstalled', function () { installEv = null; refreshInstall(); });
   function route() {
     var hs = location.hash.replace(/^#/, ''), m;
     if (!hs || hs === 'home') return { name: 'home' };
@@ -717,6 +743,15 @@ button, input, select, textarea { font: inherit; color: inherit; }
     });
     elNav = h('nav', { class: 'cats', 'aria-label': 'الأقسام' });
     elToday = h('section', { class: 'today', 'aria-label': 'مباريات اليوم', hidden: true });
+    elInstall = h('div', { class: 'install', hidden: true }, h('span', null, ''),
+      h('button', { class: 'go', type: 'button' }, 'تثبيت'),
+      h('button', { class: 'x', type: 'button', 'aria-label': 'إغلاق' }, '×'));
+    elInstall.querySelector('.go').addEventListener('click', function () {
+      if (!installEv) return; installEv.prompt(); installEv.userChoice.then(function () { installEv = null; refreshInstall(); });
+    });
+    elInstall.querySelector('.x').addEventListener('click', function () {
+      try { localStorage.setItem('s22-install-x', '1'); } catch (e) {} elInstall.hidden = true;
+    });
     elQuiz = h('div', { class: 'quizslot', hidden: true }, quizBanner(false));
     elMain = h('main', { id: 'main' });
     elFoot = h('footer', { class: 'foot' });
@@ -725,7 +760,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
         h('header', { class: 'mast' },
           h('a', { class: 'logo', href: '#home', 'aria-label': 'SPORT 22 - الرئيسية' }, h('span', { class: 'w-sport' }, 'Sport'), h('span', { class: 'w-num' }, '22')),
           h('div', { class: 'tools' }, elSearch)),
-        elNav, elToday, elQuiz, elMain, elFoot),
+        elNav, elInstall, elToday, elQuiz, elMain, elFoot),
       h('div', { class: 'toast', id: 'toast', hidden: true, role: 'status' }, h('div')));
   }
   function quizBanner(inArticle) {
@@ -941,7 +976,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
     }
   }
   window.addEventListener('hashchange', function () { renderAll(); window.scrollTo(0, 0); track(); });
-  build(); renderAll();
+  build(); renderAll(); refreshInstall();
+  if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) { window.addEventListener('load', function () { try { navigator.serviceWorker.register('sw.js').catch(function () {}); } catch (e) {} }); }
   fetch('teams.json', { cache: 'no-cache' })
     .then(function (r) { return r.ok ? r.json() : {}; })
     .catch(function () { return {}; })

@@ -68,6 +68,9 @@ for a in arts:
 <meta name="twitter:card" content="summary_large_image">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@800&family=IBM+Plex+Sans+Arabic:wght@400;600&display=swap" rel="stylesheet">
 <script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>
+<link rel="manifest" href="{BASE}manifest.webmanifest">
+<meta name="theme-color" content="#10151B">
+<link rel="apple-touch-icon" href="{BASE}icons/apple-touch-icon.png">
 <style>{CSS}</style>
 <script>window.goatcounter={{no_onload:false}}</script>
 <script data-goatcounter="https://sport22.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
