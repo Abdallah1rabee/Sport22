@@ -58,5 +58,45 @@ service cloud.firestore {
         && (resource == null || request.resource.data.total >= resource.data.total);
       allow delete: if false;
     }
+
+    // لوحة النشر: الإيميلات المسموح لها بالنشر (عدّل القائمة دي لإضافة صحفي)
+    function isEditor() {
+      return request.auth != null && request.auth.token.email_verified == true
+        && request.auth.token.email in ['abdallahrabee80@gmail.com'];
+    }
+    function isOwner() {
+      return request.auth != null && request.auth.token.email == 'abdallahrabee80@gmail.com';
+    }
+
+    // الأخبار المنشورة من اللوحة: قراءة للكل، والكتابة للمسموح لهم بس
+    match /live_articles/{id} {
+      allow read: if true;
+      allow create: if isEditor()
+        && id.matches('^n[a-z0-9]{4,24}$')
+        && request.resource.data.keys().hasOnly(['cat','title','author','body','by','date','links','image','hasFull'])
+        && request.resource.data.cat in ['news','transfers','reports','analysis','opinion']
+        && request.resource.data.title is string && request.resource.data.title.size() >= 10 && request.resource.data.title.size() <= 200
+        && request.resource.data.author is string && request.resource.data.author.size() > 0 && request.resource.data.author.size() <= 60
+        && request.resource.data.body is string && request.resource.data.body.size() >= 80 && request.resource.data.body.size() <= 20000
+        && request.resource.data.by == request.auth.token.email
+        && request.resource.data.image is string && request.resource.data.image.size() <= 150000;
+      allow update: if isEditor() && (resource.data.by == request.auth.token.email || isOwner())
+        && request.resource.data.keys().hasOnly(['cat','title','author','body','by','date','links','image','hasFull'])
+        && request.resource.data.cat in ['news','transfers','reports','analysis','opinion']
+        && request.resource.data.title is string && request.resource.data.title.size() >= 10 && request.resource.data.title.size() <= 200
+        && request.resource.data.body is string && request.resource.data.body.size() >= 80 && request.resource.data.body.size() <= 20000
+        && request.resource.data.by == resource.data.by && request.resource.data.date == resource.data.date
+        && request.resource.data.image is string && request.resource.data.image.size() <= 150000;
+      allow delete: if isEditor() && (resource.data.by == request.auth.token.email || isOwner());
+    }
+
+    // الصورة الكاملة للخبر (بتتحمل لما حد يفتح الخبر)
+    match /live_imgs/{id} {
+      allow read: if true;
+      allow create, update: if isEditor() && request.resource.data.keys().hasOnly(['d','by'])
+        && request.resource.data.d is string && request.resource.data.d.size() <= 900000
+        && request.resource.data.by == request.auth.token.email;
+      allow delete: if isEditor();
+    }
   }
 }

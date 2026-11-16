@@ -96,5 +96,5 @@ sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps
 for u, lm in urls:
     sm += f'  <url><loc>{u}</loc>' + (f'<lastmod>{lm}</lastmod>' if lm else '') + '</url>\n'
 open('sitemap.xml', 'w', encoding='utf-8').write(sm + '</urlset>\n')
-open('robots.txt', 'w').write(f"User-agent: *\nAllow: /\nDisallow: /Sport22/admin.html\n\nSitemap: {BASE}sitemap.xml\n")
+open('robots.txt', 'w').write(f"User-agent: *\nAllow: /\nDisallow: /Sport22/admin.html\nDisallow: /Sport22/editor/\n\nSitemap: {BASE}sitemap.xml\n")
 print('pages:', len(arts))

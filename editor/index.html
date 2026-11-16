@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>لوحة النشر | SPORT 22</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#10151B">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800&family=Cairo:wght@600;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#F2F4F7; --surface:#fff; --ink:#0B1220; --muted:#566074; --line:#D6DBE3;
+  --accent:#1747E0; --accent-ink:#fff; --ok:#0B7A4B; --ok-bg:#E3F1EA; --bad:#B3261E; --bad-bg:#FBE7E5;
+  --logo:'Barlow Condensed','Arial Narrow',Impact,sans-serif; --display:'Cairo','Segoe UI',Tahoma,sans-serif; --body:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --bg:#0A0F18; --surface:#121A27; --ink:#E8ECF3; --muted:#93A0B5; --line:#223049; --accent:#7399FF; --accent-ink:#0A0F18; --ok:#4FD39A; --ok-bg:#12301F; --bad:#FF8F86; --bad-bg:#3A1714; color-scheme:dark; }
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--body); line-height:1.7; font-size:16px; padding:0 max(16px,env(safe-area-inset-left,0px)) 60px; }
+.wrap { max-width:680px; margin-inline:auto; }
+.mast { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-block:16px 8px; }
+.logo { font-family:var(--logo); font-style:italic; font-weight:800; font-size:1.9rem; line-height:1; display:flex; direction:ltr; align-items:center; gap:6px; }
+.logo .n { background:var(--accent); color:var(--accent-ink); padding:.05em .22em 0; }
+h1 { font-family:var(--display); font-weight:800; font-size:1.5rem; margin:8px 0 4px; }
+h2 { font-family:var(--display); font-weight:800; font-size:1.15rem; margin:0 0 10px; }
+.sub { color:var(--muted); margin:0 0 16px; }
+.card { background:var(--surface); border:1.5px solid var(--line); padding:18px; margin-block:14px; }
+label { display:block; font-weight:600; font-size:.9rem; margin:14px 0 6px; }
+input[type=text], select, textarea { font:inherit; width:100%; background:var(--bg); color:var(--ink); border:1.5px solid var(--line); padding:10px 12px; }
+textarea { min-height:240px; resize:vertical; }
+.hint { color:var(--muted); font-size:.85rem; margin:4px 0 0; }
+.btn { font:inherit; font-weight:600; background:var(--accent); color:var(--accent-ink); border:0; padding:12px 18px; cursor:pointer; }
+.btn.block { display:block; width:100%; margin-top:18px; }
+.btn.alt { background:transparent; color:var(--ink); border:1.5px solid var(--ink); }
+.btn.sm { padding:6px 12px; font-size:.85rem; }
+.btn:disabled { opacity:.45; cursor:default; }
+.msg { padding:10px 12px; margin-top:14px; font-weight:600; }
+.msg.ok { background:var(--ok-bg); color:var(--ok); }
+.msg.bad { background:var(--bad-bg); color:var(--bad); }
+.row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.who { color:var(--muted); font-size:.875rem; }
+.thumb { max-width:100%; max-height:220px; margin-top:10px; display:block; border:1.5px solid var(--line); }
+.item { display:flex; justify-content:space-between; gap:10px; align-items:center; padding:10px 0; border-top:1.5px solid var(--line); }
+.item:first-child { border-top:0; }
+.item .t { font-weight:600; min-width:0; overflow-wrap:anywhere; }
+.item .d { color:var(--muted); font-size:.8rem; }
+[hidden] { display:none !important; }
+:focus-visible { outline:3px solid #E8590C; outline-offset:2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="mast">
+    <div class="logo"><span>SPORT</span><span class="n">22</span></div>
+    <div class="who" id="who"></div>
+  </div>
+
+  <section id="vLogin" class="card" hidden>
+    <h1>لوحة النشر</h1>
+    <p class="sub">ادخل بحساب جوجل المسموح له بالنشر.</p>
+    <button class="btn block" id="bLogin" type="button">الدخول بجوجل</button>
+    <div id="loginMsg"></div>
+  </section>
+
+  <section id="vApp" hidden>
+    <div class="card">
+      <h2 id="formTitle">خبر جديد</h2>
+      <p class="sub">الخبر بينزل على الموقع مباشرة أول ما تضغط "انشر".</p>
+
+      <label for="fCat">القسم</label>
+      <select id="fCat">
+        <option value="news">الأخبار</option>
+        <option value="transfers">الانتقالات</option>
+        <option value="reports">تقارير المباريات</option>
+        <option value="analysis">تحليلات</option>
+        <option value="opinion">مقالات الرأي</option>
+      </select>
+
+      <label for="fTitle">العنوان</label>
+      <input type="text" id="fTitle" maxlength="200" autocomplete="off">
+      <p class="hint" id="tHint"></p>
+
+      <label for="fAuthor">اسم الكاتب</label>
+      <input type="text" id="fAuthor" maxlength="60" autocomplete="off">
+
+      <label for="fBody">نص الخبر</label>
+      <textarea id="fBody" maxlength="20000"></textarea>
+      <p class="hint">كل سطر = فقرة. اترك سطر فاضي بين الفقرات. للرابط اكتب: <bdi dir="ltr">[text](https://site.com)</bdi></p>
+
+      <label for="fImg">صورة الخبر</label>
+      <input type="file" id="fImg" accept="image/*">
+      <p class="hint">بتتصغّر تلقائيًا. استخدم صورة مسموح لك بنشرها.</p>
+      <img id="prev" class="thumb" alt="" hidden>
+
+      <button class="btn block" id="bPub" type="button">انشر</button>
+      <button class="btn alt block" id="bCancel" type="button" hidden>إلغاء التعديل</button>
+      <div id="pubMsg"></div>
+    </div>
+
+    <div class="card">
+      <h2>الأخبار المنشورة من اللوحة</h2>
+      <div id="list"><p class="sub">جار التحميل...</p></div>
+    </div>
+    <div class="row"><button class="btn alt sm" id="bOut" type="button">تسجيل الخروج</button></div>
+  </section>
+</div>
+
+<script src="../firebase-config.js"></script>
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var OWNER = 'abdallahrabee80@gmail.com';
+  var db, auth, user = null, editing = null, imgFull = '', imgThumb = '', imgChanged = false;
+  var base = 'https://www.gstatic.com/firebasejs/10.12.2/';
+
+  function load(src) { return new Promise(function (ok, no) { var e = document.createElement('script'); e.src = src; e.onload = ok; e.onerror = no; document.head.appendChild(e); }); }
+  function msg(el, cls, t) { el.innerHTML = ''; if (!t) return; var d = document.createElement('div'); d.className = 'msg ' + cls; d.textContent = t; el.appendChild(d); }
+  function show(v) { $('#vLogin').hidden = v !== 'login'; $('#vApp').hidden = v !== 'app'; }
+
+  load(base + 'firebase-app-compat.js').then(function () { return load(base + 'firebase-auth-compat.js'); })
+    .then(function () { return load(base + 'firebase-firestore-compat.js'); })
+    .then(init).catch(function () { show('login'); msg($('#loginMsg'), 'bad', 'تعذر تحميل الصفحة. تأكد من الإنترنت وحدّث.'); });
+
+  function init() {
+    firebase.initializeApp(window.S22_FB); auth = firebase.auth(); db = firebase.firestore();
+    auth.getRedirectResult().catch(function (e) { msg($('#loginMsg'), 'bad', 'تعذر الدخول: ' + (e.code || e.message)); });
+    auth.onAuthStateChanged(function (u) {
+      user = u;
+      if (!u) { $('#who').textContent = ''; show('login'); return; }
+      $('#who').textContent = u.email;
+      if (!$('#fAuthor').value) { try { $('#fAuthor').value = localStorage.getItem('s22-author') || u.displayName || ''; } catch (e) { $('#fAuthor').value = u.displayName || ''; } }
+      show('app'); refreshList();
+    });
+  }
+  $('#bLogin').onclick = function () {
+    var p = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(p).catch(function (e) {
+      if (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment') auth.signInWithRedirect(p);
+      else if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') msg($('#loginMsg'), 'bad', 'تعذر الدخول: ' + (e.code || e.message));
+    });
+  };
+  $('#bOut').onclick = function () { auth.signOut(); };
+
+  $('#fTitle').addEventListener('input', function () { var n = this.value.length; $('#tHint').textContent = n ? n + ' حرف' + (n > 70 ? ' (يُفضّل أقل من 70 للسيو)' : '') : ''; });
+
+  /* ---- image: resize in the browser ---- */
+  function resize(file, maxW, q) {
+    return new Promise(function (ok, no) {
+      var url = URL.createObjectURL(file), im = new Image();
+      im.onload = function () {
+        var w = Math.min(maxW, im.naturalWidth), r = w / im.naturalWidth, c = document.createElement('canvas');
+        c.width = w; c.height = Math.round(im.naturalHeight * r);
+        var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+        URL.revokeObjectURL(url); ok(c.toDataURL('image/jpeg', q));
+      };
+      im.onerror = function () { no(new Error('img')); };
+      im.src = url;
+    });
+  }
+  $('#fImg').onchange = function () {
+    var f = this.files[0]; if (!f) return;
+    msg($('#pubMsg'), '', '');
+    resize(f, 1200, 0.8).then(function (full) {
+      var q = 0.8; return (function shrink(d, n) { return d.length > 700000 && n < 4 ? resize(f, 1200 - (n + 1) * 150, 0.7).then(function (x) { return shrink(x, n + 1); }) : d; })(full, 0);
+    }).then(function (full) {
+      imgFull = full; return resize(f, 480, 0.7);
+    }).then(function (th) {
+      imgThumb = th; imgChanged = true; var p = $('#prev'); p.src = imgFull; p.hidden = false;
+    }).catch(function () { msg($('#pubMsg'), 'bad', 'الصورة دي مش شغالة. جرّب صورة تانية (JPG أو PNG).'); });
+  };
+
+  /* ---- publish / edit ---- */
+  function newId() { return 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+  function reset() {
+    editing = null; imgFull = imgThumb = ''; imgChanged = false;
+    $('#fTitle').value = ''; $('#fBody').value = ''; $('#fImg').value = ''; $('#prev').hidden = true; $('#tHint').textContent = '';
+    $('#formTitle').textContent = 'خبر جديد'; $('#bPub').textContent = 'انشر'; $('#bCancel').hidden = true;
+  }
+  $('#bCancel').onclick = function () { reset(); msg($('#pubMsg'), '', ''); };
+
+  $('#bPub').onclick = function () {
+    var title = $('#fTitle').value.trim(), body = $('#fBody').value.trim(), author = $('#fAuthor').value.trim();
+    if (title.length < 10) return msg($('#pubMsg'), 'bad', 'العنوان قصير. اكتب عنوان واضح.');
+    if (!author) return msg($('#pubMsg'), 'bad', 'اكتب اسم الكاتب.');
+    if (body.length < 80) return msg($('#pubMsg'), 'bad', 'نص الخبر قصير جدًا.');
+    if (!editing && !imgThumb && !confirm('الخبر من غير صورة. تكمل؟')) return;
+    if (!confirm(editing ? 'تحفظ التعديل؟' : 'تنشر الخبر دلوقتي على الموقع؟')) return;
+    try { localStorage.setItem('s22-author', author); } catch (e) {}
+    var b = $('#bPub'); b.disabled = true; msg($('#pubMsg'), '', '');
+    var id = editing ? editing.id : newId();
+    var doc = { cat: $('#fCat').value, title: title, author: author, body: body, by: user.email, date: editing ? editing.date : Date.now(), links: [], image: editing ? (editing.image || '') : '', hasFull: editing ? !!editing.hasFull : false };
+    var p = Promise.resolve();
+    if (imgChanged && imgFull) {
+      doc.image = imgThumb; doc.hasFull = true;
+      p = db.collection('live_imgs').doc(id).set({ d: imgFull, by: user.email });
+    }
+    p.then(function () { return db.collection('live_articles').doc(id).set(doc); })
+      .then(function () {
+        var url = location.origin + location.pathname.replace(/editor\/?(index\.html)?$/, '') + '#a-' + id;
+        var wasEdit = !!editing; reset();
+        var m = $('#pubMsg'); m.innerHTML = '';
+        var d = document.createElement('div'); d.className = 'msg ok';
+        d.appendChild(document.createTextNode(wasEdit ? 'اتحفظ التعديل. ' : 'اتنشر الخبر. '));
+        var a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'افتح الخبر'; d.appendChild(a); m.appendChild(d);
+        refreshList();
+      })
+      .catch(function (e) {
+        msg($('#pubMsg'), 'bad', (e && e.code === 'permission-denied') ? 'حسابك مش مسموح له بالنشر. كلّم عبدالله.' : 'حصلت مشكلة وماتنشرش: ' + (e.code || e.message));
+      }).then(function () { b.disabled = false; });
+  };
+
+  /* ---- list ---- */
+  function refreshList() {
+    db.collection('live_articles').orderBy('date', 'desc').limit(30).get().then(function (qs) {
+      var box = $('#list'); box.innerHTML = '';
+      var n = 0;
+      qs.forEach(function (d) {
+        var x = d.data(); x.id = d.id; n++;
+        var mine = x.by === user.email || user.email === OWNER;
+        var row = document.createElement('div'); row.className = 'item';
+        var l = document.createElement('div');
+        var t = document.createElement('div'); t.className = 't'; t.textContent = x.title;
+        var dt = document.createElement('div'); dt.className = 'd';
+        dt.textContent = new Date(x.date).toLocaleString('ar-EG-u-nu-latn', { dateStyle: 'medium', timeStyle: 'short' }) + ' · ' + (x.author || '');
+        l.appendChild(t); l.appendChild(dt); row.appendChild(l);
+        if (mine) {
+          var r = document.createElement('div'); r.className = 'row';
+          var e = document.createElement('button'); e.className = 'btn alt sm'; e.type = 'button'; e.textContent = 'تعديل';
+          e.onclick = function () {
+            editing = x; imgChanged = false; imgFull = imgThumb = '';
+            $('#fCat').value = x.cat || 'news'; $('#fTitle').value = x.title; $('#fAuthor').value = x.author || ''; $('#fBody').value = x.body;
+            $('#fImg').value = ''; var p = $('#prev'); if (x.image) { p.src = x.image; p.hidden = false; } else p.hidden = true;
+            $('#formTitle').textContent = 'تعديل خبر'; $('#bPub').textContent = 'احفظ التعديل'; $('#bCancel').hidden = false;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          };
+          var del = document.createElement('button'); del.className = 'btn alt sm'; del.type = 'button'; del.textContent = 'حذف';
+          del.onclick = function () {
+            if (!confirm('تحذف الخبر نهائيًا؟')) return;
+            db.collection('live_articles').doc(x.id).delete().then(function () { return db.collection('live_imgs').doc(x.id).delete().catch(function () {}); }).then(refreshList)
+              .catch(function () { msg($('#pubMsg'), 'bad', 'ماتحذفش.'); });
+          };
+          r.appendChild(e); r.appendChild(del); row.appendChild(r);
+        }
+        box.appendChild(row);
+      });
+      if (!n) box.innerHTML = '<p class="sub">لسه مفيش أخبار منشورة من اللوحة.</p>';
+    }).catch(function () { $('#list').innerHTML = '<p class="sub">تعذر تحميل القائمة.</p>'; });
+  }
+})();
+</script>
+</body>
+</html>
