@@ -707,6 +707,10 @@ button, input, select, textarea { font: inherit; color: inherit; }
   function build() {
     var root = document.getElementById('root');
     elSearch = h('input', { class: 'search', type: 'search', id: 'q', placeholder: 'ابحث في الموقع', 'aria-label': 'بحث' });
+    try {
+      var qp = new URLSearchParams(location.search).get('q');
+      if (qp) { state.q = qp.trim(); elSearch.value = state.q; if (!/^#(home)?$/.test(location.hash || '#')) location.hash = '#home'; }
+    } catch (e) {}
     elSearch.addEventListener('input', function () {
       state.q = elSearch.value.trim();
       if (route().name !== 'home') { location.hash = '#home'; } else { renderMain(); }
@@ -762,11 +766,19 @@ button, input, select, textarea { font: inherit; color: inherit; }
     return h('div', { class: 'empty' }, h('p', null, text),
       state.canWrite ? h('a', { class: 'btn primary', href: '#write' }, 'اكتب أول خبر') : null);
   }
+  /* توحيد الحروف العربية للبحث: همزات الألف، الياء والألف المقصورة، التاء المربوطة، التشكيل */
+  function norm(t) {
+    return String(t || '').replace(/[\u064B-\u0652\u0640]/g, '').replace(/[أإآٱ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه').replace(/[ؤ]/g, 'و').replace(/[ئ]/g, 'ي').replace(/\s+/g, ' ').trim().toLowerCase();
+  }
   function homeView() {
     var list = sorted(), box = document.createDocumentFragment();
     if (state.q) {
       var q = state.q;
-      var res = list.filter(function (a) { return (a.title + ' ' + a.body).indexOf(q) !== -1; });
+      var words = norm(q).split(' ').filter(Boolean);
+      var res = list.filter(function (a) {
+        var hay = norm(a.title + ' ' + a.body + ' ' + catName(a.cat));
+        return words.every(function (w) { return hay.indexOf(w) !== -1; });
+      });
       box.append(h('div', { class: 'pageHead' }, h('h1', null, 'نتائج البحث عن: ' + q)));
       box.append(res.length ? h('ul', { class: 'feed' }, res.map(feedItem)) : emptyBox('لا توجد مواد تطابق بحثك.'));
       return box;
