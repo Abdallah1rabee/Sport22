@@ -73,20 +73,28 @@ service cloud.firestore {
       allow read: if true;
       allow create: if isEditor()
         && id.matches('^n[a-z0-9]{4,24}$')
-        && request.resource.data.keys().hasOnly(['cat','title','author','body','by','date','links','image','hasFull'])
+        && request.resource.data.keys().hasOnly(['cat','title','author','body','by','date','links','image','hasFull','video','extra'])
         && request.resource.data.cat in ['news','transfers','reports','analysis','opinion']
         && request.resource.data.title is string && request.resource.data.title.size() >= 10 && request.resource.data.title.size() <= 200
         && request.resource.data.author is string && request.resource.data.author.size() > 0 && request.resource.data.author.size() <= 60
         && request.resource.data.body is string && request.resource.data.body.size() >= 80 && request.resource.data.body.size() <= 20000
         && request.resource.data.by == request.auth.token.email
-        && request.resource.data.image is string && request.resource.data.image.size() <= 150000;
+        && request.resource.data.image is string && request.resource.data.image.size() <= 150000
+        && request.resource.data.links is list && request.resource.data.links.size() <= 8
+        && request.resource.data.video is string && request.resource.data.video.size() <= 300
+        && (request.resource.data.video == '' || request.resource.data.video.matches('^https://.*'))
+        && request.resource.data.extra is int && request.resource.data.extra >= 0 && request.resource.data.extra <= 4;
       allow update: if isEditor() && (resource.data.by == request.auth.token.email || isOwner())
-        && request.resource.data.keys().hasOnly(['cat','title','author','body','by','date','links','image','hasFull'])
+        && request.resource.data.keys().hasOnly(['cat','title','author','body','by','date','links','image','hasFull','video','extra'])
         && request.resource.data.cat in ['news','transfers','reports','analysis','opinion']
         && request.resource.data.title is string && request.resource.data.title.size() >= 10 && request.resource.data.title.size() <= 200
         && request.resource.data.body is string && request.resource.data.body.size() >= 80 && request.resource.data.body.size() <= 20000
         && request.resource.data.by == resource.data.by && request.resource.data.date == resource.data.date
-        && request.resource.data.image is string && request.resource.data.image.size() <= 150000;
+        && request.resource.data.image is string && request.resource.data.image.size() <= 150000
+        && request.resource.data.links is list && request.resource.data.links.size() <= 8
+        && request.resource.data.video is string && request.resource.data.video.size() <= 300
+        && (request.resource.data.video == '' || request.resource.data.video.matches('^https://.*'))
+        && request.resource.data.extra is int && request.resource.data.extra >= 0 && request.resource.data.extra <= 4;
       allow delete: if isEditor() && (resource.data.by == request.auth.token.email || isOwner());
     }
 

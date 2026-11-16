@@ -179,6 +179,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .media { margin: 0 0 22px; }
 .media img { display: block; width: 100%; height: auto; max-height: 560px; object-fit: cover; background: var(--line); }
 .lead .media { margin: 0 0 14px; }
+.gal { display: grid; gap: 12px; margin: 12px 0 20px; }
+.gal img { width: 100%; display: block; }
 .video { position: relative; aspect-ratio: 16 / 9; margin: 8px 0 24px; background: #000; }
 .video iframe, .video video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .video video { object-fit: contain; }
@@ -933,6 +935,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
         els.splice(cut, 0, quizBanner(true));
         return els;
       })(),
+      a.live && a.extra ? h('div', { class: 'gal', id: 'gal' }) : null,
       videoEl(a.video),
       refsEl(a),
       predEl(a),
@@ -1023,18 +1026,31 @@ button, input, select, textarea { font: inherit; color: inherit; }
     });
   }
   function loadFullImage(a) {
-    if (!a.live || !a.hasFull || a.fullDone) return;
-    a.fullDone = true;
-    fbLoad(function (db) {
-      db.collection('live_imgs').doc(a.id).get().then(function (d) {
-        var v = d.exists && d.data().d;
-        if (v && /^data:image\//i.test(v)) {
-          a.image = v;
-          var im = document.querySelector('article.article figure.media img');
-          if (im) im.src = v;
-        }
-      }).catch(function () {});
-    });
+    if (!a.live) return;
+    if (a.hasFull && !a.fullDone) {
+      a.fullDone = true;
+      fbLoad(function (db) {
+        db.collection('live_imgs').doc(a.id).get().then(function (d) {
+          var v = d.exists && d.data().d;
+          if (v && /^data:image\//i.test(v)) {
+            a.image = v;
+            var im = document.querySelector('article.article figure.media img');
+            if (im) im.src = v;
+          }
+        }).catch(function () {});
+      });
+    }
+    if (a.extra && !a.xDone) {
+      a.xDone = true;
+      fbLoad(function (db) {
+        for (var i = 1; i <= Math.min(a.extra, 4); i++) (function (i) {
+          db.collection('live_imgs').doc(a.id + '_' + i).get().then(function (d) {
+            var v = d.exists && d.data().d, g = document.getElementById('gal');
+            if (v && g && /^data:image\//i.test(v)) { var im = document.createElement('img'); im.src = v; im.alt = a.title || ''; im.loading = 'lazy'; im.style.order = i; g.appendChild(im); }
+          }).catch(function () {});
+        })(i);
+      });
+    }
   }
   fetch('articles.json', { cache: 'no-cache' })
     .then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })

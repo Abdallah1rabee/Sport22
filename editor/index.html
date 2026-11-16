@@ -47,6 +47,12 @@ textarea { min-height:240px; resize:vertical; }
 .item:first-child { border-top:0; }
 .item .t { font-weight:600; min-width:0; overflow-wrap:anywhere; }
 .item .d { color:var(--muted); font-size:.8rem; }
+.xrow { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+.xrow img { width:72px; height:72px; object-fit:cover; border:1.5px solid var(--line); }
+.lrow { display:grid; grid-template-columns:1fr 1.4fr auto; gap:8px; margin-top:8px; }
+.lrow input { min-width:0; }
+@media (max-width:480px) { .lrow { grid-template-columns:1fr; } }
+[dir=ltr] { direction:ltr; text-align:left; }
 [hidden] { display:none !important; }
 :focus-visible { outline:3px solid #E8590C; outline-offset:2px; }
 </style>
@@ -95,6 +101,19 @@ textarea { min-height:240px; resize:vertical; }
       <p class="hint">بتتصغّر تلقائيًا. استخدم صورة مسموح لك بنشرها.</p>
       <img id="prev" class="thumb" alt="" hidden>
 
+      <label for="fExtra">صور إضافية (اختياري، لحد 4)</label>
+      <input type="file" id="fExtra" accept="image/*" multiple>
+      <p class="hint" id="xHint">بتظهر تحت نص الخبر.</p>
+      <div id="xprev" class="xrow"></div>
+
+      <label for="fVid">فيديو (اختياري)</label>
+      <input type="text" id="fVid" dir="ltr" autocomplete="off" placeholder="https://www.youtube.com/watch?v=...">
+      <p class="hint">لينك يوتيوب أو فيميو أو ملف mp4.</p>
+
+      <label>روابط ذات صلة (اختياري)</label>
+      <div id="lnks"></div>
+      <button class="btn alt sm" id="addLnk" type="button" style="margin-top:8px">+ أضف رابط</button>
+
       <button class="btn block" id="bPub" type="button">انشر</button>
       <button class="btn alt block" id="bCancel" type="button" hidden>إلغاء التعديل</button>
       <div id="pubMsg"></div>
@@ -113,7 +132,7 @@ textarea { min-height:240px; resize:vertical; }
 (function () {
   var $ = function (s) { return document.querySelector(s); };
   var OWNER = 'abdallahrabee80@gmail.com';
-  var db, auth, user = null, editing = null, imgFull = '', imgThumb = '', imgChanged = false;
+  var db, auth, user = null, editing = null, imgFull = '', imgThumb = '', imgChanged = false, extraImgs = [], extraChanged = false;
   var base = 'https://www.gstatic.com/firebasejs/10.12.2/';
 
   function load(src) { return new Promise(function (ok, no) { var e = document.createElement('script'); e.src = src; e.onload = ok; e.onerror = no; document.head.appendChild(e); }); }
@@ -172,10 +191,46 @@ textarea { min-height:240px; resize:vertical; }
     }).catch(function () { msg($('#pubMsg'), 'bad', 'الصورة دي مش شغالة. جرّب صورة تانية (JPG أو PNG).'); });
   };
 
+
+  /* ---- extra images, video, links ---- */
+  function lrow(label, url) {
+    var r = document.createElement('div'); r.className = 'lrow';
+    var a = document.createElement('input'); a.type = 'text'; a.placeholder = 'عنوان الرابط'; a.maxLength = 100; a.value = label || '';
+    var b = document.createElement('input'); b.type = 'text'; b.placeholder = 'https://...'; b.setAttribute('dir', 'ltr'); b.maxLength = 400; b.value = url || '';
+    var x = document.createElement('button'); x.type = 'button'; x.className = 'btn alt sm'; x.textContent = 'حذف'; x.onclick = function () { r.remove(); };
+    r.appendChild(a); r.appendChild(b); r.appendChild(x); $('#lnks').appendChild(r);
+  }
+  $('#addLnk').onclick = function () { if ($('#lnks').children.length < 8) lrow('', ''); };
+  function readLinks() {
+    var out = [];
+    Array.prototype.forEach.call($('#lnks').children, function (r) {
+      var i = r.querySelectorAll('input'), u = i[1].value.trim(), l = i[0].value.trim();
+      if (u && /^https:\/\//i.test(u)) out.push({ label: l || u, url: u });
+    });
+    return out;
+  }
+  function badLink() {
+    var bad = false;
+    Array.prototype.forEach.call($('#lnks').children, function (r) { var u = r.querySelectorAll('input')[1].value.trim(); if (u && !/^https:\/\//i.test(u)) bad = true; });
+    return bad;
+  }
+  function fit(f) {
+    return resize(f, 1000, 0.75).then(function (d) { return d.length > 450000 ? resize(f, 800, 0.65) : d; });
+  }
+  $('#fExtra').onchange = function () {
+    var fs = Array.prototype.slice.call(this.files, 0, 4); if (!fs.length) return;
+    if (this.files.length > 4) $('#xHint').textContent = 'أخدنا أول 4 صور بس.';
+    Promise.all(fs.map(fit)).then(function (arr) {
+      extraImgs = arr; extraChanged = true; var b = $('#xprev'); b.innerHTML = '';
+      arr.forEach(function (d) { var im = document.createElement('img'); im.src = d; im.alt = ''; b.appendChild(im); });
+    }).catch(function () { msg($('#pubMsg'), 'bad', 'إحدى الصور مش شغالة. جرّب صور تانية.'); });
+  };
+
   /* ---- publish / edit ---- */
   function newId() { return 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
   function reset() {
-    editing = null; imgFull = imgThumb = ''; imgChanged = false;
+    editing = null; imgFull = imgThumb = ''; imgChanged = false; extraImgs = []; extraChanged = false;
+    $('#fExtra').value = ''; $('#xprev').innerHTML = ''; $('#xHint').textContent = 'بتظهر تحت نص الخبر.'; $('#fVid').value = ''; $('#lnks').innerHTML = '';
     $('#fTitle').value = ''; $('#fBody').value = ''; $('#fImg').value = ''; $('#prev').hidden = true; $('#tHint').textContent = '';
     $('#formTitle').textContent = 'خبر جديد'; $('#bPub').textContent = 'انشر'; $('#bCancel').hidden = true;
   }
@@ -186,17 +241,21 @@ textarea { min-height:240px; resize:vertical; }
     if (title.length < 10) return msg($('#pubMsg'), 'bad', 'العنوان قصير. اكتب عنوان واضح.');
     if (!author) return msg($('#pubMsg'), 'bad', 'اكتب اسم الكاتب.');
     if (body.length < 80) return msg($('#pubMsg'), 'bad', 'نص الخبر قصير جدًا.');
+    var vid = $('#fVid').value.trim();
+    if (vid && !/^https:\/\//i.test(vid)) return msg($('#pubMsg'), 'bad', 'لينك الفيديو لازم يبدأ بـ https://');
+    if (badLink()) return msg($('#pubMsg'), 'bad', 'كل لينك لازم يبدأ بـ https://');
     if (!editing && !imgThumb && !confirm('الخبر من غير صورة. تكمل؟')) return;
     if (!confirm(editing ? 'تحفظ التعديل؟' : 'تنشر الخبر دلوقتي على الموقع؟')) return;
     try { localStorage.setItem('s22-author', author); } catch (e) {}
     var b = $('#bPub'); b.disabled = true; msg($('#pubMsg'), '', '');
     var id = editing ? editing.id : newId();
-    var doc = { cat: $('#fCat').value, title: title, author: author, body: body, by: user.email, date: editing ? editing.date : Date.now(), links: [], image: editing ? (editing.image || '') : '', hasFull: editing ? !!editing.hasFull : false };
+    var doc = { cat: $('#fCat').value, title: title, author: author, body: body, by: user.email, date: editing ? editing.date : Date.now(), links: readLinks(), video: vid, extra: extraChanged ? extraImgs.length : (editing ? (editing.extra || 0) : 0), image: editing ? (editing.image || '') : '', hasFull: editing ? !!editing.hasFull : false };
     var p = Promise.resolve();
     if (imgChanged && imgFull) {
       doc.image = imgThumb; doc.hasFull = true;
       p = db.collection('live_imgs').doc(id).set({ d: imgFull, by: user.email });
     }
+    if (extraChanged) extraImgs.forEach(function (d, i) { p = p.then(function () { return db.collection('live_imgs').doc(id + '_' + (i + 1)).set({ d: d, by: user.email }); }); });
     p.then(function () { return db.collection('live_articles').doc(id).set(doc); })
       .then(function () {
         var url = location.origin + location.pathname.replace(/editor\/?(index\.html)?$/, '') + '#a-' + id;
@@ -232,6 +291,8 @@ textarea { min-height:240px; resize:vertical; }
           e.onclick = function () {
             editing = x; imgChanged = false; imgFull = imgThumb = '';
             $('#fCat').value = x.cat || 'news'; $('#fTitle').value = x.title; $('#fAuthor').value = x.author || ''; $('#fBody').value = x.body;
+            $('#fVid').value = x.video || ''; $('#lnks').innerHTML = ''; (x.links || []).forEach(function (l) { lrow(l.label, l.url); });
+            extraImgs = []; extraChanged = false; $('#xprev').innerHTML = ''; $('#xHint').textContent = x.extra ? ('الصور الإضافية الحالية: ' + x.extra + '. اختر صور جديدة لو عايز تستبدلها.') : 'بتظهر تحت نص الخبر.';
             $('#fImg').value = ''; var p = $('#prev'); if (x.image) { p.src = x.image; p.hidden = false; } else p.hidden = true;
             $('#formTitle').textContent = 'تعديل خبر'; $('#bPub').textContent = 'احفظ التعديل'; $('#bCancel').hidden = false;
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -239,7 +300,7 @@ textarea { min-height:240px; resize:vertical; }
           var del = document.createElement('button'); del.className = 'btn alt sm'; del.type = 'button'; del.textContent = 'حذف';
           del.onclick = function () {
             if (!confirm('تحذف الخبر نهائيًا؟')) return;
-            db.collection('live_articles').doc(x.id).delete().then(function () { return db.collection('live_imgs').doc(x.id).delete().catch(function () {}); }).then(refreshList)
+            db.collection('live_articles').doc(x.id).delete().then(function () { var ids = [x.id]; for (var k = 1; k <= (x.extra || 0); k++) ids.push(x.id + '_' + k); return Promise.all(ids.map(function (i) { return db.collection('live_imgs').doc(i).delete().catch(function () {}); })); }).then(refreshList)
               .catch(function () { msg($('#pubMsg'), 'bad', 'ماتحذفش.'); });
           };
           r.appendChild(e); r.appendChild(del); row.appendChild(r);
