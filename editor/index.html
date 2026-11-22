@@ -157,10 +157,11 @@ textarea { min-height:240px; resize:vertical; }
   $('#bLogin').onclick = function () {
     var p = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(p).catch(function (e) {
-      if (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment') auth.signInWithRedirect(p);
+      if (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment') msg($('#loginMsg'), 'bad', 'الدخول بجوجل مش شغال داخل المتصفح ده. انسخ لينك الصفحة وافتحه في متصفح Chrome مباشرة (مش من جوه واتساب أو فيسبوك)، وتأكد إن النوافذ المنبثقة مسموحة.');
       else if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') msg($('#loginMsg'), 'bad', 'تعذر الدخول: ' + (e.code || e.message));
     });
   };
+  if (/FBAN|FBAV|Instagram|WhatsApp|Line\/|Snapchat|MicroMessenger/i.test(navigator.userAgent)) msg($('#loginMsg'), 'bad', 'إنتِ فاتحة الصفحة من جوه تطبيق. انسخي اللينك وافتحيه في Chrome مباشرة عشان الدخول بجوجل يشتغل.');
   $('#bOut').onclick = function () { auth.signOut(); };
 
   $('#fTitle').addEventListener('input', function () { var n = this.value.length; $('#tHint').textContent = n ? n + ' حرف' + (n > 70 ? ' (يُفضّل أقل من 70 للسيو)' : '') : ''; });

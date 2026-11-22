@@ -354,7 +354,7 @@ h1 { font-family: var(--display); font-weight: 800; font-size: clamp(1.5rem, 6vw
   $('glogin').addEventListener('click', function () {
     err(''); var prov = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(prov).catch(function (e) {
-      if (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment') { auth.signInWithRedirect(prov); return; }
+      if (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment') { err('الدخول بجوجل مش شغال داخل المتصفح ده. انسخ لينك الصفحة وافتحه في متصفح Chrome مباشرة (مش من جوه واتساب أو فيسبوك)، وتأكد إن النوافذ المنبثقة مسموحة.'); return; }
       if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
       err(e.code === 'auth/unauthorized-domain' ? 'الدخول بجوجل لسه مش متفعل لدومين الموقع. لازم صاحب الموقع يضيفه في إعدادات Firebase.' : 'مقدرناش نسجل دخولك (' + (e.code || e.message) + ').');
     });
