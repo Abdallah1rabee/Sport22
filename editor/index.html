@@ -12,11 +12,12 @@
 <style>
 :root {
   --bg:#F2F4F7; --surface:#fff; --ink:#0B1220; --muted:#566074; --line:#D6DBE3;
+  --warn:#A84F08; --warn-bg:#FBEEDF;
   --accent:#1747E0; --accent-ink:#fff; --ok:#0B7A4B; --ok-bg:#E3F1EA; --bad:#B3261E; --bad-bg:#FBE7E5;
   --logo:'Barlow Condensed','Arial Narrow',Impact,sans-serif; --display:'Cairo','Segoe UI',Tahoma,sans-serif; --body:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --bg:#0A0F18; --surface:#121A27; --ink:#E8ECF3; --muted:#93A0B5; --line:#223049; --accent:#7399FF; --accent-ink:#0A0F18; --ok:#4FD39A; --ok-bg:#12301F; --bad:#FF8F86; --bad-bg:#3A1714; color-scheme:dark; }
+  :root:not([data-theme="light"]) { --bg:#0A0F18; --surface:#121A27; --ink:#E8ECF3; --muted:#93A0B5; --line:#223049; --accent:#7399FF; --accent-ink:#0A0F18; --ok:#4FD39A; --ok-bg:#12301F; --bad:#FF8F86; --bad-bg:#3A1714; --warn:#F2A862; --warn-bg:#2E2114; color-scheme:dark; }
 }
 * { box-sizing:border-box; }
 body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--body); line-height:1.7; font-size:16px; padding:0 max(16px,env(safe-area-inset-left,0px)) 60px; }
@@ -53,6 +54,27 @@ textarea { min-height:240px; resize:vertical; }
 .lrow input { min-width:0; }
 @media (max-width:480px) { .lrow { grid-template-columns:1fr; } }
 [dir=ltr] { direction:ltr; text-align:left; }
+.panel { border:1.5px solid var(--line); background:var(--bg); padding:14px; margin-top:18px; }
+.panel h3 { font-family:var(--display); font-weight:800; font-size:1rem; margin:0 0 8px; }
+.chk { list-style:none; margin:8px 0 0; padding:0; display:grid; gap:6px; }
+.chk li { display:grid; grid-template-columns:1.4rem minmax(0,1fr); gap:8px; font-size:.9rem; line-height:1.6; padding:6px 8px; }
+.chk li.good { background:var(--ok-bg); } .chk li.ok { background:var(--warn-bg); } .chk li.bad { background:var(--bad-bg); }
+.chk .mk { font-weight:800; text-align:center; }
+.chk li.good .mk { color:var(--ok); } .chk li.ok .mk { color:var(--warn); } .chk li.bad .mk { color:var(--bad); }
+.cnt { display:flex; gap:14px; flex-wrap:wrap; font-size:.85rem; color:var(--muted); margin-bottom:6px; }
+.cnt b { color:var(--ink); }
+.score { display:flex; align-items:center; gap:12px; }
+.score .n { font-family:var(--display); font-weight:800; font-size:2rem; line-height:1; min-width:3.6ch; }
+.score .bar { flex:1; height:10px; background:var(--line); }
+.score .bar i { display:block; height:100%; width:0; }
+.score.g .n { color:var(--ok); } .score.g .bar i { background:var(--ok); }
+.score.o .n { color:var(--warn); } .score.o .bar i { background:var(--warn); }
+.score.r .n { color:var(--bad); } .score.r .bar i { background:var(--bad); }
+.slab { font-weight:600; margin:4px 0 0; }
+.snip { background:var(--surface); border:1.5px solid var(--line); padding:10px 12px; margin-top:10px; direction:rtl; }
+.snip .u { color:var(--muted); font-size:.78rem; direction:ltr; text-align:left; }
+.snip .t { color:var(--accent); font-size:1.05rem; font-weight:600; margin:2px 0; overflow-wrap:anywhere; }
+.snip .d { color:var(--muted); font-size:.85rem; overflow-wrap:anywhere; }
 [hidden] { display:none !important; }
 :focus-visible { outline:3px solid #E8590C; outline-offset:2px; }
 </style>
@@ -89,6 +111,10 @@ textarea { min-height:240px; resize:vertical; }
       <input type="text" id="fTitle" maxlength="200" autocomplete="off">
       <p class="hint" id="tHint"></p>
 
+      <label for="fKey">الكلمة المفتاحية (اسم اللاعب أو الفريق أو الحدث)</label>
+      <input type="text" id="fKey" maxlength="60" autocomplete="off" placeholder="مثال: جمال موسيالا">
+      <p class="hint">للفحص بس، ومش بتتنشر. هي أهم عبارة الناس هتبحث بيها عن الخبر.</p>
+
       <label for="fAuthor">اسم الكاتب</label>
       <input type="text" id="fAuthor" maxlength="60" autocomplete="off">
 
@@ -113,6 +139,9 @@ textarea { min-height:240px; resize:vertical; }
       <label>روابط ذات صلة (اختياري)</label>
       <div id="lnks"></div>
       <button class="btn alt sm" id="addLnk" type="button" style="margin-top:8px">+ أضف رابط</button>
+
+      <section class="panel" aria-live="polite" id="pQuick"></section>
+      <section class="panel" aria-live="polite" id="pSeo"></section>
 
       <button class="btn block" id="bPub" type="button">انشر</button>
       <button class="btn alt block" id="bCancel" type="button" hidden>إلغاء التعديل</button>
@@ -227,13 +256,131 @@ textarea { min-height:240px; resize:vertical; }
     }).catch(function () { msg($('#pubMsg'), 'bad', 'إحدى الصور مش شغالة. جرّب صور تانية.'); });
   };
 
+  /* ---- quick check + SEO panel ---- */
+  var OPINION = ['رائع','رائعة','مذهل','مذهلة','مخيب','مخيبة','تاريخي','تاريخية','مستحق','مستحقة','ممتاز','ممتازة','مهزلة','صدمة','بجدارة','حلو','خرافي','أسطوري','كارثي','كارثة'];
+  var FIX = { 'الاهلي':'الأهلي','الجونه':'الجونة','الدقيقه':'الدقيقة','المباراه':'المباراة','بنتيجه':'بنتيجة','ماليه':'مالية','ثنائيه':'ثنائية','ثلاثيه':'ثلاثية','نظيفه':'نظيفة','امس':'أمس','الاربعاء':'الأربعاء','الاحد':'الأحد','احمد':'أحمد','اصابة':'إصابة','الاصابة':'الإصابة','الاعب':'اللاعب','ذالك':'ذلك','مواجة':'مواجهة','مبارايات':'مباريات','الي':'إلى','انه':'أنه','الاهداف':'الأهداف','الاول':'الأول','اعلن':'أعلن','اكد':'أكد','اوضح':'أوضح','اضاف':'أضاف','ادرك':'أدرك','ايضا':'أيضاً','صفحتة':'صفحته','اسابيع':'أسابيع' };
+  var VERBS = /(قال|وقال|صرح|وصرح|أكد|وأكد|أوضح|وأوضح|أعلن|وأعلن|أضاف|وأضاف|يقول|تصريح|تصريحات)/;
+  function plain(t) { return t.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1'); }
+  function words(t) { return plain(t).split(/[\s ]+/).filter(function (w) { return /[؀-ۿa-zA-Z0-9]/.test(w); }).map(function (w) { return w.replace(/^[^؀-ۿa-zA-Z0-9]+|[^؀-ۿa-zA-Z0-9]+$/g, ''); }); }
+  function paras(t) { return t.split(/\n+/).map(function (x) { return x.trim(); }).filter(Boolean); }
+  function norm(t) { return plain(t).toLowerCase().replace(/[ً-ْـ]/g, '').replace(/[أإآٱ]/g, 'ا').replace(/ى/g, 'ي').replace(/ة/g, 'ه'); }
+  function analyze(title, body) {
+    var t = title.trim(), b = body.trim();
+    if (!t && !b) return null;
+    var out = [];
+    function add(ok, msg) { out.push({ ok: ok, msg: msg }); }
+    var all = t + '\n' + b, quotes = /"[^"]*"|“[^”]*”/g, outside = all.replace(quotes, ' ');
+    if (t) {
+      var n = words(t).length;
+      add(n >= 6 && n <= 10, n >= 6 && n <= 10 ? 'العنوان ' + n + ' كلمات، وهو ضمن المطلوب.' : 'العنوان ' + n + ' كلمات. المطلوب من 6 إلى 10.');
+      if (/\.\s*$|!/.test(t)) add(false, 'احذف النقطة أو علامة التعجب من العنوان.');
+    }
+    if (b) {
+      var lead = paras(b)[0] || '', ln = words(lead.split(/\.(?:\s|$)/)[0]).length;
+      add(ln <= 30, ln <= 30 ? 'المقدمة ' + ln + ' كلمة.' : 'المقدمة ' + ln + ' كلمة. اجعلها أقل من 30 وابدأ بأهم معلومة.');
+      var longs = b.split(/[.؟!]+\s|\n+/).filter(function (x) { return words(x).length > 35; }).length;
+      if (longs) add(false, 'في النص ' + longs + ' جملة أطول من 35 كلمة. اقسمها إلى جملتين.');
+    }
+    if (/[^\S\n][،.:؛!؟]/.test(all)) add(false, 'توجد مسافة قبل علامة ترقيم. العلامة تلتصق بالكلمة التي قبلها.');
+    if (/[،؛](?=\S)|:(?=[^\s\d])|\.(?=[ء-ي])/.test(plain(all).replace(/https?:\/\/\S+/g, ''))) add(false, 'علامة ترقيم بلا مسافة بعدها.');
+    if (/!/.test(b)) add(false, 'علامة التعجب ممنوعة في الخبر.');
+    if (/["”]\s*\./.test(all)) add(false, 'النقطة تأتي داخل علامتي التنصيص في آخر التصريح.');
+    if ((all.match(/"/g) || []).length % 2 === 1) add(false, 'علامات التنصيص غير متوازنة.');
+    if (/[“”]/.test(all)) add(false, 'استخدم علامات التنصيص المستقيمة " بدل المنحنية.');
+    var m, unattr = 0; quotes.lastIndex = 0;
+    while ((m = quotes.exec(all)) !== null) { if (!VERBS.test(all.slice(Math.max(0, m.index - 70), m.index))) unattr++; }
+    if (unattr) add(false, 'تصريح بلا ذكر قائله. اكتب من قال قبل علامات التنصيص.');
+    var op = OPINION.filter(function (w) { return words(outside).indexOf(w) !== -1; });
+    if (op.length) add(false, 'ألفاظ رأي خارج التصريحات: ' + op.join('، ') + '.');
+    var found = [], seen = {};
+    words(all).forEach(function (w) { if (FIX[w] && !seen[w]) { seen[w] = 1; found.push(w + ' ← ' + FIX[w]); } });
+    if (found.length) add(false, 'إملاء: ' + found.join('، '));
+    if (out.every(function (x) { return x.ok; }) && b) out.push({ ok: true, msg: 'لا ملاحظات آلية. راجع المعلومات على مصدرها قبل النشر.' });
+    return out;
+  }
+  function count(hay, needle) { if (!needle) return 0; var c = 0, i = 0; while ((i = hay.indexOf(needle, i)) !== -1) { c++; i += needle.length; } return c; }
+  function seo(title, body, key, hasImg, hasLink) {
+    var t = title.trim(), b = body.trim(), k = norm(key.trim()), items = [];
+    function add(lv, msg) { items.push({ lv: lv, msg: msg }); }
+    var tl = t.length;
+    if (!tl) add('bad', 'اكتب العنوان.');
+    else if (tl >= 45 && tl <= 60) add('good', 'طول العنوان ' + tl + ' حرف. مناسب لنتايج جوجل.');
+    else if (tl >= 35 && tl <= 70) add('ok', 'طول العنوان ' + tl + ' حرف. الأفضل بين 45 و60 حرف.');
+    else add('bad', 'طول العنوان ' + tl + ' حرف. ' + (tl < 35 ? 'قصير، ضيف الاسم الكامل وكلمات البحث.' : 'طويل وجوجل هيقطعه. اختصره لـ60 حرف.'));
+    var nt = norm(t), lead = paras(b)[0] || '', nl = norm(lead), nb = norm(b);
+    if (!k) add('bad', 'اكتب الكلمة المفتاحية فوق عشان نفحص السيو عليها.');
+    else {
+      if (nt.indexOf(k) === 0) add('good', 'الكلمة المفتاحية في أول العنوان.');
+      else if (nt.indexOf(k) > 0) add('ok', 'الكلمة المفتاحية في العنوان، والأفضل تكون في أوله.');
+      else add('bad', 'الكلمة المفتاحية مش موجودة في العنوان.');
+      add(nl.indexOf(k) !== -1 ? 'good' : 'bad', nl.indexOf(k) !== -1 ? 'الكلمة المفتاحية في المقدمة.' : 'الكلمة المفتاحية مش موجودة في المقدمة.');
+      var c = count(nb, k), wc = words(b).length || 1, dens = c * words(key).length / wc * 100;
+      if (c >= 2 && dens <= 3) add('good', 'الكلمة المفتاحية ظهرت ' + c + ' مرات (' + dens.toFixed(1) + '%).');
+      else if (c < 2) add('ok', 'الكلمة المفتاحية ظهرت ' + c + (c === 1 ? ' مرة' : ' مرات') + '. اذكرها مرتين على الأقل.');
+      else add('ok', 'الكلمة المفتاحية متكررة كتير (' + dens.toFixed(1) + '%). قلّلها.');
+    }
+    var wn = words(b).length;
+    if (wn >= 200) add('good', 'طول النص ' + wn + ' كلمة. ممتاز.');
+    else if (wn >= 120) add('ok', 'طول النص ' + wn + ' كلمة. الأفضل 200 كلمة أو أكتر.');
+    else add('bad', 'طول النص ' + wn + ' كلمة. قصير جدًا لجوجل.');
+    var ln = words(lead.split(/\.(?:\s|$)/)[0]).length;
+    if (lead) add(ln <= 30 ? 'good' : 'ok', ln <= 30 ? 'المقدمة ' + ln + ' كلمة. مناسبة كوصف في جوجل.' : 'المقدمة ' + ln + ' كلمة. اختصرها لأقل من 30.');
+    var ps = paras(b), longP = ps.filter(function (x) { return words(x).length > 70; }).length;
+    if (ps.length >= 4 && !longP) add('good', 'عدد الفقرات ' + ps.length + ' وكلها قصيرة.');
+    else add(ps.length >= 3 ? 'ok' : 'bad', ps.length < 3 ? 'الفقرات قليلة (' + ps.length + '). قسّم النص.' : (longP ? 'فيه ' + longP + ' فقرة أطول من 70 كلمة. قسّمها.' : 'عدد الفقرات ' + ps.length + '. الأفضل 4 أو أكتر.'));
+    add(hasImg ? 'good' : 'bad', hasImg ? 'فيه صورة للخبر.' : 'مفيش صورة. الخبر بصورة بيتشارك ويتفتح أكتر.');
+    var internal = /\]\((?:https:\/\/abdallah1rabee\.github\.io\/Sport22\/)?#a-/.test(b) || /abdallah1rabee\.github\.io\/Sport22\/(#a-|news\/)/.test(b);
+    add(internal ? 'good' : 'bad', internal ? 'فيه رابط لخبر تاني من الموقع.' : 'مفيش رابط لخبر تاني من الموقع. ضيف سطر "اقرأ أيضًا" برابط خبر قديم.');
+    var ext = /\]\(https:\/\/(?!abdallah1rabee)/.test(b) || hasLink;
+    add(ext ? 'good' : 'ok', ext ? 'فيه رابط لمصدر خارجي.' : 'مفيش رابط لمصدر. ضيف رابط المصدر لو متاح.');
+    var pts = 0; items.forEach(function (x) { pts += x.lv === 'good' ? 1 : x.lv === 'ok' ? .5 : 0; });
+    var score = Math.round(pts / items.length * 100);
+    var d = (lead.split(/\.(?:\s|$)/)[0] || '').replace(/\s+/g, ' ');
+    if (d.length > 155) d = d.slice(0, 152).replace(/\s+\S*$/, '') + '...';
+    return { score: score, items: items, snip: { t: t.length > 60 ? t.slice(0, 57) + '...' : t, d: plain(d) } };
+  }
+  function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  function list(items, mk) { var u = el('ul', 'chk'); items.forEach(function (x) { var li = el('li', x.lv); li.appendChild(el('span', 'mk', mk[x.lv])); li.appendChild(el('span', '', x.msg)); u.appendChild(li); }); return u; }
+  var runT;
+  function runChecks() {
+    var title = $('#fTitle').value, body = $('#fBody').value, key = $('#fKey').value;
+    var q = $('#pQuick'); q.innerHTML = '';
+    q.appendChild(el('h3', '', 'فحص سريع'));
+    var cn = el('div', 'cnt'); var b1 = el('span', ''); b1.innerHTML = 'العنوان: <b></b> كلمة'; b1.firstElementChild.textContent = words(title).length;
+    var b2 = el('span', ''); b2.innerHTML = 'النص: <b></b> كلمة'; b2.firstElementChild.textContent = words(body).length;
+    cn.appendChild(b1); cn.appendChild(b2); cn.appendChild(el('span', '', 'الفقرة الأولى هي المقدمة')); q.appendChild(cn);
+    var res = analyze(title, body);
+    if (!res) q.appendChild(el('p', 'hint', 'ابدأ بالكتابة وستظهر الملاحظات هنا.'));
+    else {
+      var bad = res.filter(function (x) { return !x.ok; }).length;
+      q.appendChild(el('p', 'slab', bad ? 'عدد الملاحظات: ' + bad : 'لا توجد ملاحظات'));
+      q.appendChild(list(res.map(function (x) { return { lv: x.ok ? 'good' : 'bad', msg: x.msg }; }), { good: '✓', bad: '!' }));
+    }
+    q.appendChild(el('p', 'hint', 'العنوان بفعل مضارع، والمقدمة والنص بفعل ماضٍ. الفحص آلي، ولا يغني عن مراجعتك للمعلومات.'));
+    var s = $('#pSeo'); s.innerHTML = '';
+    s.appendChild(el('h3', '', 'لوحة السيو'));
+    var hasImg = !!imgThumb || !!(editing && editing.image);
+    var r = seo(title, body, key, hasImg, !!$('#lnks').querySelector('input[type=text]:nth-of-type(2)') && readLinks().length > 0);
+    var sc = el('div', 'score ' + (r.score >= 80 ? 'g' : r.score >= 60 ? 'o' : 'r'));
+    sc.appendChild(el('div', 'n', r.score + '')); var bar = el('div', 'bar'); var i = document.createElement('i'); i.style.width = r.score + '%'; bar.appendChild(i); sc.appendChild(bar); s.appendChild(sc);
+    s.appendChild(el('p', 'slab', r.score >= 80 ? 'ممتاز، جاهز للنشر.' : r.score >= 60 ? 'جيد، حسّن الملاحظات البرتقالية والحمراء.' : 'يحتاج تحسين قبل النشر.'));
+    s.appendChild(list(r.items, { good: '✓', ok: '~', bad: '!' }));
+    var sn = el('div', 'snip'); sn.appendChild(el('div', 'u', 'abdallah1rabee.github.io › Sport22')); sn.appendChild(el('div', 't', r.snip.t || 'عنوان الخبر يظهر هنا')); sn.appendChild(el('div', 'd', r.snip.d || 'مقدمة الخبر تظهر هنا كوصف.'));
+    var sh = el('p', 'hint', 'شكل الخبر المتوقع في نتايج جوجل:'); s.appendChild(sh); s.appendChild(sn);
+  }
+  function schedule() { clearTimeout(runT); runT = setTimeout(runChecks, 150); }
+  ['#fTitle', '#fBody', '#fKey', '#lnks'].forEach(function (x) { $(x).addEventListener('input', schedule); });
+  ['#fImg', '#fExtra'].forEach(function (x) { $(x).addEventListener('change', function () { setTimeout(runChecks, 600); }); });
+  runChecks();
+
   /* ---- publish / edit ---- */
   function newId() { return 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
   function reset() {
     editing = null; imgFull = imgThumb = ''; imgChanged = false; extraImgs = []; extraChanged = false;
     $('#fExtra').value = ''; $('#xprev').innerHTML = ''; $('#xHint').textContent = 'بتظهر تحت نص الخبر.'; $('#fVid').value = ''; $('#lnks').innerHTML = '';
     $('#fTitle').value = ''; $('#fBody').value = ''; $('#fImg').value = ''; $('#prev').hidden = true; $('#tHint').textContent = '';
-    $('#formTitle').textContent = 'خبر جديد'; $('#bPub').textContent = 'انشر'; $('#bCancel').hidden = true;
+    $('#formTitle').textContent = 'خبر جديد'; $('#bPub').textContent = 'انشر'; $('#bCancel').hidden = true; $('#fKey').value = '';
+    runChecks();
   }
   $('#bCancel').onclick = function () { reset(); msg($('#pubMsg'), '', ''); };
 
@@ -296,7 +443,7 @@ textarea { min-height:240px; resize:vertical; }
             extraImgs = []; extraChanged = false; $('#xprev').innerHTML = ''; $('#xHint').textContent = x.extra ? ('الصور الإضافية الحالية: ' + x.extra + '. اختر صور جديدة لو عايز تستبدلها.') : 'بتظهر تحت نص الخبر.';
             $('#fImg').value = ''; var p = $('#prev'); if (x.image) { p.src = x.image; p.hidden = false; } else p.hidden = true;
             $('#formTitle').textContent = 'تعديل خبر'; $('#bPub').textContent = 'احفظ التعديل'; $('#bCancel').hidden = false;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            runChecks(); window.scrollTo({ top: 0, behavior: 'smooth' });
           };
           var del = document.createElement('button'); del.className = 'btn alt sm'; del.type = 'button'; del.textContent = 'حذف';
           del.onclick = function () {
