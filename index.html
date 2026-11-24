@@ -179,6 +179,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .media { margin: 0 0 22px; }
 .media img { display: block; width: 100%; height: auto; max-height: 560px; object-fit: cover; background: var(--line); }
 .lead .media { margin: 0 0 14px; }
+.media figcaption, figure.inl figcaption { font-size: .82rem; color: var(--muted); padding-top: 6px; line-height: 1.6; }
+figure.inl { margin: 18px 0; }
+figure.inl img { display: block; width: 100%; height: auto; max-height: 560px; object-fit: cover; background: var(--line); }
 .gal { display: grid; gap: 12px; margin: 12px 0 20px; }
 .gal img { width: 100%; display: block; }
 .video { position: relative; aspect-ratio: 16 / 9; margin: 8px 0 24px; background: #000; }
@@ -356,12 +359,19 @@ button, input, select, textarea { font: inherit; color: inherit; }
   function imgEl(a, cls) {
     var s = safeUrl(a.image);
     if (!s) return null;
-    return h('img', { src: s, alt: a.title || '', loading: 'lazy', class: cls || null, onerror: function (e) { e.target.style.display = 'none'; } });
+    return h('img', { src: s, alt: a.cap || a.title || '', loading: 'lazy', class: cls || null, onerror: function (e) { e.target.style.display = 'none'; } });
   }
   function figEl(a, link) {
     var im = imgEl(a);
     if (!im) return null;
-    return h('figure', { class: 'media' }, link ? h('a', { href: articleHref(a) }, im) : im);
+    return h('figure', { class: 'media' }, link ? h('a', { href: articleHref(a) }, im) : im, (!link && a.cap) ? h('figcaption', null, a.cap) : null);
+  }
+  function inlFig(a, k) {
+    var cap = k === 'mid' ? a.midCap : a.preCap, src = k === 'mid' ? a.midImg : a.preImg;
+    var im = h('img', { alt: cap || a.title || '', loading: 'lazy' });
+    var f = h('figure', { class: 'inl', id: 'f-' + k }, im, cap ? h('figcaption', null, cap) : null);
+    if (src && /^data:image\//i.test(src)) im.src = src; else f.hidden = true;
+    return f;
   }
   function linkify(text) {
     var out = [], re = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|https?:\/\/[^\s<>"]+/g, last = 0, m;
@@ -932,16 +942,19 @@ button, input, select, textarea { font: inherit; color: inherit; }
         var cut = ps.findIndex(function (p, i) { return i > 0 && /^اقرأ أيضًا/.test(p); });
         var els = ps.map(function (p, i) { return h('p', { class: i === 0 ? 'first' : null }, linkify(p)); });
         if (cut < 0) cut = els.length;
-        els.splice(cut, 0, quizBanner(true));
+        els.splice(cut, 0, a.preview ? null : quizBanner(true));
+        var preAt = Math.max(1, cut - 1);
+        if (a.live && a.pre) els.splice(preAt, 0, inlFig(a, 'pre'));
+        if (a.live && a.midAt > 0) els.splice(Math.min(a.midAt, preAt), 0, inlFig(a, 'mid'));
         return els;
       })(),
-      a.live && a.extra ? h('div', { class: 'gal', id: 'gal' }) : null,
+      a.live && (a.extra || (a.gal && a.gal.length)) ? h('div', { class: 'gal', id: 'gal' }, (a.gal || []).map(function (d) { return /^data:image\//i.test(d) ? h('img', { src: d, alt: a.title || '' }) : null; })) : null,
       videoEl(a.video),
       refsEl(a),
-      predEl(a),
-      engageEl(withPoll(a)),
-      commentsEl(a),
-      state.canWrite ? h('div', { class: 'articleActions' }, h('a', { class: 'btn', href: '#write-' + a.id }, 'تعديل المادة')) : null));
+      a.preview ? null : predEl(a),
+      a.preview ? null : engageEl(withPoll(a)),
+      a.preview ? null : commentsEl(a),
+      state.canWrite && !a.preview ? h('div', { class: 'articleActions' }, h('a', { class: 'btn', href: '#write-' + a.id }, 'تعديل المادة')) : null));
     if (more.length) {
       box.append(h('section', { class: 'more' }, h('h2', { class: 'sec' }, 'اقرأ أيضاً'), h('ul', { class: 'feed' }, more.map(feedItem))));
     }
@@ -1025,8 +1038,19 @@ button, input, select, textarea { font: inherit; color: inherit; }
       }).catch(function () { state.liveDone = true; renderAll(); });
     });
   }
+  function loadInl(a, k) {
+    var flag = k + 'Done'; if (a[flag]) return; a[flag] = true;
+    fbLoad(function (db) {
+      db.collection('live_imgs').doc(a.id + '_' + k).get().then(function (d) {
+        var v = d.exists && d.data().d, f = document.getElementById('f-' + k);
+        if (v && f && /^data:image\//i.test(v)) { var im = f.querySelector('img'); im.src = v; f.hidden = false; if (k === 'mid') a.midImg = v; else a.preImg = v; }
+      }).catch(function () {});
+    });
+  }
   function loadFullImage(a) {
-    if (!a.live) return;
+    if (!a.live || a.preview) return;
+    if (a.midAt > 0) loadInl(a, 'mid');
+    if (a.pre) loadInl(a, 'pre');
     if (a.hasFull && !a.fullDone) {
       a.fullDone = true;
       fbLoad(function (db) {
@@ -1052,9 +1076,20 @@ button, input, select, textarea { font: inherit; color: inherit; }
       });
     }
   }
+  var previewArt = null, isPV = location.hash === '#a-pv' && window.parent !== window;
+  if (isPV) {
+    window.addEventListener('message', function (e) {
+      if (e.origin !== location.origin || !e.data || e.data.type !== 's22-preview') return;
+      var a = e.data.article; if (!a) return;
+      a.id = 'pv'; a.live = true; a.preview = true; a.links = a.links || [];
+      previewArt = a;
+      if (state.status === 'ready') { DATA.articles = DATA.articles.filter(function (x) { return x.id !== 'pv'; }); DATA.articles.push(a); state.liveDone = true; renderAll(); var ar = document.querySelector('article.article'); if (ar) ar.scrollIntoView(); }
+    });
+    try { window.parent.postMessage({ type: 's22-ready' }, location.origin); } catch (e) {}
+  }
   fetch('articles.json', { cache: 'no-cache' })
     .then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
-    .then(function (d) { DATA = { site: d.site || {}, articles: d.articles || [], matches: (d.matches || []).concat(EXTRAS.matches) }; state.status = 'ready'; renderAll(); track(); loadLive(); })
+    .then(function (d) { DATA = { site: d.site || {}, articles: d.articles || [], matches: (d.matches || []).concat(EXTRAS.matches) }; state.status = 'ready'; if (previewArt) { DATA.articles.push(previewArt); state.liveDone = true; } renderAll(); if (isPV) { var ar2 = document.querySelector('article.article'); if (ar2) ar2.scrollIntoView(); } if (!isPV) { track(); loadLive(); } })
     .catch(function () { state.status = 'error'; renderAll(); });
 })();
 </script>
