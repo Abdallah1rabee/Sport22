@@ -514,6 +514,20 @@ textarea { min-height:240px; resize:vertical; }
         var d = document.createElement('div'); d.className = 'msg ok';
         d.appendChild(document.createTextNode(wasEdit ? 'اتحفظ التعديل. ' : 'اتنشر الخبر. '));
         var a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'افتح الخبر'; d.appendChild(a); m.appendChild(d);
+        var perm = location.origin + location.pathname.replace(/editor\/?(index\.html)?$/, '') + 'news/' + id + '/';
+        var bx = document.createElement('div'); bx.className = 'msg ok'; bx.style.marginTop = '8px';
+        var lb = document.createElement('div'); lb.textContent = 'رابط الفهرسة (جوجل):'; bx.appendChild(lb);
+        var inp = document.createElement('input'); inp.readOnly = true; inp.value = perm; inp.style.cssText = 'width:100%;direction:ltr;margin:6px 0'; inp.onclick = function () { inp.select(); }; bx.appendChild(inp);
+        var cb = document.createElement('button'); cb.type = 'button'; cb.className = 'btn alt sm'; cb.textContent = 'انسخ الرابط';
+        cb.onclick = function () { inp.select(); try { navigator.clipboard.writeText(perm); } catch (e) { document.execCommand('copy'); } cb.textContent = 'اتنسخ'; };
+        var st = document.createElement('span'); st.style.marginInlineStart = '10px'; st.textContent = 'بيتجهز… (لحد 5–10 دقايق)';
+        bx.appendChild(cb); bx.appendChild(st); m.appendChild(bx);
+        var tries = 0;
+        (function chk() {
+          fetch(perm + '?t=' + Date.now(), { cache: 'no-store' }).then(function (r) {
+            if (r.ok) { st.textContent = 'الرابط جاهز ✓ تقدر تبعته للفهرسة'; } else if (++tries < 60) setTimeout(chk, 15000); else st.textContent = 'لسه ماجهزش. جرب الرابط بعد شوية.';
+          }).catch(function () { if (++tries < 60) setTimeout(chk, 15000); });
+        })();
         refreshList();
       })
       .catch(function (e) {

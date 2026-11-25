@@ -5,6 +5,9 @@ BASE = 'https://abdallah1rabee.github.io/Sport22/'
 CATS = {'news': 'الأخبار'}
 d = json.load(open('articles.json', encoding='utf-8'))
 arts = d['articles']
+live = json.load(open('live_articles.json', encoding='utf-8')) if os.path.exists('live_articles.json') else []
+static_ids = {a['id'] for a in arts}
+arts = arts + [a for a in live if a['id'] not in static_ids]
 e = html.escape
 AR = '٠١٢٣٤٥٦٧٨٩'
 def ar_date(ms):
@@ -52,7 +55,7 @@ header form{margin-inline-start:auto}header input[type=search]{width:9.5rem;max-
 article{padding:28px 0 40px}.tag{color:var(--accent);font-weight:600;font-size:14px;text-decoration:none}
 h1{font-family:'Cairo',sans-serif;font-weight:800;font-size:32px;line-height:1.5;margin:6px 0 10px}
 .by{color:var(--muted);font-size:15px;margin-bottom:18px}figure{margin:0 0 22px}
-figure img{width:100%;height:auto;border-radius:14px;display:block}
+figcaption{color:var(--muted);font-size:14px;margin-top:6px}figure img{width:100%;height:auto;border-radius:14px;display:block}
 p{font-size:19px;margin:0 0 18px}a{color:var(--accent)}
 footer{border-top:1px solid var(--line);color:var(--muted);font-size:14px;padding:20px 0 40px}
 h2{font-family:'Cairo',sans-serif;font-size:20px;margin:24px 0 10px}.refs ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
@@ -68,8 +71,15 @@ for a in arts:
           "dateModified":iso(a['date']),"author":{"@type":"Person","name":a['author']},
           "publisher":{"@type":"Organization","name":"SPORT 22"},"mainEntityOfPage":url,"inLanguage":"ar"}
     if img: ld["image"] = [img]
-    paras = ''.join(f'<p>{inline(p)}</p>' for p in a['body'].split('\n\n') if p.strip())
-    fig = f'<figure><img src="{e(img)}" alt="{e(a["title"])}" width="760" loading="eager"></figure>' if img else ''
+    pl = [p for p in a['body'].split('\n\n') if p.strip()]
+    els = [f'<p>{inline(p)}</p>' for p in pl]
+    def figx(path, cap):
+        return f'<figure><img src="{e(BASE + path)}" alt="{e(cap or a["title"])}" width="760" loading="lazy">' + (f'<figcaption>{e(cap)}</figcaption>' if cap else '') + '</figure>'
+    if a.get('preImg'): els.insert(max(1, len(els) - 1), figx(a['preImg'], a.get('preCap')))
+    if a.get('midImg') and a.get('midAt', 0) > 0: els.insert(min(a['midAt'], max(1, len(els) - 1)), figx(a['midImg'], a.get('midCap')))
+    els += [figx(g, '') for g in a.get('gal', [])]
+    paras = ''.join(els)
+    fig = f'<figure><img src="{e(img)}" alt="{e(a.get("cap") or a["title"])}" width="760" loading="eager">' + (f'<figcaption>{e(a["cap"])}</figcaption>' if a.get('cap') else '') + '</figure>' if img else ''
     page = f"""<!doctype html>
 <html lang="ar" dir="rtl">
 <head>

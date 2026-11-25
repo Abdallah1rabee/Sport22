@@ -1,0 +1,26 @@
+name: sync-live
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: sync-live
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 sync_live.py
+      - run: python3 build_seo.py
+      - name: commit
+        run: |
+          git config user.name "sport22-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "auto: sync live articles"
+          git pull --rebase -q origin main
+          git push origin HEAD:main
