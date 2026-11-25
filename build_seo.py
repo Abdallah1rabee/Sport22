@@ -26,6 +26,22 @@ def inline(t):
 def desc(a):
     p = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', a['body'].split('\n\n')[0]).strip()
     return p if len(p) <= 155 else p[:152].rsplit(' ', 1)[0] + '...'
+byid = {x['id']: x for x in arts}
+def refs(a):
+    out, cards = '', 0
+    for l in a.get('links') or []:
+        u = l.get('url', '')
+        m = re.search(r'(?:#a-|/news/)([\w-]+)/?$', u)
+        t = byid.get(m.group(1)) if m and (u.startswith(BASE)) else None
+        if t and t['id'] != a['id']:
+            cards += 1
+            im = (f'<span class="ri"><img src="{e(BASE + t["image"])}" alt="" loading="lazy"></span>' if t.get('image') else '')
+            out += f'<li><a class="rc" href="{BASE}news/{t["id"]}/">{im}<span class="rt"><b>{e(l.get("label") or t["title"])}</b><small>{e(t["title"])}</small></span></a></li>'
+        elif u.startswith('http'):
+            out += f'<li><a href="{e(u)}" rel="noopener">{e(l.get("label") or u)}</a></li>'
+    if not out: return ''
+    ttl = 'اقرأ أيضًا' if cards == len(a['links']) else 'روابط ذات صلة'
+    return f'<section class="refs"><h2>{ttl}</h2><ul>{out}</ul></section>'
 CSS = """:root{--bg:#10151B;--surface:#18202A;--ink:#E9EDF2;--muted:#8B95A1;--line:#252D36;--accent:#7FD6B0}
 *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;line-height:1.9}
 header{border-bottom:1px solid var(--line)}.w{max-width:760px;margin:0 auto;padding:0 16px}
@@ -39,6 +55,10 @@ h1{font-family:'Cairo',sans-serif;font-weight:800;font-size:32px;line-height:1.5
 figure img{width:100%;height:auto;border-radius:14px;display:block}
 p{font-size:19px;margin:0 0 18px}a{color:var(--accent)}
 footer{border-top:1px solid var(--line);color:var(--muted);font-size:14px;padding:20px 0 40px}
+h2{font-family:'Cairo',sans-serif;font-size:20px;margin:24px 0 10px}.refs ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.rc{display:flex;gap:12px;align-items:center;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.ri{flex:0 0 120px;align-self:stretch;background:var(--line)}.ri img{width:100%;height:100%;object-fit:cover;display:block}
+.rt{padding:10px 12px;display:flex;flex-direction:column;gap:2px}.rt small{color:var(--muted);font-size:14px;line-height:1.6}
 @media(max-width:600px){h1{font-size:25px}p{font-size:17px}}"""
 shutil.rmtree('news', ignore_errors=True)
 for a in arts:
@@ -83,6 +103,7 @@ for a in arts:
 <div class="by">{e(a['author'])} · <time datetime="{iso(a['date'])}">{ar_date(a['date'])}</time></div>
 {fig}
 {paras}
+{refs(a)}
 <p><a href="{BASE}#a-{a['id']}">التفاعل والتعليقات على الخبر</a></p>
 <p><a href="{BASE}">← كل أخبار SPORT 22</a></p>
 </article></main>
