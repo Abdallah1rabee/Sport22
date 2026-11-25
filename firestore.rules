@@ -62,7 +62,7 @@ service cloud.firestore {
     // لوحة النشر: الإيميلات المسموح لها بالنشر (عدّل القائمة دي لإضافة صحفي)
     function isEditor() {
       return request.auth != null && request.auth.token.email_verified == true
-        && request.auth.token.email in ['abdallahrabee80@gmail.com','fatmayasein09@gmail.com'];
+        && request.auth.token.email in ['abdallahrabee80@gmail.com','fatmayasein09@gmail.com','fatmayasein33@gmail.com','abdallahrabee212@gmail.com'];
     }
     function isOwner() {
       return request.auth != null && request.auth.token.email == 'abdallahrabee80@gmail.com';
