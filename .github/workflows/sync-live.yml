@@ -22,5 +22,7 @@ jobs:
           git add -A
           git diff --cached --quiet && exit 0
           git commit -m "auto: sync live articles"
+          NEW=$(git diff --name-only --diff-filter=A HEAD~1 HEAD | sed -n 's#^news/\([^/]*\)/index.html$#\1#p' | tr '\n' ' ')
           git pull --rebase -q origin main
           git push origin HEAD:main
+          [ -n "$NEW" ] && sleep 90 && python3 indexnow.py $NEW || true

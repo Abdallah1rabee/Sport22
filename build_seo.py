@@ -122,6 +122,10 @@ for a in arts:
 </html>"""
     os.makedirs(f"news/{a['id']}", exist_ok=True)
     open(f"news/{a['id']}/index.html", 'w', encoding='utf-8').write(page)
+ix = open('index.html', encoding='utf-8').read()
+nav = '<nav class="seo-nav" aria-label="أحدث الأخبار"><ul>' + ''.join(f'<li><a href="{BASE}news/{a["id"]}/">{e(a["title"])}</a></li>' for a in sorted(arts, key=lambda x: -x['date'])) + '</ul></nav>'
+ix = re.sub(r'<!--SEO-LIST-->.*?<!--/SEO-LIST-->', lambda m: '<!--SEO-LIST-->\n' + nav + '\n<!--/SEO-LIST-->', ix, flags=re.S)
+open('index.html', 'w', encoding='utf-8').write(ix)
 urls = [(BASE, None)] + [(f"{BASE}news/{a['id']}/", iso(a['date'])[:10]) for a in arts]
 sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
 for u, lm in urls:
