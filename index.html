@@ -669,6 +669,7 @@ figure.inl img { display: block; width: 100%; height: auto; max-height: 560px; o
   }
   var todayTab = null;
   var DET = {};
+  var todayReset = false;
   function renderToday() {
     if (!elToday) return;
     var now = Date.now(), D = TODAY, DAY = 86400000;
@@ -719,7 +720,8 @@ figure.inl img { display: block; width: 100%; height: auto; max-height: 560px; o
     var lists = TABS.map(function (sec) {
       var date = cairoDay(now + sec[1] * DAY);
       var list = (Array.isArray(days[date]) ? days[date] : []).filter(function (m) { return m && m.home && m.away && m.time; });
-      list.sort(function (a, b) { return ((a.pri || 5) - (b.pri || 5)) || (a.time - b.time); });
+      list.forEach(function (m, i) { m._i = i; });
+      list.sort(function (a, b) { return (a.time - b.time) || (a._i - b._i); });
       return { date: date, list: list };
     });
     if (!lists.some(function (x) { return x.list.length; })) { elToday.hidden = true; elToday.replaceChildren(); return; }
@@ -727,13 +729,18 @@ figure.inl img { display: block; width: 100%; height: auto; max-height: 560px; o
     var cur = lists[todayTab];
     var tabs = h('div', { class: 'ttabs', role: 'tablist' }, TABS.map(function (sec, k) {
       return h('button', { type: 'button', role: 'tab', class: 'ttab' + (k === todayTab ? ' on' : ''), 'aria-selected': k === todayTab ? 'true' : 'false',
-        onclick: function () { todayTab = k; renderToday(); } }, 'مباريات ' + sec[0]);
+        onclick: function () { todayTab = k; todayReset = true; renderToday(); } }, 'مباريات ' + sec[0]);
     }));
     var body = cur.list.length
       ? h('div', { class: 'tstrip' }, cur.list.map(function (m) { return mk(m, cur.date); }))
       : h('div', { class: 'tempty' }, 'مفيش مباريات متسجلة في اليوم ده.');
+    var oldStrip = elToday.querySelector('.tstrip'), keepX = (oldStrip && !todayReset) ? oldStrip.scrollLeft : 0, keepY = window.pageYOffset;
+    todayReset = false;
     elToday.hidden = false;
     elToday.replaceChildren(h('div', { class: 'thead' }, tabs, h('span', { class: 'tnote' }, 'بتوقيت القاهرة')), body);
+    var ns = elToday.querySelector('.tstrip');
+    if (ns && keepX) ns.scrollLeft = keepX;
+    if (Math.abs(window.pageYOffset - keepY) > 1) window.scrollTo(0, keepY);
   }
   function newId() { return 'n' + Date.now().toString(36); }
   var toastTimer;
