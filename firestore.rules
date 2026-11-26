@@ -68,43 +68,31 @@ service cloud.firestore {
       return request.auth != null && request.auth.token.email == 'abdallahrabee80@gmail.com';
     }
 
+    // شروط الخبر (مشتركة بين النشر والتعديل)
+    function okArt(d) {
+      return d.keys().hasOnly(['cat','title','author','body','by','date','links','image','hasFull','video','extra','cap','midAt','midCap','pre','preCap'])
+        && d.cat in ['news','transfers','reports','analysis','opinion']
+        && d.title is string && d.title.size() >= 10 && d.title.size() <= 200
+        && d.body is string && d.body.size() >= 80 && d.body.size() <= 20000
+        && d.image is string && d.image.size() <= 150000
+        && d.links is list && d.links.size() <= 8
+        && d.video is string && d.video.size() <= 300 && (d.video == '' || d.video.matches('^https://.*'))
+        && d.extra is int && d.extra >= 0 && d.extra <= 4
+        && (!('cap' in d) || (d.cap is string && d.cap.size() <= 120))
+        && (!('midCap' in d) || (d.midCap is string && d.midCap.size() <= 120))
+        && (!('preCap' in d) || (d.preCap is string && d.preCap.size() <= 120))
+        && (!('midAt' in d) || (d.midAt is int && d.midAt >= 0 && d.midAt <= 60))
+        && (!('pre' in d) || (d.pre is int && d.pre >= 0 && d.pre <= 1));
+    }
+
     // الأخبار المنشورة من اللوحة: قراءة للكل، والكتابة للمسموح لهم بس
     match /live_articles/{id} {
       allow read: if true;
-      allow create: if isEditor()
-        && id.matches('^n[a-z0-9]{4,24}$')
-        && request.resource.data.keys().hasOnly(['cat','title','author','body','by','date','links','image','hasFull','video','extra','cap','midAt','midCap','pre','preCap'])
-        && request.resource.data.cat in ['news','transfers','reports','analysis','opinion']
-        && request.resource.data.title is string && request.resource.data.title.size() >= 10 && request.resource.data.title.size() <= 200
+      allow create: if isEditor() && id.matches('^n[a-z0-9]{4,24}$') && okArt(request.resource.data)
         && request.resource.data.author is string && request.resource.data.author.size() > 0 && request.resource.data.author.size() <= 60
-        && request.resource.data.body is string && request.resource.data.body.size() >= 80 && request.resource.data.body.size() <= 20000
-        && request.resource.data.by == request.auth.token.email
-        && request.resource.data.image is string && request.resource.data.image.size() <= 150000
-        && request.resource.data.links is list && request.resource.data.links.size() <= 8
-        && request.resource.data.video is string && request.resource.data.video.size() <= 300
-        && (request.resource.data.video == '' || request.resource.data.video.matches('^https://.*'))
-        && request.resource.data.extra is int && request.resource.data.extra >= 0 && request.resource.data.extra <= 4
-        && (!('cap' in request.resource.data) || (request.resource.data.cap is string && request.resource.data.cap.size() <= 120))
-        && (!('midCap' in request.resource.data) || (request.resource.data.midCap is string && request.resource.data.midCap.size() <= 120))
-        && (!('preCap' in request.resource.data) || (request.resource.data.preCap is string && request.resource.data.preCap.size() <= 120))
-        && (!('midAt' in request.resource.data) || (request.resource.data.midAt is int && request.resource.data.midAt >= 0 && request.resource.data.midAt <= 60))
-        && (!('pre' in request.resource.data) || (request.resource.data.pre is int && request.resource.data.pre >= 0 && request.resource.data.pre <= 1));
-      allow update: if isEditor() && (resource.data.by == request.auth.token.email || isOwner())
-        && request.resource.data.keys().hasOnly(['cat','title','author','body','by','date','links','image','hasFull','video','extra','cap','midAt','midCap','pre','preCap'])
-        && request.resource.data.cat in ['news','transfers','reports','analysis','opinion']
-        && request.resource.data.title is string && request.resource.data.title.size() >= 10 && request.resource.data.title.size() <= 200
-        && request.resource.data.body is string && request.resource.data.body.size() >= 80 && request.resource.data.body.size() <= 20000
-        && request.resource.data.by == resource.data.by && request.resource.data.date == resource.data.date
-        && request.resource.data.image is string && request.resource.data.image.size() <= 150000
-        && request.resource.data.links is list && request.resource.data.links.size() <= 8
-        && request.resource.data.video is string && request.resource.data.video.size() <= 300
-        && (request.resource.data.video == '' || request.resource.data.video.matches('^https://.*'))
-        && request.resource.data.extra is int && request.resource.data.extra >= 0 && request.resource.data.extra <= 4
-        && (!('cap' in request.resource.data) || (request.resource.data.cap is string && request.resource.data.cap.size() <= 120))
-        && (!('midCap' in request.resource.data) || (request.resource.data.midCap is string && request.resource.data.midCap.size() <= 120))
-        && (!('preCap' in request.resource.data) || (request.resource.data.preCap is string && request.resource.data.preCap.size() <= 120))
-        && (!('midAt' in request.resource.data) || (request.resource.data.midAt is int && request.resource.data.midAt >= 0 && request.resource.data.midAt <= 60))
-        && (!('pre' in request.resource.data) || (request.resource.data.pre is int && request.resource.data.pre >= 0 && request.resource.data.pre <= 1));
+        && request.resource.data.by == request.auth.token.email;
+      allow update: if isEditor() && (resource.data.by == request.auth.token.email || isOwner()) && okArt(request.resource.data)
+        && request.resource.data.by == resource.data.by && request.resource.data.date == resource.data.date;
       allow delete: if isEditor() && (resource.data.by == request.auth.token.email || isOwner());
     }
 
