@@ -1,117 +1,54 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // الآراء: أي حد يكتب رأي جديد (بيظهر بعد موافقتك)، والقراءة للآراء الموافق عليها بس
     match /comments/{id} {
       allow read: if resource.data.approved == true;
-      allow create: if request.resource.data.approved == false
-        && request.resource.data.keys().hasOnly(['art','n','t','p','approved','ts'])
-        && request.resource.data.n is string && request.resource.data.n.size() > 0 && request.resource.data.n.size() <= 30
-        && request.resource.data.t is string && request.resource.data.t.size() >= 3 && request.resource.data.t.size() <= 500
-        && request.resource.data.art is string && request.resource.data.art.size() <= 60;
+      allow create: if request.resource.data.approved == false && request.resource.data.keys().hasOnly(['art','n','t','p','approved','ts']) && request.resource.data.n is string && request.resource.data.n.size() > 0 && request.resource.data.n.size() <= 30 && request.resource.data.t is string && request.resource.data.t.size() >= 3 && request.resource.data.t.size() <= 500 && request.resource.data.art is string && request.resource.data.art.size() <= 60;
       allow update, delete: if false;
     }
-
-    // التوقعات: قراءة للكل، وتسجيل جديد بس (من غير تعديل)
     match /predictions/{id} {
       allow read: if true;
-      allow create: if request.resource.data.keys().hasOnly(['m','n','h','a','t'])
-        && request.resource.data.n is string && request.resource.data.n.size() > 0 && request.resource.data.n.size() <= 30
-        && request.resource.data.h is int && request.resource.data.h >= 0 && request.resource.data.h <= 20
-        && request.resource.data.a is int && request.resource.data.a >= 0 && request.resource.data.a <= 20;
+      allow create: if request.resource.data.keys().hasOnly(['m','n','h','a','t']) && request.resource.data.n is string && request.resource.data.n.size() > 0 && request.resource.data.n.size() <= 30 && request.resource.data.h is int && request.resource.data.h >= 0 && request.resource.data.h <= 20 && request.resource.data.a is int && request.resource.data.a >= 0 && request.resource.data.a <= 20;
       allow update, delete: if false;
     }
-
-    // عدادات التفاعلات والتصويت
     match /counts/{id} {
       allow read: if true;
       allow write: if true;
     }
-
-    // تحدي اليوم: نتيجة كل لاعب في كل يوم (مرة واحدة فقط، تتفتح ثم تُقفل)
     match /quiz_days/{id} {
       allow read: if true;
-      allow create: if request.auth != null
-        && id == request.resource.data.date + '_' + request.auth.uid
-        && request.resource.data.keys().hasOnly(['uid','n','team','date','pts','ct','cg','done'])
-        && request.resource.data.uid == request.auth.uid
-        && request.resource.data.n is string && request.resource.data.n.size() > 0 && request.resource.data.n.size() <= 30
-        && request.resource.data.pts == 0 && request.resource.data.done == false;
-      allow update: if request.auth != null
-        && resource.data.uid == request.auth.uid && resource.data.done == false
-        && request.resource.data.done == true
-        && request.resource.data.uid == resource.data.uid && request.resource.data.date == resource.data.date
-        && request.resource.data.n == resource.data.n && request.resource.data.team == resource.data.team
-        && request.resource.data.pts is int && request.resource.data.pts >= 0 && request.resource.data.pts <= 90;
+      allow create: if request.auth != null && id == request.resource.data.date + '_' + request.auth.uid && request.resource.data.keys().hasOnly(['uid','n','team','date','pts','ct','cg','done']) && request.resource.data.uid == request.auth.uid && request.resource.data.n is string && request.resource.data.n.size() > 0 && request.resource.data.n.size() <= 30 && request.resource.data.pts == 0 && request.resource.data.done == false;
+      allow update: if request.auth != null && resource.data.uid == request.auth.uid && resource.data.done == false && request.resource.data.done == true && request.resource.data.uid == resource.data.uid && request.resource.data.date == resource.data.date && request.resource.data.n == resource.data.n && request.resource.data.team == resource.data.team && request.resource.data.pts is int && request.resource.data.pts >= 0 && request.resource.data.pts <= 90;
       allow delete: if false;
     }
-
-    // تحدي اليوم: مجموع نقاط كل لاعب وسلسلة أيامه
     match /quiz_users/{uid} {
       allow read: if true;
-      allow create, update: if request.auth != null && request.auth.uid == uid
-        && request.resource.data.keys().hasOnly(['n','team','total','streak','last','wk','wkPts'])
-        && request.resource.data.n is string && request.resource.data.n.size() > 0 && request.resource.data.n.size() <= 30
-        && request.resource.data.total is int && request.resource.data.total >= 0
-        && request.resource.data.total <= (resource == null ? 90 : resource.data.total + 90)
-        && (resource == null || request.resource.data.total >= resource.data.total);
+      allow create, update: if request.auth != null && request.auth.uid == uid && request.resource.data.keys().hasOnly(['n','team','total','streak','last','wk','wkPts']) && request.resource.data.n is string && request.resource.data.n.size() > 0 && request.resource.data.n.size() <= 30 && request.resource.data.total is int && request.resource.data.total >= 0 && request.resource.data.total <= (resource == null ? 90 : resource.data.total + 90) && (resource == null || request.resource.data.total >= resource.data.total);
       allow delete: if false;
     }
-
-    // لوحة النشر: الإيميلات المسموح لها بالنشر (عدّل القائمة دي لإضافة صحفي)
     function isEditor() {
-      return request.auth != null && request.auth.token.email_verified == true
-        && request.auth.token.email in ['abdallahrabee80@gmail.com','fatmayasein09@gmail.com','fatmayasein33@gmail.com','abdallahrabee212@gmail.com'];
+      return request.auth != null && request.auth.token.email_verified == true && request.auth.token.email in ['abdallahrabee80@gmail.com','fatmayasein09@gmail.com','fatmayasein33@gmail.com','abdallahrabee212@gmail.com'];
     }
     function isOwner() {
       return request.auth != null && request.auth.token.email == 'abdallahrabee80@gmail.com';
     }
-
-    // شروط الخبر (مشتركة بين النشر والتعديل)
     function okArt(d) {
-      return d.keys().hasOnly(['cat','title','author','body','by','date','links','image','hasFull','video','extra','cap','midAt','midCap','pre','preCap'])
-        && d.cat in ['news','transfers','reports','analysis','opinion']
-        && d.title is string && d.title.size() >= 10 && d.title.size() <= 200
-        && d.body is string && d.body.size() >= 80 && d.body.size() <= 20000
-        && d.image is string && d.image.size() <= 150000
-        && d.links is list && d.links.size() <= 8
-        && d.video is string && d.video.size() <= 300 && (d.video == '' || d.video.matches('^https://.*'))
-        && d.extra is int && d.extra >= 0 && d.extra <= 4
-        && (!('cap' in d) || (d.cap is string && d.cap.size() <= 120))
-        && (!('midCap' in d) || (d.midCap is string && d.midCap.size() <= 120))
-        && (!('preCap' in d) || (d.preCap is string && d.preCap.size() <= 120))
-        && (!('midAt' in d) || (d.midAt is int && d.midAt >= 0 && d.midAt <= 60))
-        && (!('pre' in d) || (d.pre is int && d.pre >= 0 && d.pre <= 1));
+      return d.keys().hasOnly(['cat','title','author','body','by','date','links','image','hasFull','video','extra','cap','midAt','midCap','pre','preCap']) && d.cat in ['news','transfers','reports','analysis','opinion'] && d.title is string && d.title.size() >= 10 && d.title.size() <= 200 && d.body is string && d.body.size() >= 80 && d.body.size() <= 20000 && d.image is string && d.image.size() <= 150000 && d.links is list && d.links.size() <= 8 && d.video is string && d.video.size() <= 300 && (d.video == '' || d.video.matches('^https://.*')) && d.extra is int && d.extra >= 0 && d.extra <= 4 && (!('cap' in d) || (d.cap is string && d.cap.size() <= 120)) && (!('midCap' in d) || (d.midCap is string && d.midCap.size() <= 120)) && (!('preCap' in d) || (d.preCap is string && d.preCap.size() <= 120)) && (!('midAt' in d) || (d.midAt is int && d.midAt >= 0 && d.midAt <= 60)) && (!('pre' in d) || (d.pre is int && d.pre >= 0 && d.pre <= 1));
     }
-
-    // الأخبار المنشورة من اللوحة: قراءة للكل، والكتابة للمسموح لهم بس
     match /live_articles/{id} {
       allow read: if true;
-      allow create: if isEditor() && id.matches('^n[a-z0-9]{4,24}$') && okArt(request.resource.data)
-        && request.resource.data.author is string && request.resource.data.author.size() > 0 && request.resource.data.author.size() <= 60
-        && request.resource.data.by == request.auth.token.email;
-      allow update: if isEditor() && (resource.data.by == request.auth.token.email || isOwner()) && okArt(request.resource.data)
-        && request.resource.data.by == resource.data.by && request.resource.data.date == resource.data.date;
+      allow create: if isEditor() && id.matches('^n[a-z0-9]{4,24}$') && okArt(request.resource.data) && request.resource.data.author is string && request.resource.data.author.size() > 0 && request.resource.data.author.size() <= 60 && request.resource.data.by == request.auth.token.email;
+      allow update: if isEditor() && (resource.data.by == request.auth.token.email || isOwner()) && okArt(request.resource.data) && request.resource.data.by == resource.data.by && request.resource.data.date == resource.data.date;
       allow delete: if isEditor() && (resource.data.by == request.auth.token.email || isOwner());
     }
-
-    // الصورة الكاملة للخبر (بتتحمل لما حد يفتح الخبر)
     match /live_imgs/{id} {
       allow read: if true;
-      allow create, update: if isEditor() && request.resource.data.keys().hasOnly(['d','by'])
-        && request.resource.data.d is string && request.resource.data.d.size() <= 900000
-        && request.resource.data.by == request.auth.token.email;
+      allow create, update: if isEditor() && request.resource.data.keys().hasOnly(['d','by']) && request.resource.data.d is string && request.resource.data.d.size() <= 900000 && request.resource.data.by == request.auth.token.email;
       allow delete: if isEditor();
     }
-
-    // نتايج الماتشات (شريط المباريات): قراءة للكل، والتعديل للمسموح لهم بس
     match /match_days/{day} {
       allow read: if true;
-      allow create, update: if isEditor() && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
-        && request.resource.data.keys().hasOnly(['m','by'])
-        && request.resource.data.m is map && request.resource.data.m.size() <= 60
-        && request.resource.data.by == request.auth.token.email;
+      allow create, update: if isEditor() && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$') && request.resource.data.keys().hasOnly(['m','by']) && request.resource.data.m is map && request.resource.data.m.size() <= 60 && request.resource.data.by == request.auth.token.email;
     }
   }
 }
