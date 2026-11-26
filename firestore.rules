@@ -116,5 +116,14 @@ service cloud.firestore {
         && request.resource.data.by == request.auth.token.email;
       allow delete: if isEditor();
     }
+
+    // نتايج الماتشات (شريط المباريات): قراءة للكل، والتعديل للمسموح لهم بس
+    match /match_days/{day} {
+      allow read: if true;
+      allow create, update: if isEditor() && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && request.resource.data.keys().hasOnly(['m','by'])
+        && request.resource.data.m is map && request.resource.data.m.size() <= 60
+        && request.resource.data.by == request.auth.token.email;
+    }
   }
 }

@@ -669,17 +669,44 @@ figure.inl img { display: block; width: 100%; height: auto; max-height: 560px; o
   }
   var todayTab = null;
   var DET = {};
-  var todayReset = false;
+  var todayReset = false, OVR = {}, ovrOn = false;
+  function watchOvr() {
+    if (ovrOn || !fbOn()) return; ovrOn = true;
+    fbLoad(function (db) {
+      [-1, 0, 1].forEach(function (k) {
+        var day = cairoDay(Date.now() + k * 86400000); if (!day) return;
+        try {
+          db.collection('match_days').doc(day).onSnapshot(function (d) {
+            OVR[day] = (d.exists && d.data() && d.data().m) || {};
+            renderToday();
+          }, function () {});
+        } catch (e) {}
+      });
+    });
+  }
   function renderToday() {
     if (!elToday) return;
     var now = Date.now(), D = TODAY, DAY = 86400000;
     var days = D && D.days && typeof D.days === 'object' ? D.days : (D && D.date ? (function () { var o = {}; o[D.date] = D.matches; return o; })() : {});
     function mk(m, date) {
-      var cls = 'tm', stat, mid;
+      var cls = 'tm', stat, mid, ov = OVR[date] && OVR[date][m.home + '|' + m.away];
+      if (ov) {
+        m = Object.assign({}, m);
+        if (ov.st) m.st = ov.st;
+        if (typeof ov.hs === 'number' && typeof ov.as === 'number') { m.hs = ov.hs; m.as = ov.as; }
+        if (Array.isArray(ov.goals) && ov.goals.length) m.details = { goals: ov.goals };
+      }
       var hasScore = typeof m.hs === 'number' && typeof m.as === 'number';
-      if (m.st === 'ft' || now >= m.time + 135 * 60000) {
+      var scoreEl = function () { return h('div', { class: 'big' }, h('span', null, String(m.hs)), h('span', null, '-'), h('span', null, String(m.as))); };
+      if (m.st === 'ns') {
+        var t0 = cairoParts(m.time); stat = 'لم تبدأ';
+        mid = h('div', { class: 'big' }, (t0.hour || '') + ':' + (t0.minute || ''), t0.dayPeriod ? h('small', null, t0.dayPeriod) : null);
+      } else if (m.st === 'live') {
+        cls += ' live'; stat = h('span', null, h('span', { class: 'dot', 'aria-hidden': 'true' }), 'جارية الآن');
+        mid = hasScore ? scoreEl() : h('div', { class: 'big' }, '×');
+      } else if (m.st === 'ft' || now >= m.time + 135 * 60000) {
         cls += ' ft'; stat = 'انتهت';
-        mid = (m.st === 'ft' && hasScore) ? h('div', { class: 'big' }, h('span', null, String(m.hs)), h('span', null, '-'), h('span', null, String(m.as))) : h('div', { class: 'big' }, '×');
+        mid = (m.st === 'ft' && hasScore) ? scoreEl() : h('div', { class: 'big' }, '×');
       } else if (now < m.time) {
         var t = cairoParts(m.time); stat = 'لم تبدأ';
         mid = h('div', { class: 'big' }, (t.hour || '') + ':' + (t.minute || ''), t.dayPeriod ? h('small', null, t.dayPeriod) : null);
@@ -1050,7 +1077,7 @@ figure.inl img { display: block; width: 100%; height: auto; max-height: 560px; o
     .catch(function () { return {}; })
     .then(function (t) { TEAMS = t || {}; return fetch('today.json', { cache: 'no-cache' }); })
     .then(function (r) { return r.ok ? r.json() : null; })
-    .then(function (d) { TODAY = d; renderToday(); })
+    .then(function (d) { TODAY = d; renderToday(); watchOvr(); })
     .catch(function () {});
   setInterval(renderToday, 60000);
   fetch('extras.json', { cache: 'no-cache' })
