@@ -105,9 +105,8 @@ textarea { min-height:240px; resize:vertical; }
 [hidden] { display:none !important; }
 :focus-visible { outline:3px solid #E8590C; outline-offset:2px; }
 
-#mrTab { position:fixed; left:0; top:45%; z-index:30; writing-mode:vertical-rl; background:var(--accent); color:var(--accent-ink); border:0; padding:14px 8px; font:inherit; font-weight:700; font-size:.85rem; cursor:pointer; border-radius:0 8px 8px 0; }
-#mrDr { position:fixed; left:0; top:0; bottom:0; width:min(440px,100vw); z-index:40; background:var(--surface); border-right:2px solid var(--line); overflow:auto; padding:14px; box-shadow:4px 0 24px rgba(0,0,0,.25); }
-#mrDr[hidden], #mrTab[hidden] { display:none; }
+#mrTab { text-decoration:none; position:fixed; left:0; top:45%; z-index:30; writing-mode:vertical-rl; background:var(--accent); color:var(--accent-ink); border:0; padding:14px 8px; font:inherit; font-weight:700; font-size:.85rem; cursor:pointer; border-radius:0 8px 8px 0; }
+#mrTab[hidden] { display:none; }
 .mrH { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px; }
 .mrT { display:flex; gap:6px; margin-bottom:10px; }
 .mrT button { flex:1; font:inherit; padding:6px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink); cursor:pointer; }
@@ -212,15 +211,7 @@ textarea { min-height:240px; resize:vertical; }
     <button type="button" id="pvD" class="on">كمبيوتر</button><button type="button" id="pvM">موبايل</button><button type="button" id="pvX">رجوع للتعديل</button></div>
   <div class="stage"><iframe id="pvf" title="معاينة"></iframe></div>
 </div>
-<button id="mrTab" type="button" hidden>نتايج الماتشات</button>
-<div id="mrDr" hidden>
-  <div class="mrH"><b>نتايج الماتشات</b><button class="btn alt sm" id="mrClose" type="button">إغلاق</button></div>
-  <div class="mrT" id="mrTabs"></div>
-  <div id="mrList"></div>
-  <div id="mrMsg"></div>
-  <button class="btn block" id="mrSave" type="button">حفظ نتايج اليوم</button>
-  <p class="hint">بعد الحفظ بتظهر على الموقع على طول. "تلقائي" معناه الموقع يحدد الحالة بالتوقيت.</p>
-</div>
+<a id="mrTab" href="results.html" target="_blank" rel="noopener" hidden>نتايج الماتشات</a>
 <script src="../firebase-config.js"></script>
 <script>
 (function () {
@@ -630,103 +621,7 @@ textarea { min-height:240px; resize:vertical; }
 })();
 </script>
 <script>
-(function () {
-  var $ = function (s) { return document.querySelector(s); };
-  var tab = $('#mrTab'), dr = $('#mrDr'), list = $('#mrList'), tabs = $('#mrTabs'), msgEl = $('#mrMsg');
-  var DAY = 86400000, TODAY = null, cur = 1, state = {};
-  function cday(ms) { return new Date(ms).toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' }); }
-  function ctime(ms) { return new Date(ms).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Africa/Cairo' }); }
-  function el(t, a) { var e = document.createElement(t); for (var k in (a || {})) { if (k === 'text') e.textContent = a[k]; else if (k === 'on') e.addEventListener(a[k][0], a[k][1]); else e.setAttribute(k, a[k]); } for (var i = 2; i < arguments.length; i++) if (arguments[i]) e.appendChild(arguments[i]); return e; }
-  setInterval(function () { tab.hidden = !(window.firebase && firebase.apps && firebase.apps.length && firebase.auth().currentUser) || !dr.hidden; }, 800);
-  tab.onclick = function () { dr.hidden = false; tab.hidden = true; open(); };
-  $('#mrClose').onclick = function () { dr.hidden = true; };
-  function dayOf(k) { return cday(Date.now() + (k - 1) * DAY); }
-  function matches(k) { var d = TODAY && TODAY.days && TODAY.days[dayOf(k)]; return (Array.isArray(d) ? d : []).filter(function (m) { return m && m.home && m.away && m.time; }).sort(function (a, b) { return (a.time - b.time); }); }
-  function key(m) { return m.home + '|' + m.away; }
-  function open() {
-    msgEl.textContent = '';
-    var go = function () { buildTabs(); showDay(cur); };
-    if (TODAY) return go();
-    fetch('../today.json?t=' + Date.now()).then(function (r) { return r.json(); }).then(function (d) { TODAY = d; go(); }).catch(function () { list.textContent = 'تعذر تحميل المباريات.'; });
-  }
-  function buildTabs() {
-    tabs.innerHTML = '';
-    ['أمس', 'اليوم', 'غدًا'].forEach(function (n, k) { tabs.appendChild(el('button', { type: 'button', text: n, class: k === cur ? 'on' : '', on: ['click', function () { cur = k; buildTabs(); showDay(k); }] })); });
-  }
-  function showDay(k) {
-    var day = dayOf(k); list.textContent = 'بيحمّل…';
-    var ms = matches(k);
-    if (!ms.length) { list.textContent = 'مفيش مباريات في اليوم ده.'; return; }
-    firebase.firestore().collection('match_days').doc(day).get().then(function (d) {
-      var saved = (d.exists && d.data().m) || {};
-      state[day] = {};
-      ms.forEach(function (m) {
-        var o = saved[key(m)] || {};
-        var goals = Array.isArray(o.goals) ? o.goals : ((m.details && m.details.goals) || []);
-        state[day][key(m)] = { st: o.st || (m.st === 'ft' ? 'ft' : ''), hs: typeof o.hs === 'number' ? o.hs : (typeof m.hs === 'number' ? m.hs : ''), as: typeof o.as === 'number' ? o.as : (typeof m.as === 'number' ? m.as : ''), goals: JSON.parse(JSON.stringify(goals)), touched: !!saved[key(m)] };
-      });
-      draw(day, ms);
-    }).catch(function () { list.textContent = 'تعذر قراءة الحفظ. تأكد من الإنترنت وحدّث.'; });
-  }
-  function draw(day, ms) {
-    list.innerHTML = '';
-    ms.forEach(function (m) {
-      var S = state[day][key(m)];
-      var card = el('div', { class: 'mrM' }, el('h4', { text: m.home + ' × ' + m.away }), el('small', { text: ctime(m.time) + ' • ' + (m.comp || '') }));
-      var st = el('select'); [['', 'تلقائي'], ['ns', 'لسه مابدأتش'], ['live', 'جارية'], ['ft', 'انتهت']].forEach(function (o) { var op = el('option', { value: o[0], text: o[1] }); if (S.st === o[0]) op.selected = true; st.appendChild(op); });
-      st.onchange = function () { S.st = st.value; S.touched = true; };
-      var hs = el('input', { type: 'number', min: 0, max: 30, value: S.hs }), as = el('input', { type: 'number', min: 0, max: 30, value: S.as });
-      hs.oninput = function () { S.hs = hs.value === '' ? '' : +hs.value; S.touched = true; };
-      as.oninput = function () { S.as = as.value === '' ? '' : +as.value; S.touched = true; };
-      card.appendChild(el('div', { class: 'mrR' }, st, el('span', { text: m.home }), hs, el('span', { text: '-' }), as, el('span', { text: m.away })));
-      var gl = el('div'); card.appendChild(gl);
-      function drawGoals() {
-        gl.innerHTML = '';
-        S.goals.forEach(function (g, i) {
-          var mn = el('input', { type: 'number', min: 1, max: 130, value: g.min || '', placeholder: 'دقيقة' });
-          mn.oninput = function () { g.min = +mn.value || 0; S.touched = true; };
-          var ad = el('input', { type: 'number', min: 1, max: 20, value: g.add || '', placeholder: '+' });
-          ad.oninput = function () { if (ad.value) g.add = +ad.value; else delete g.add; S.touched = true; };
-          var nm = el('input', { type: 'text', class: 'nm', value: g.p || '', placeholder: 'اسم اللاعب' });
-          nm.oninput = function () { g.p = nm.value; S.touched = true; };
-          var sd = el('select'); [['h', m.home], ['a', m.away]].forEach(function (o) { var op = el('option', { value: o[0], text: o[1] }); if ((g.side || 'h') === o[0]) op.selected = true; sd.appendChild(op); });
-          sd.onchange = function () { g.side = sd.value; recount(); S.touched = true; };
-          var ty = el('select'); [['', 'عادي'], ['pen', 'جزاء'], ['og', 'عكسي']].forEach(function (o) { var op = el('option', { value: o[0], text: o[1] }); if ((g.pen ? 'pen' : g.og ? 'og' : '') === o[0]) op.selected = true; ty.appendChild(op); });
-          ty.onchange = function () { delete g.pen; delete g.og; if (ty.value) g[ty.value] = true; S.touched = true; };
-          var x = el('button', { type: 'button', class: 'mrX', text: '×', title: 'حذف الهدف', on: ['click', function () { S.goals.splice(i, 1); recount(); drawGoals(); S.touched = true; }] });
-          gl.appendChild(el('div', { class: 'mrR' }, mn, ad, nm, sd, ty, x));
-        });
-      }
-      function recount() { var h = 0, a = 0; S.goals.forEach(function (g) { if ((g.side || 'h') === 'a') a++; else h++; }); S.hs = h; S.as = a; hs.value = h; as.value = a; }
-      drawGoals();
-      card.appendChild(el('div', { class: 'mrR' },
-        el('button', { type: 'button', class: 'btn alt sm', text: '+ هدف', on: ['click', function () { S.goals.push({ min: 0, p: '', side: 'h' }); recount(); drawGoals(); S.touched = true; }] }),
-        el('button', { type: 'button', class: 'btn alt sm', text: 'رجّع الأصل', on: ['click', function () { S.st = ''; S.hs = ''; S.as = ''; S.goals = (m.details && m.details.goals) ? JSON.parse(JSON.stringify(m.details.goals)) : []; S.touched = false; S.reset = true; draw(day, ms); }] })));
-      list.appendChild(card);
-    });
-    $('#mrSave').onclick = function () { save(day, ms); };
-  }
-  function save(day, ms) {
-    var out = {}, bad = '';
-    ms.forEach(function (m) {
-      var S = state[day][key(m)]; if (!S.touched) return;
-      var o = {};
-      if (S.st) o.st = S.st;
-      if (S.hs !== '' && S.as !== '') { o.hs = +S.hs; o.as = +S.as; }
-      var gs = S.goals.filter(function (g) { return (g.p || '').trim() && g.min > 0; });
-      if (S.goals.length !== gs.length) bad = 'فيه هدف ناقص اسم لاعب أو دقيقة في ' + m.home + ' × ' + m.away + '. اكمله أو احذفه.';
-      o.goals = gs.map(function (g) { var r = { min: +g.min, p: g.p.trim(), side: g.side === 'a' ? 'a' : 'h' }; if (g.add) r.add = +g.add; if (g.pen) r.pen = true; if (g.og) r.og = true; return r; });
-      out[key(m)] = o;
-    });
-    if (bad) { msgEl.innerHTML = ''; msgEl.appendChild(el('div', { class: 'msg bad', text: bad })); return; }
-    var b = $('#mrSave'); b.disabled = true; b.textContent = 'بيحفظ…';
-    firebase.firestore().collection('match_days').doc(day).set({ m: out, by: firebase.auth().currentUser.email }).then(function () {
-      msgEl.innerHTML = ''; msgEl.appendChild(el('div', { class: 'msg ok', text: 'اتحفظت. هتظهر على الموقع على طول.' }));
-    }).catch(function (e) {
-      msgEl.innerHTML = ''; msgEl.appendChild(el('div', { class: 'msg bad', text: e && e.code === 'permission-denied' ? 'مفيش صلاحية. لازم قواعد Firebase الجديدة تتنشر الأول.' : 'تعذر الحفظ: ' + (e.code || e.message) }));
-    }).then(function () { b.disabled = false; b.textContent = 'حفظ نتايج اليوم'; });
-  }
-})();
+setInterval(function () { var t = document.getElementById('mrTab'); if (t) t.hidden = !(window.firebase && firebase.apps && firebase.apps.length && firebase.auth().currentUser); }, 800);
 </script>
 </body>
 </html>

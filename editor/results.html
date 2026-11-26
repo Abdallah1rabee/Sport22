@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>نتايج الماتشات | SPORT 22</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap">
+<style>
+:root{--bg:#0A0F18;--sf:#121A27;--sf2:#17233A;--line:#223049;--line2:#3A4B69;--ink:#E8ECF3;--mut:#93A0B5;--ac:#7399FF;--ac-ink:#0A0F18;--bad:#FF8F86;--ok:#4FD39A;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Cairo',system-ui,sans-serif;line-height:1.6;padding-bottom:40px}
+a{color:var(--ac)}
+header{padding:14px max(16px,env(safe-area-inset-left,0px));display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-bottom:1.5px solid var(--line)}
+header h1{margin:0;font-size:22px;flex:1}
+.wrap{display:flex;flex-wrap:wrap;gap:24px;padding:20px max(16px,env(safe-area-inset-left,0px));align-items:flex-start}
+.rail{flex:0 1 300px;min-width:250px;display:flex;flex-direction:column;gap:8px}
+.main{flex:1 1 520px;min-width:0;display:flex;flex-direction:column;gap:18px}
+.tabs{display:flex;gap:6px}
+.tabs button{flex:1}
+button{font:inherit;cursor:pointer}
+.btn{font-weight:700;border:0;padding:11px 20px;background:var(--ac);color:var(--ac-ink)}
+.btn.alt{background:transparent;color:var(--ink);border:1.5px solid var(--line2)}
+.btn.sm{padding:7px 14px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:default}
+.btn.on{background:var(--ac);color:var(--ac-ink);border-color:var(--ac)}
+.btn.live.on{background:var(--bad);border-color:var(--bad)}
+.mi{background:var(--sf);border:1.5px solid var(--line);padding:9px 12px;text-align:right;color:var(--ink);display:flex;flex-direction:column;gap:2px;width:100%}
+.mi.on{border-color:var(--ac);background:var(--sf2)}
+.mi small{color:var(--mut);font-size:12px}
+.mi .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bad);margin-left:6px}
+.panel{background:var(--sf);border:1.5px solid var(--line);padding:22px;display:flex;flex-direction:column;gap:16px;align-items:center}
+.stat{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.board{display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap}
+.tm{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:130px;text-align:center}
+.tm b{font-size:18px}
+.crest{width:64px;height:64px;border-radius:50%;background:var(--line);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--mut);overflow:hidden}
+.crest img{width:100%;height:100%;object-fit:contain}
+.sb{width:46px;height:46px;border:1.5px solid var(--line2);background:var(--sf);color:var(--ink);font-size:26px;font-weight:700;line-height:1}
+.sb.p{background:var(--ac);color:var(--ac-ink);border-color:var(--ac)}
+.score{font-size:92px;font-weight:700;line-height:1;min-width:150px;text-align:center}
+.score i{font-style:normal;color:var(--line2)}
+.hint{font-size:13px;color:var(--mut);text-align:center}
+.add{background:var(--sf);border:1.5px solid var(--ac);padding:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.add[hidden]{display:none}
+input,select{font:inherit;background:var(--bg);color:var(--ink);border:1.5px solid var(--line2);padding:9px 12px}
+input.n{width:84px}input.p{flex:1;min-width:140px}
+.sec{font-size:13px;color:var(--mut);font-weight:600;margin-bottom:8px}
+.tl{border-right:3px solid var(--line);padding-right:14px;margin-right:6px;display:flex;flex-direction:column;gap:10px}
+.ev{display:flex;gap:10px;align-items:center;background:var(--sf);border:1.5px solid var(--line);padding:8px 12px;flex-wrap:wrap}
+.ev input.n{width:64px}
+.ev .tmn{color:var(--mut);font-size:13px}
+.x{background:none;border:0;color:var(--bad);font-size:22px;padding:0 6px}
+.bar{display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
+.msg{padding:10px 14px;font-weight:600}
+.msg.ok{background:#12301F;color:var(--ok)}.msg.bad{background:#3A1714;color:var(--bad)}
+.dirty{color:#F2A862;font-size:13px;flex:1}
+#gate{max-width:520px;margin:60px auto;padding:0 20px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <a href="./">← رجوع للوحة الرفع</a>
+  <h1>نتايج الماتشات</h1>
+  <span id="dayTxt" style="font-size:13px;color:var(--mut)"></span>
+</header>
+<div id="gate" hidden></div>
+<div class="wrap" id="app" hidden>
+  <aside class="rail">
+    <div class="tabs" id="tabs"></div>
+    <div class="sec" style="margin:6px 0 0">ماتشات اليوم (بتوقيت القاهرة)</div>
+    <div id="rail" style="display:flex;flex-direction:column;gap:8px"></div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+<script src="../firebase-config.js"></script>
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var DAY = 86400000, TODAY = null, TEAMS = {}, cur = 1, S = {}, sel = null, dirty = false, db, ms = [];
+  var base = 'https://www.gstatic.com/firebasejs/10.12.2/';
+  function el(t, a) { var e = document.createElement(t); for (var k in (a || {})) { if (k === 'text') e.textContent = a[k]; else if (k === 'on') e.addEventListener(a[k][0], a[k][1]); else if (k === 'cls') e.className = a[k]; else e.setAttribute(k, a[k]); } for (var i = 2; i < arguments.length; i++) if (arguments[i]) e.appendChild(arguments[i]); return e; }
+  function load(src) { return new Promise(function (ok, no) { var e = document.createElement('script'); e.src = src; e.onload = ok; e.onerror = no; document.head.appendChild(e); }); }
+  function cday(ms_) { return new Date(ms_).toLocaleDateString('en-CA', { timeZone: 'Africa/Cairo' }); }
+  function ctime(ms_) { return new Date(ms_).toLocaleTimeString('ar-EG-u-nu-latn', { hour: 'numeric', minute: '2-digit', timeZone: 'Africa/Cairo' }); }
+  function dayOf(k) { return cday(Date.now() + (k - 1) * DAY); }
+  function key(m) { return m.home + '|' + m.away; }
+  function gate(t, linkTxt) { $('#app').hidden = true; var g = $('#gate'); g.hidden = false; g.innerHTML = ''; g.appendChild(el('p', { text: t })); if (linkTxt) g.appendChild(el('a', { href: './', text: linkTxt })); }
+
+  load(base + 'firebase-app-compat.js').then(function () { return load(base + 'firebase-auth-compat.js'); }).then(function () { return load(base + 'firebase-firestore-compat.js'); })
+    .then(function () {
+      firebase.initializeApp(window.S22_FB); db = firebase.firestore();
+      firebase.auth().onAuthStateChanged(function (u) {
+        if (!u) { gate('لازم تسجل دخول من لوحة الرفع الأول.', 'افتح لوحة الرفع'); return; }
+        $('#gate').hidden = true; $('#app').hidden = false; start();
+      });
+    }).catch(function () { gate('تعذر تحميل الصفحة. تأكد من الإنترنت وحدّث.'); });
+
+  function start() {
+    Promise.all([fetch('../today.json?t=' + Date.now()).then(function (r) { return r.json(); }), fetch('../teams.json').then(function (r) { return r.json(); }).catch(function () { return {}; })])
+      .then(function (r) { TODAY = r[0]; TEAMS = r[1] || {}; buildTabs(); loadDay(); })
+      .catch(function () { gate('تعذر تحميل المباريات.'); });
+  }
+  function matches(k) { var d = TODAY && TODAY.days && TODAY.days[dayOf(k)]; return (Array.isArray(d) ? d : []).filter(function (m) { return m && m.home && m.away && m.time; }).sort(function (a, b) { return a.time - b.time; }); }
+  function buildTabs() {
+    var t = $('#tabs'); t.innerHTML = '';
+    ['أمس', 'اليوم', 'غدًا'].forEach(function (n, k) { t.appendChild(el('button', { type: 'button', cls: 'btn sm ' + (k === cur ? 'on' : 'alt'), text: n, on: ['click', function () { if (k === cur) return; if (dirty && !confirm('فيه تعديلات ماتحفظتش. تسيبها؟')) return; cur = k; loadDay(); buildTabs(); }] })); });
+    $('#dayTxt').textContent = dayOf(cur);
+  }
+  function loadDay() {
+    var day = dayOf(cur); ms = matches(cur); S = {}; sel = null; dirty = false;
+    $('#main').textContent = 'بيحمّل…'; $('#rail').innerHTML = '';
+    if (!ms.length) { $('#main').textContent = 'مفيش مباريات في اليوم ده.'; return; }
+    db.collection('match_days').doc(day).get().then(function (d) {
+      var saved = (d.exists && d.data().m) || {};
+      ms.forEach(function (m) {
+        var o = saved[key(m)] || {}, goals = Array.isArray(o.goals) ? o.goals : ((m.details && m.details.goals) || []);
+        S[key(m)] = { st: o.st || '', hs: typeof o.hs === 'number' ? o.hs : (typeof m.hs === 'number' ? m.hs : 0), as: typeof o.as === 'number' ? o.as : (typeof m.as === 'number' ? m.as : 0), goals: JSON.parse(JSON.stringify(goals)), touched: !!saved[key(m)] };
+      });
+      sel = key(ms[0]); draw();
+    }).catch(function () { $('#main').textContent = 'تعذر قراءة الحفظ. تأكد من الإنترنت وحدّث.'; });
+  }
+  function statusOf(m) {
+    var s = S[key(m)];
+    if (s.st === 'ft') return 'انتهت'; if (s.st === 'live') return 'جارية'; if (s.st === 'ns') return 'لسه';
+    if (m.st === 'ft') return 'انتهت'; var n = Date.now(); return n < m.time ? 'لسه' : (n >= m.time + 135 * 60000 ? 'انتهت' : 'جارية');
+  }
+  function crest(name) { var c = el('span', { cls: 'crest' }); if (TEAMS[name]) c.appendChild(el('img', { src: '../' + TEAMS[name], alt: '' })); else c.textContent = name.slice(0, 2); return c; }
+  function sc(m) { var s = S[key(m)], has = s.touched || typeof m.hs === 'number' || s.hs || s.as; return has ? s.hs + ' - ' + s.as : ''; }
+  function draw() { drawRail(); drawMain(); }
+  function drawRail() {
+    var r = $('#rail'); r.innerHTML = '';
+    ms.forEach(function (m) {
+      var st = statusOf(m), b = el('button', { type: 'button', cls: 'mi' + (key(m) === sel ? ' on' : ''), on: ['click', function () { sel = key(m); draw(); }] },
+        el('b', { text: m.home + ' × ' + m.away }));
+      var sm = el('small'); if (st === 'جارية') sm.appendChild(el('span', { cls: 'dot' })); sm.appendChild(document.createTextNode(ctime(m.time) + ' • ' + st + (sc(m) && st !== 'لسه' ? ' ' + sc(m) : '')));
+      b.appendChild(sm); r.appendChild(b);
+    });
+  }
+  function touch() { S[sel].touched = true; dirty = true; drawRail(); drawBar(); }
+  function recount(s) { var h = 0, a = 0; s.goals.forEach(function (g) { if (g.side === 'a') a++; else h++; }); s.hs = h; s.as = a; }
+  var barEl;
+  function drawBar() { if (!barEl) return; var d = barEl.querySelector('.dirty'); if (d) d.textContent = dirty ? 'فيه تعديلات لسه ماتحفظتش' : ''; }
+  function drawMain() {
+    var m = ms.filter(function (x) { return key(x) === sel; })[0], s = S[sel], main = $('#main'); main.innerHTML = '';
+    if (!m) return;
+    var scoreEl = el('div', { cls: 'score' }), addBox = el('div', { cls: 'add', hidden: '' }), tl = el('div', { cls: 'tl' });
+    function paintScore() { scoreEl.innerHTML = ''; scoreEl.appendChild(document.createTextNode(s.hs)); scoreEl.appendChild(el('i', { text: ' - ' })); scoreEl.appendChild(document.createTextNode(s.as)); }
+    function paintTl() {
+      tl.innerHTML = '';
+      var arr = s.goals.map(function (g, i) { return { g: g, i: i }; }).sort(function (a, b) { return ((a.g.min || 0) + (a.g.add || 0) / 100) - ((b.g.min || 0) + (b.g.add || 0) / 100); });
+      if (!arr.length) tl.appendChild(el('div', { cls: 'hint', text: 'مفيش أهداف متسجلة.' }));
+      arr.forEach(function (o) {
+        var g = o.g;
+        var mn = el('input', { type: 'number', cls: 'n', min: 1, max: 130, value: g.min || '' }); mn.oninput = function () { g.min = +mn.value || 0; touch(); };
+        var nm = el('input', { type: 'text', cls: 'p', value: g.p || '' }); nm.oninput = function () { g.p = nm.value; touch(); };
+        var sd = el('select'); [['h', m.home], ['a', m.away]].forEach(function (x) { var op = el('option', { value: x[0], text: x[1] }); if ((g.side || 'h') === x[0]) op.selected = true; sd.appendChild(op); });
+        sd.onchange = function () { g.side = sd.value; recount(s); paintScore(); touch(); };
+        var ty = el('select'); [['', 'عادي'], ['pen', 'جزاء'], ['og', 'عكسي']].forEach(function (x) { var op = el('option', { value: x[0], text: x[1] }); if ((g.pen ? 'pen' : g.og ? 'og' : '') === x[0]) op.selected = true; ty.appendChild(op); });
+        ty.onchange = function () { delete g.pen; delete g.og; if (ty.value) g[ty.value] = true; touch(); };
+        tl.appendChild(el('div', { cls: 'ev' }, mn, nm, sd, ty, el('button', { type: 'button', cls: 'x', text: '×', title: 'حذف الهدف', on: ['click', function () { s.goals.splice(o.i, 1); recount(s); paintScore(); paintTl(); touch(); }] })));
+      });
+    }
+    function openAdd(side) {
+      addBox.hidden = false; addBox.innerHTML = '';
+      var mn = el('input', { type: 'number', cls: 'n', min: 1, max: 130, placeholder: 'الدقيقة' }), ad = el('input', { type: 'number', cls: 'n', min: 1, max: 20, placeholder: '+' }), nm = el('input', { type: 'text', cls: 'p', placeholder: 'اسم اللاعب' });
+      var ty = el('select'); [['', 'عادي'], ['pen', 'جزاء'], ['og', 'عكسي']].forEach(function (x) { ty.appendChild(el('option', { value: x[0], text: x[1] })); });
+      var msg = el('span', { cls: 'hint' });
+      var ok = el('button', { type: 'button', cls: 'btn', text: 'تسجيل الهدف', on: ['click', function () {
+        if (!nm.value.trim() || !(+mn.value > 0)) { msg.textContent = 'اكتب الدقيقة واسم اللاعب.'; return; }
+        var g = { min: +mn.value, p: nm.value.trim(), side: side }; if (ad.value) g.add = +ad.value; if (ty.value) g[ty.value] = true;
+        s.goals.push(g); recount(s); paintScore(); paintTl(); touch(); addBox.hidden = true;
+      }] });
+      addBox.appendChild(el('b', { text: 'هدف جديد لـ ' + (side === 'a' ? m.away : m.home) }));
+      [mn, ad, nm, ty, ok, el('button', { type: 'button', cls: 'btn alt', text: 'إلغاء', on: ['click', function () { addBox.hidden = true; }] }), msg].forEach(function (x) { addBox.appendChild(x); });
+      mn.focus();
+    }
+    function side(name, sd) {
+      var minus = el('button', { type: 'button', cls: 'sb', text: '−', title: 'نقّص هدف', on: ['click', function () {
+        var k = -1; for (var i = s.goals.length - 1; i >= 0; i--) if ((s.goals[i].side || 'h') === sd) { k = i; break; }
+        if (k >= 0) { s.goals.splice(k, 1); recount(s); } else { if (sd === 'a') s.as = Math.max(0, s.as - 1); else s.hs = Math.max(0, s.hs - 1); }
+        paintScore(); paintTl(); touch();
+      }] });
+      var plus = el('button', { type: 'button', cls: 'sb p', text: '+', title: 'سجّل هدف', on: ['click', function () { openAdd(sd); }] });
+      return el('div', { cls: 'tm' }, crest(name), el('b', { text: name }), el('div', { style: 'display:flex;gap:8px' }, minus, plus));
+    }
+    var stBtns = el('div', { cls: 'stat' });
+    [['', 'تلقائي'], ['ns', 'لسه'], ['live', 'جارية'], ['ft', 'انتهت']].forEach(function (o) {
+      var b = el('button', { type: 'button', cls: 'btn sm ' + (o[0] === 'live' ? 'live ' : '') + (s.st === o[0] ? 'on' : 'alt'), text: o[1], on: ['click', function () { s.st = o[0]; touch(); drawMain(); }] });
+      stBtns.appendChild(b);
+    });
+    paintScore(); paintTl();
+    var saveMsg = el('div');
+    barEl = el('div', { cls: 'bar' }, el('span', { cls: 'dirty' }),
+      el('button', { type: 'button', cls: 'btn alt', text: 'رجّع الأصل', on: ['click', function () { if (!confirm('تلغي تعديلاتك على المباراة دي؟')) return; s.st = ''; s.touched = false; s.goals = (m.details && m.details.goals) ? JSON.parse(JSON.stringify(m.details.goals)) : []; recount(s); if (!s.goals.length) { s.hs = typeof m.hs === 'number' ? m.hs : 0; s.as = typeof m.as === 'number' ? m.as : 0; } dirty = true; draw(); }] }),
+      el('button', { type: 'button', cls: 'btn', id: 'saveBtn', text: 'حفظ ونشر على الموقع', on: ['click', function () { save(saveMsg); }] }));
+    main.appendChild(el('div', { cls: 'panel' }, el('div', { cls: 'hint', text: m.comp + ' • ' + ctime(m.time) }), stBtns,
+      el('div', { cls: 'board' }, side(m.home, 'h'), scoreEl, side(m.away, 'a')),
+      el('div', { cls: 'hint', text: 'دوس + وهيطلب اسم اللاعب والدقيقة، والنتيجة بتتحسب لوحدها.' })));
+    main.appendChild(addBox);
+    main.appendChild(el('div', null, el('div', { cls: 'sec', text: 'سير المباراة' }), tl));
+    main.appendChild(barEl); main.appendChild(saveMsg); drawBar();
+  }
+  function save(msgEl) {
+    var out = {}, bad = '';
+    ms.forEach(function (m) {
+      var s = S[key(m)]; if (!s.touched) return;
+      var o = {}; if (s.st) o.st = s.st; o.hs = +s.hs; o.as = +s.as;
+      var gs = s.goals.filter(function (g) { return (g.p || '').trim() && g.min > 0; });
+      if (gs.length !== s.goals.length) bad = 'فيه هدف ناقص اسم لاعب أو دقيقة في ' + m.home + ' × ' + m.away + '.';
+      o.goals = gs.map(function (g) { var r = { min: +g.min, p: g.p.trim(), side: g.side === 'a' ? 'a' : 'h' }; if (g.add) r.add = +g.add; if (g.pen) r.pen = true; if (g.og) r.og = true; return r; });
+      out[key(m)] = o;
+    });
+    msgEl.innerHTML = '';
+    if (bad) { msgEl.appendChild(el('div', { cls: 'msg bad', text: bad })); return; }
+    var b = $('#saveBtn'); b.disabled = true; b.textContent = 'بيحفظ…';
+    db.collection('match_days').doc(dayOf(cur)).set({ m: out, by: firebase.auth().currentUser.email }).then(function () {
+      dirty = false; drawBar(); msgEl.appendChild(el('div', { cls: 'msg ok', text: 'اتحفظت. ظهرت على الموقع.' }));
+    }).catch(function (e) {
+      msgEl.appendChild(el('div', { cls: 'msg bad', text: e && e.code === 'permission-denied' ? 'مفيش صلاحية. لازم قواعد Firebase الجديدة تتنشر الأول.' : 'تعذر الحفظ: ' + (e.code || e.message) }));
+    }).then(function () { b.disabled = false; b.textContent = 'حفظ ونشر على الموقع'; });
+  }
+  window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+})();
+</script>
+</body>
+</html>
