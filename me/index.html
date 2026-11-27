@@ -263,13 +263,22 @@ textarea { min-height: 110px; resize: vertical; }
       st.fixtures.sort(function (a, b) { return a.time - b.time; });
     });
   }
+  var FAVS = ['الأهلي', 'الزمالك', 'بيراميدز'];
+  function fav() { var f = lsGet('me-team', null); return FAVS.indexOf(f) >= 0 ? f : null; }
+  function sideFor(m) { var f = fav(); return f === m.home ? 'h' : f === m.away ? 'a' : null; }
+  function mine4(m) { var sd = sideFor(m); return sd && (sd === 'h' ? m.sqH : m.sqA) && (sd === 'h' ? m.sqH : m.sqA).length ? sd : null; }
+  function favMatches() { return st.matches.filter(function (m) { return mine4(m); }); }
+  function favPicker(after) {
+    var c = el('div', 'card'); c.appendChild(el('div', 'h2', 'اختار فريقك المفضل')); c.appendChild(el('div', 'muted', 'هتعمل تشكيل فريقك وتتوقع لاعبيه في كل مباراة.'));
+    var seg = el('div', 'seg'); FAVS.forEach(function (t) { var b = el('button', null, t); b.type = 'button'; b.addEventListener('click', function () { lsSet('me-team', t); after(); }); seg.appendChild(b); }); c.appendChild(seg); return c;
+  }
   function mstate(m) { var n = Date.now(); if (m.scored) return 'scored'; if (n < m.open) return 'soon'; if (n < m.lock) return 'open'; return 'locked'; }
 
   /* ---------- notifications (in-app) ---------- */
   function notifs() {
     var out = [], n = Date.now(), nm = [];
     if (!st.quizDone) out.push({ id: 'q' + cairoDate(), t: 'تحدي اليوم مستنيك', d: 'أسئلة جديدة النهاردة. جاوب قبل منتصف الليل' + (st.qprof && st.qprof.streak ? ' وحافظ على سلسلة ' + st.qprof.streak + ' يوم.' : '.'), href: '../quiz/', a: 'ابدأ التحدي' });
-    st.matches.forEach(function (m) {
+    favMatches().forEach(function (m) {
       var s = mstate(m), mine = st.mylu[m.id], title = m.home + ' × ' + m.away;
       if (s === 'open' && !mine) out.push({ id: 'o' + m.id, t: 'اختر تشكيلك: ' + title, d: 'تقفل بعد ' + dur(m.lock - n) + '.', tab: 'play', a: 'اختار التشكيل', hot: m.lock - n < 3 * 3600000 });
       if (s === 'open' && mine && m.lock - n < 2 * 3600000) out.push({ id: 'l' + m.id, t: 'آخر فرصة للتعديل', d: title + ' تقفل بعد ' + dur(m.lock - n) + '.', tab: 'play', a: 'عدّل' });
@@ -312,10 +321,11 @@ textarea { min-height: 110px; resize: vertical; }
 
   function paneHome(p) {
     var q = st.qprof || {}, rank = st.myRank;
+    if (!fav()) p.appendChild(favPicker(renderPane));
     var stats = el('div', 'stats');
     [[seasonPts(st.qprof, st.lprof), 'نقاط الموسم'], [q.streak || 0, 'أيام متتالية'], [rank || '—', 'مركزك']].forEach(function (s) { var d = el('div', 'stat'); d.appendChild(el('b', null, String(s[0]))); d.appendChild(el('span', null, s[1])); stats.appendChild(d); });
     p.appendChild(stats);
-    var open = st.matches.filter(function (m) { return mstate(m) === 'open'; })[0];
+    var open = favMatches().filter(function (m) { return mstate(m) === 'open'; })[0];
     if (open) {
       var c = el('div', 'card urgent'), mine = st.mylu[open.id];
       c.appendChild(el('div', 'h2', mine ? 'تشكيلك متسجل. تقدر تعدّله' : 'المطلوب منك دلوقتي'));
@@ -327,7 +337,7 @@ textarea { min-height: 110px; resize: vertical; }
     var qc = el('div', 'card'); qc.appendChild(el('div', 'h2', 'تحدي اليوم'));
     qc.appendChild(el('div', 'muted', st.quizDone ? 'خلّصته النهاردة وجبت ' + st.quizDone.pts + ' نقطة. التحدي الجاي بعد منتصف الليل.' : 'لسه ما حليتوش. أسئلة جديدة كل يوم.'));
     var qa = el('a', st.quizDone ? 'btn ghost' : 'btn', st.quizDone ? 'شوف الترتيب' : 'ابدأ التحدي'); qa.href = '../quiz/'; qc.appendChild(qa); p.appendChild(qc);
-    var ms = st.matches.filter(function (m) { return mstate(m) !== 'scored' || st.mylu[m.id]; }).slice(0, 4);
+    var ms = favMatches().filter(function (m) { return mstate(m) !== 'scored' || st.mylu[m.id]; }).slice(0, 4);
     if (ms.length) { p.appendChild(el('div', 'h2', 'مبارياتك')); var l = el('div', 'mrow'); ms.forEach(function (m) { l.appendChild(matchCard(m)); }); p.appendChild(l); }
     if (st.lprof && st.lprof.pts) p.appendChild(el('div', 'muted', 'نقاط اختر تشكيلك: ' + st.lprof.pts));
     var out = el('button', 'btn ghost', 'تسجيل الخروج'); out.type = 'button'; out.addEventListener('click', function () { auth.signOut(); }); p.appendChild(out);
@@ -347,14 +357,16 @@ textarea { min-height: 110px; resize: vertical; }
   }
   function startDraft(m) {
     var mine = st.mylu[m.id];
-    draft = { m: m, side: mine ? mine.side : (m.sqH && m.sqH.length ? 'h' : 'a'), form: mine ? mine.form : '4-3-3', xi: mine ? mine.xi.slice() : new Array(11).fill(null), sc: mine && mine.sc != null ? mine.sc : null, as: mine && mine.as != null ? mine.as : null, open: null };
+    draft = { m: m, side: sideFor(m), form: mine ? mine.form : '4-3-3', xi: mine ? mine.xi.slice() : new Array(11).fill(null), sc: mine && mine.sc != null ? mine.sc : null, as: mine && mine.as != null ? mine.as : null, open: null };
     renderPane(); window.scrollTo(0, 0);
   }
   function panePlay(p) {
     if (draft) return paneDraft(p);
     p.appendChild(el('div', 'h2', 'مباريات اختر تشكيلك'));
-    var l = el('div', 'mrow'); st.matches.forEach(function (m) { l.appendChild(matchCard(m)); });
-    if (!st.matches.length) { var e = el('div', 'card'); e.appendChild(el('div', 'h2', 'مفيش مباراة متاحة دلوقتي')); e.appendChild(el('div', 'muted', 'بنضيف قائمة لاعبي الفريقين قبل المباراة بـ 48 ساعة. هتلاقي هنا إشعار أول ما تتفتح.')); l.appendChild(e); }
+    if (!fav()) { p.appendChild(favPicker(renderPane)); return; }
+    var ch = el('button', 'btn ghost', 'فريقك: ' + fav() + ' (تغيير)'); ch.type = 'button'; ch.style.minHeight = '40px'; ch.addEventListener('click', function () { lsSet('me-team', null); renderPane(); }); p.appendChild(ch);
+    var l = el('div', 'mrow'); favMatches().forEach(function (m) { l.appendChild(matchCard(m)); });
+    if (!favMatches().length) { var e = el('div', 'card'); e.appendChild(el('div', 'h2', 'مفيش مباراة متاحة دلوقتي')); e.appendChild(el('div', 'muted', 'مفيش مباراة لفريقك في الأيام الجاية. أول ما تتحدد هتلاقيها هنا وتوصلك إشعار.')); l.appendChild(e); }
     p.appendChild(l);
   }
   function paneDraft(p) {
@@ -363,8 +375,6 @@ textarea { min-height: 110px; resize: vertical; }
     p.appendChild(back);
     var h = el('div', 'card'); h.appendChild(el('div', 'h2', m.home + ' × ' + m.away));
     var cd = el('div', 'row'); cd.appendChild(el('span', 'muted', editable ? 'تقفل بعد' : 'اتقفلت')); if (editable) { var c = el('span', 'cd'); c.dataset.until = m.lock; c.textContent = hms(m.lock - Date.now()); cd.appendChild(c); } h.appendChild(cd); p.appendChild(h);
-    var seg = el('div', 'seg'); [['h', m.home], ['a', m.away]].forEach(function (x) { var b = el('button', null, x[1]); b.type = 'button'; b.setAttribute('aria-pressed', String(draft.side === x[0])); b.disabled = !editable || !(x[0] === 'h' ? m.sqH : m.sqA).length; b.addEventListener('click', function () { if (draft.side !== x[0]) { draft.side = x[0]; draft.xi = new Array(11).fill(null); draft.sc = null; draft.as = null; renderPane(); } }); seg.appendChild(b); });
-    p.appendChild(seg);
     var fm = el('div', 'forms'); Object.keys(FORMS).forEach(function (f) { var b = el('button', null, f); b.type = 'button'; b.setAttribute('aria-pressed', String(draft.form === f)); b.disabled = !editable; b.addEventListener('click', function () { draft.form = f; draft.xi = new Array(11).fill(null); draft.sc = null; draft.as = null; renderPane(); }); fm.appendChild(b); });
     p.appendChild(fm);
     p.appendChild(pitchEl(m, draft.side, editable));
@@ -472,7 +482,24 @@ textarea { min-height: 110px; resize: vertical; }
     t.split('\n').forEach(function (ln) { var a = ln.split('|').map(function (x) { return x.trim(); }); if (a.length < 3) return; var n = parseInt(a[0], 10), pos = map[a[1]]; if (!n || !pos || !a[2]) return; out.push({ num: n, pos: pos, n: a[2] }); });
     return out;
   }
+  function publishFixtures(quiet) {
+    return fetch('../squads.json?v=' + Date.now()).then(function (r) { return r.json(); }).then(function (SQ) {
+      var T = firebase.firestore.Timestamp, jobs = [], have = {}; st.matches.forEach(function (x) { have[x.id] = 1; });
+      st.fixtures.forEach(function (m) {
+        if (m.time < Date.now() || m.time > Date.now() + 4 * 86400000) return;
+        var sh = SQ[m.home] || [], sa = SQ[m.away] || []; if (!sh.length && !sa.length) return;
+        var id = mid(m.time, m.home, m.away); if (have[id]) return;
+        jobs.push(db.collection('match_lineups').doc(id).set({ home: m.home, away: m.away, comp: m.comp, time: m.time, open: T.fromMillis(m.time - 48 * 3600000), lock: T.fromMillis(m.time - 10 * 3600000), sqH: sh, sqA: sa, by: user.email }));
+      });
+      return Promise.all(jobs).then(function () { return jobs.length; });
+    });
+  }
   function paneAdm(p) {
+    var ap = el('div', 'card'); ap.appendChild(el('div', 'h2', 'نشر مباريات الأهلي والزمالك وبيراميدز'));
+    ap.appendChild(el('div', 'muted', 'بتنشر تلقائيًا كل مباراة قادمة (خلال 4 أيام) لأي فريق من التلاتة، بقوائمهم الجاهزة.'));
+    var pb = el('button', 'btn', 'انشر دلوقتي'); pb.type = 'button'; var pm = el('div', 'msg'); pm.hidden = true;
+    pb.addEventListener('click', function () { pb.disabled = true; publishFixtures().then(function (n) { pm.className = 'msg ok'; pm.textContent = n ? 'اتنشر ' + n + ' مباراة.' : 'مفيش مباريات جديدة للنشر.'; pm.hidden = false; pb.disabled = false; loadAll(); }).catch(function (e) { pb.disabled = false; pm.className = 'msg'; pm.textContent = 'فشل (' + (e.code || e.message) + ')'; pm.hidden = false; }); });
+    ap.appendChild(pb); ap.appendChild(pm); p.appendChild(ap);
     p.appendChild(el('div', 'h2', 'إدارة اختر تشكيلك'));
     var c = el('div', 'card'); c.appendChild(el('div', 'h2', '1) نشر قوائم الفريقين'));
     c.appendChild(el('div', 'muted', 'قوائم الأهلي والزمالك وبيراميدز بتتملي لوحدها. لأي فريق تاني اكتب كل سطر: رقم | مركز (حارس/مدافع/وسط/مهاجم) | الاسم'));
@@ -507,7 +534,7 @@ textarea { min-height: 110px; resize: vertical; }
   function scoreMatch(id, f, out) {
     function say(t, ok) { out.className = 'msg' + (ok ? ' ok' : ''); out.textContent = t; out.hidden = false; }
     var off = { h: { x: nums(f.xh), sc: nums(f.sh), as: nums(f.ah) }, a: { x: nums(f.xa), sc: nums(f.sa), as: nums(f.aa) } };
-    if (off.h.x.length !== 11 || off.a.x.length !== 11) { say('لازم 11 رقم لكل فريق.'); return Promise.resolve(); }
+    if ((off.h.x.length && off.h.x.length !== 11) || (off.a.x.length && off.a.x.length !== 11) || (!off.h.x.length && !off.a.x.length)) { say('لازم 11 رقم للفريق (أو الفريقين لو الاتنين من التلاتة). سيب خانة الفريق التاني فاضية لو مش من التلاتة.'); return Promise.resolve(); }
     var ref = db.collection('match_lineups').doc(id);
     return ref.get().then(function (d) {
       var m = d.data(); if (m.scored) { say('المباراة اتحسبت قبل كده.'); return; }
@@ -523,7 +550,7 @@ textarea { min-height: 110px; resize: vertical; }
         }
         var gains = {}, ups = [];
         all.forEach(function (l) {
-          var o = off[l.side], pts = 0, hit = 0;
+          var o = off[l.side], pts = 0, hit = 0; if (!o.x.length) return;
           l.xi.forEach(function (n) { if (o.x.indexOf(n) >= 0) { var b = tier(l.side, n); pts += b; hit++; } });
           if (l.sc != null && o.sc.indexOf(l.sc) >= 0) pts += 2; if (l.as != null && o.as.indexOf(l.as) >= 0) pts += 1; if (hit === 11) pts += 5;
           gains[l.uid] = (gains[l.uid] || 0) + pts; ups.push({ ref: l.ref, pts: pts, uid: l.uid, n: l.n });
@@ -548,6 +575,7 @@ textarea { min-height: 110px; resize: vertical; }
     show('s-load'); $('who').hidden = false; $('uname').textContent = shortName(u); $('uav').textContent = shortName(u).charAt(0);
     loadAll().then(function () {
       show('app'); drawTabs(); renderPane();
+      if (isEditor()) publishFixtures().then(function (n) { if (n) loadAll().then(function () { renderPane(); }); }).catch(function () {});
       db.collection('quiz_users').orderBy('total', 'desc').limit(100).get().then(function (s) { var i = 0, r = 0; s.forEach(function (d) { i++; if (d.id === user.uid) r = i; }); if (r) { st.myRank = r; if (tab === 'home') renderPane(); } }).catch(function () {});
     }).catch(function (e) { show('s-login'); var er = $('lerr'); er.textContent = 'حصلت مشكلة في التحميل (' + (e.code || e.message) + '). حدّث الصفحة.'; er.hidden = false; });
   }
