@@ -119,6 +119,11 @@ textarea { min-height: 110px; resize: vertical; }
 .nt b { font-family: var(--display); }
 .op { border-top: 1px solid var(--line); padding-top: 10px; }
 .op:first-child { border-top: 0; padding-top: 0; }
+.stage.imgm { height: auto; aspect-ratio: 1012 / 920; background: url(pitch.jpg) center / 100% 100% no-repeat; perspective: none; }
+.stage.imgm::after { display: none; }
+.islot { position: absolute; width: 0; height: 0; transform: scale(var(--k, .5)); transform-origin: 0 0; }
+.islot .sh { left: -34px; top: -14px; width: 68px; height: 28px; }
+.islot .fig { transform: none; left: -22px; bottom: 6px; }
 @media (max-width: 380px) { .pitch { transform: rotateX(var(--tilt)) scale(.92); } }
 </style>
 </head>
@@ -179,7 +184,8 @@ textarea { min-height: 110px; resize: vertical; }
   var $ = function (id) { return document.getElementById(id); };
   var db, auth, user = null, tab = 'home', now = Date.now();
   var st = { quizDone: null, qprof: null, lprof: null, matches: [], mylu: {}, today: null, fixtures: [] };
-  var draft = null, pitchTab = 'week';
+  var draft = null, pitchTab = 'week', IMG = false;
+  (function () { var i = new Image(); i.onload = function () { IMG = true; if (tab === 'play' && draft) renderPane(); }; i.src = 'pitch.jpg'; })();
 
   function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
   function put(parent) { parent.replaceChildren.apply(parent, [].slice.call(arguments, 1).filter(Boolean)); return parent; }
@@ -198,10 +204,10 @@ textarea { min-height: 110px; resize: vertical; }
   function seasonPts(q, l) { return ((q && q.total) || 0) + ((l && l.pts) || 0); }
 
   /* ---------- mini figure (inline SVG, shaded like a toy figurine) ---------- */
-  var KITS = { 'الأهلي': ['#D8232A', '#FFFFFF', '#D8232A'], 'الزمالك': ['#F2F2EE', '#C8102E', '#F2F2EE'], 'بيراميدز': ['#4DB4F0', '#0B3A66', '#4DB4F0'], 'المصري': ['#1F8F4E', '#111111', '#1F8F4E'], 'مصر': ['#C8102E', '#FFFFFF', '#111111'] };
+  var KITS = { 'الأهلي': ['#D8232A', '#FFFFFF', '#D8232A', '#FFFFFF'], 'الزمالك': ['#F7F7F4', '#F7F7F4', '#F7F7F4', '#C8102E'], 'بيراميدز': ['#4DB4F0', '#0B3A66', '#4DB4F0', '#FFFFFF'], 'المصري': ['#1F8F4E', '#111111', '#1F8F4E', '#FFFFFF'], 'مصر': ['#C8102E', '#FFFFFF', '#111111', '#FFFFFF'] };
   function kit(name, gk) {
-    if (gk) return ['#F2A862', '#1D1204', '#F2A862'];
-    return KITS[name] || ['hsl(' + hue(name) + ' 55% 46%)', '#F5F5F2', 'hsl(' + hue(name) + ' 55% 46%)'];
+    if (gk) return ['#F2D13B', '#1D1204', '#F2D13B', '#1D1204'];
+    return KITS[name] || ['hsl(' + hue(name) + ' 55% 46%)', '#F5F5F2', 'hsl(' + hue(name) + ' 55% 46%)', '#FFFFFF'];
   }
   var SKIN = ['#F1C9A5', '#D9A47A', '#A8734B', '#7A4F31'], HAIR = ['#2B1B10', '#111', '#5A3A1E', '#C9A24B'];
   var uidc = 0;
@@ -222,7 +228,7 @@ textarea { min-height: 110px; resize: vertical; }
       '<rect x="6.5" y="21" width="8" height="10" rx="4" fill="' + sv + '"/><rect x="37.5" y="21" width="8" height="10" rx="4" fill="' + sv + '"/>' +
       // torso
       '<path d="M14 19c4-3 20-3 24 0l2 26H12z" fill="' + sv + '"/><path d="M14 19c4-3 20-3 24 0l2 26H12z" fill="url(#' + id + 'j)"/>' +
-      '<text x="26" y="38" text-anchor="middle" font-family="Barlow Condensed,Arial Narrow,sans-serif" font-style="italic" font-weight="800" font-size="16" fill="' + k[1] + '" stroke="rgba(0,0,0,.25)" stroke-width=".4">' + (num == null ? '?' : num) + '</text>' +
+      '<text x="26" y="38" text-anchor="middle" font-family="Barlow Condensed,Arial Narrow,sans-serif" font-style="italic" font-weight="800" font-size="16" fill="' + k[3] + '" stroke="rgba(0,0,0,.3)" stroke-width=".5">' + (num == null ? '?' : num) + '</text>' +
       // neck + head
       '<rect x="22.5" y="14" width="7" height="6" rx="2" fill="' + sk + '"/>' +
       '<circle cx="26" cy="9.5" r="9" fill="' + sk + '"/><path d="M17 8.5c0-6 4-8.6 9-8.6s9 2.6 9 8.6c-2-3-5-4-9-4s-7 1-9 4z" fill="' + hr + '"/>' +
@@ -241,6 +247,7 @@ textarea { min-height: 110px; resize: vertical; }
   }
   function pitchEl(m, side, edit) {
     var sq = side === 'h' ? m.sqH : m.sqA, team = side === 'h' ? m.home : m.away, slots = slotsFor(draft.form);
+    if (IMG) return imgPitch(m, side, edit, sq, team, slots);
     var stage = el('div', 'stage'), pitch = el('div', 'pitch'), turf = el('div', 'turf');
     turf.innerHTML = '<svg viewBox="0 0 66 100" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="rgba(255,255,255,.55)" stroke-width=".5"><rect x="1" y="1" width="64" height="98"/><line x1="1" y1="50" x2="65" y2="50"/><circle cx="33" cy="50" r="9"/><rect x="13" y="1" width="40" height="16"/><rect x="24" y="1" width="18" height="6"/><rect x="13" y="83" width="40" height="16"/><rect x="24" y="93" width="18" height="6"/></g></svg>';
     pitch.appendChild(turf); pitch.appendChild(el('div', 'goal t')); pitch.appendChild(el('div', 'goal b'));
@@ -258,6 +265,22 @@ textarea { min-height: 110px; resize: vertical; }
       slot.appendChild(f); pitch.appendChild(slot);
     });
     stage.appendChild(pitch); return stage;
+  }
+  function imgPitch(m, side, edit, sq, team, slots) {
+    var stage = el('div', 'stage imgm'), W = Math.min(520, window.innerWidth) - 32;
+    slots.map(function (s, i) { return { s: s, i: i }; }).sort(function (a, b) { return a.s.y - b.s.y; }).forEach(function (o) {
+      var s = o.s, i = o.i, f = Math.pow(s.y / 100, 1.46), iy = 190 + 655 * f, t = (iy - 190) / 655;
+      var xl = 270 + (75 - 270) * t, xr = 785 + (990 - 785) * t, ix = xl + (xr - xl) * s.x / 100, sc = (xr - xl) / 600;
+      var num = draft.xi[i], p = sq.filter(function (x) { return x.num === num; })[0], u = W / 1012;
+      var slot = el('div', 'islot'); slot.style.left = ix / 1012 * 100 + '%'; slot.style.top = (iy + 18) / 920 * 100 + '%'; slot.style.setProperty('--k', String(sc * u * 1.5));
+      var sh = el('div', 'sh'); sh.style.setProperty('--ring', kit(team, s.g === 'GK')[0]); slot.appendChild(sh);
+      var b = el('button', 'fig' + (p ? '' : ' empty') + (draft.open === i ? ' sel' : '')); b.type = 'button'; b.setAttribute('aria-label', p ? p.n : 'اختر لاعب');
+      b.innerHTML = figure(kit(team, s.g === 'GK'), p ? p.num : null, p ? p.num * 7 : i * 5);
+      b.appendChild(el('span', 'tag', p ? p.n.split(' ').slice(-1)[0] : '+')); if (p && draft.cap === p.num) b.appendChild(el('span', 'c', 'C'));
+      if (edit) b.addEventListener('click', function () { openPicker(m, side, i, s.g); });
+      slot.appendChild(b); stage.appendChild(slot);
+    });
+    return stage;
   }
   var POSN = { GK: 'حارس', DF: 'مدافع', MF: 'وسط', FW: 'مهاجم' };
   function openPicker(m, side, slotIdx, grp) {
