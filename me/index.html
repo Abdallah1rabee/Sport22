@@ -211,12 +211,13 @@ textarea { min-height: 110px; resize: vertical; }
       var t = el('button', 'tok' + (draft.open === i ? ' sel' : '')); t.type = 'button'; t.style.left = s.x + '%'; t.style.top = s.y + '%'; t.setAttribute('aria-label', p ? p.n : 'اختر لاعب');
       var d = el('span', 'disc' + (p ? '' : ' empty'), p ? String(p.num) : '+'); d.style.background = p ? k[0] : 'transparent'; d.style.color = p ? k[3] : '#cfe3da'; if (p && k[0] === '#F7F7F4') d.style.color = '#C8102E';
       if (p && draft.sc === p.num) d.appendChild(el('span', 'bd', '⚽')); if (p && draft.as === p.num) d.appendChild(el('span', 'bd a', 'A'));
-      t.appendChild(d); t.appendChild(el('span', 'nm', p ? p.n.split(' ').slice(-1)[0] : POSN[s.g]));
+      t.appendChild(d); t.appendChild(el('span', 'nm', p ? shortN(p.n) : POSN[s.g]));
       if (edit) t.addEventListener('click', function () { openPicker(m, side, i, s.g); });
       pitch.appendChild(t);
     });
     return pitch;
   }
+  function shortN(n) { var q = /«([^»]+)»/.exec(n); return q ? q[1] : n.split(' ').slice(-1)[0]; }
   var POSN = { GK: 'حارس', DF: 'مدافع', MF: 'وسط', FW: 'مهاجم' };
   function openPicker(m, side, slotIdx, grp) {
     var sq = side === 'h' ? m.sqH : m.sqA, used = {}; draft.xi.forEach(function (n, i) { if (n != null && i !== slotIdx) used[n] = 1; });
@@ -346,7 +347,7 @@ textarea { min-height: 110px; resize: vertical; }
   }
   function startDraft(m) {
     var mine = st.mylu[m.id];
-    draft = { m: m, side: mine ? mine.side : 'h', form: mine ? mine.form : '4-3-3', xi: mine ? mine.xi.slice() : new Array(11).fill(null), sc: mine && mine.sc != null ? mine.sc : null, as: mine && mine.as != null ? mine.as : null, open: null };
+    draft = { m: m, side: mine ? mine.side : (m.sqH && m.sqH.length ? 'h' : 'a'), form: mine ? mine.form : '4-3-3', xi: mine ? mine.xi.slice() : new Array(11).fill(null), sc: mine && mine.sc != null ? mine.sc : null, as: mine && mine.as != null ? mine.as : null, open: null };
     renderPane(); window.scrollTo(0, 0);
   }
   function panePlay(p) {
@@ -362,7 +363,7 @@ textarea { min-height: 110px; resize: vertical; }
     p.appendChild(back);
     var h = el('div', 'card'); h.appendChild(el('div', 'h2', m.home + ' × ' + m.away));
     var cd = el('div', 'row'); cd.appendChild(el('span', 'muted', editable ? 'تقفل بعد' : 'اتقفلت')); if (editable) { var c = el('span', 'cd'); c.dataset.until = m.lock; c.textContent = hms(m.lock - Date.now()); cd.appendChild(c); } h.appendChild(cd); p.appendChild(h);
-    var seg = el('div', 'seg'); [['h', m.home], ['a', m.away]].forEach(function (x) { var b = el('button', null, x[1]); b.type = 'button'; b.setAttribute('aria-pressed', String(draft.side === x[0])); b.disabled = !editable; b.addEventListener('click', function () { if (draft.side !== x[0]) { draft.side = x[0]; draft.xi = new Array(11).fill(null); draft.sc = null; draft.as = null; renderPane(); } }); seg.appendChild(b); });
+    var seg = el('div', 'seg'); [['h', m.home], ['a', m.away]].forEach(function (x) { var b = el('button', null, x[1]); b.type = 'button'; b.setAttribute('aria-pressed', String(draft.side === x[0])); b.disabled = !editable || !(x[0] === 'h' ? m.sqH : m.sqA).length; b.addEventListener('click', function () { if (draft.side !== x[0]) { draft.side = x[0]; draft.xi = new Array(11).fill(null); draft.sc = null; draft.as = null; renderPane(); } }); seg.appendChild(b); });
     p.appendChild(seg);
     var fm = el('div', 'forms'); Object.keys(FORMS).forEach(function (f) { var b = el('button', null, f); b.type = 'button'; b.setAttribute('aria-pressed', String(draft.form === f)); b.disabled = !editable; b.addEventListener('click', function () { draft.form = f; draft.xi = new Array(11).fill(null); draft.sc = null; draft.as = null; renderPane(); }); fm.appendChild(b); });
     p.appendChild(fm);
@@ -474,13 +475,21 @@ textarea { min-height: 110px; resize: vertical; }
   function paneAdm(p) {
     p.appendChild(el('div', 'h2', 'إدارة اختر تشكيلك'));
     var c = el('div', 'card'); c.appendChild(el('div', 'h2', '1) نشر قوائم الفريقين'));
-    c.appendChild(el('div', 'muted', 'كل سطر: رقم | مركز (حارس/مدافع/وسط/مهاجم) | الاسم. مثال: 1 | حارس | محمد الشناوي'));
+    c.appendChild(el('div', 'muted', 'قوائم الأهلي والزمالك وبيراميدز بتتملي لوحدها. لأي فريق تاني اكتب كل سطر: رقم | مركز (حارس/مدافع/وسط/مهاجم) | الاسم'));
     var sel = el('select'); st.fixtures.forEach(function (m, i) { var o = el('option', null, m.home + ' × ' + m.away + ' — ' + when(m.time)); o.value = i; sel.appendChild(o); });
     var th = el('textarea'); th.placeholder = 'قائمة صاحب الأرض'; var ta = el('textarea'); ta.placeholder = 'قائمة الضيف';
+    var PN = { GK: 'حارس', DF: 'مدافع', MF: 'وسط', FW: 'مهاجم' }, SQ = null;
+    function fill() {
+      var m = st.fixtures[sel.value]; if (!m || !SQ) return;
+      function tx(t) { return (SQ[t] || []).map(function (x) { return x.num + ' | ' + PN[x.pos] + ' | ' + x.n; }).join('\n'); }
+      th.value = tx(m.home); ta.value = tx(m.away);
+    }
+    sel.addEventListener('change', fill);
+    fetch('../squads.json?v=' + Date.now()).then(function (r) { return r.json(); }).then(function (j) { SQ = j; fill(); }).catch(function () {});
     var go = el('button', 'btn', 'نشر المباراة'); go.type = 'button'; var msg = el('div', 'msg'); msg.hidden = true;
     go.addEventListener('click', function () {
       var m = st.fixtures[sel.value]; if (!m) return; var sh = parseSquad(th.value), sa = parseSquad(ta.value);
-      if (sh.length < 14 || sa.length < 14) { msg.textContent = 'كل قائمة لازم يكون فيها 14 لاعب على الأقل (عدد الصحيح: ' + sh.length + ' / ' + sa.length + ').'; msg.className = 'msg'; msg.hidden = false; return; }
+      if ((sh.length && sh.length < 14) || (sa.length && sa.length < 14) || (!sh.length && !sa.length)) { msg.textContent = 'كل قائمة لازم يكون فيها 14 لاعب على الأقل، أو تسيبها فاضية لو الفريق مش متاح (الأرقام الصحيحة: ' + sh.length + ' / ' + sa.length + ').'; msg.className = 'msg'; msg.hidden = false; return; }
       var T = firebase.firestore.Timestamp, id = mid(m.time, m.home, m.away);
       db.collection('match_lineups').doc(id).set({ home: m.home, away: m.away, comp: m.comp, time: m.time, open: T.fromMillis(m.time - 48 * 3600000), lock: T.fromMillis(m.time - 10 * 3600000), sqH: sh, sqA: sa, by: user.email })
         .then(function () { msg.className = 'msg ok'; msg.textContent = 'اتنشرت المباراة. هتفتح للاعبين قبلها بـ 48 ساعة.'; msg.hidden = false; }).catch(function (e) { msg.className = 'msg'; msg.textContent = 'فشل النشر (' + (e.code || e.message) + ')'; msg.hidden = false; });
