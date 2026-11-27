@@ -95,6 +95,7 @@ a { color: inherit; }
 .fig.empty svg { opacity: .55; filter: grayscale(.6) drop-shadow(0 3px 2px rgba(0,0,0,.35)); }
 .fig.empty .tag { background: rgba(10,16,22,.7); color: #9fb0bf; }
 .fig .c { position: absolute; top: -4px; right: -4px; width: 19px; height: 19px; border-radius: 50%; background: var(--warn); color: #1D1204; font-size: 11px; font-weight: 800; display: grid; place-items: center; border: 2px solid #1d5a43; }
+.fig .c.a { right: auto; left: -4px; background: var(--accent); color: var(--accent-ink); }
 .fig.sel svg { filter: drop-shadow(0 0 8px #7FD6B0) drop-shadow(0 3px 2px rgba(0,0,0,.35)); }
 .sheet { position: fixed; inset: 0; z-index: 20; background: rgba(5,8,12,.6); display: flex; align-items: flex-end; justify-content: center; }
 .sheet .in { width: 100%; max-width: 520px; max-height: 78vh; overflow: auto; background: var(--surface); border-radius: 20px 20px 0 0; border: 1px solid var(--line); padding: 14px 16px 22px; display: grid; gap: 10px; }
@@ -149,8 +150,8 @@ textarea { min-height: 110px; resize: vertical; }
         <li>اختار الفريق اللي هتتوقع تشكيله، وطريقة اللعب، و11 لاعب من قائمة الفريق. تقدر تعدّل لحد وقت القفل.</li>
         <li>بعد التشكيل الرسمي: كل لاعب من اختيارك شارك أساسيًا = 1 نقطة.</li>
         <li>اللاعب النادر (اللي أقل ناس اختارته) بيدّي 3 نقاط، والمتوسط 2، والشائع 1. ده بيشتغل بس لو لعب المباراة 30 مشارك أو أكتر.</li>
-        <li>طريقة اللعب مطابقة للرسمي = +3 نقاط.</li>
-        <li>الكابتن نقاطه ×2.</li>
+        <li>اختار من تشكيلك لاعب تتوقع إنه يسجّل: لو سجّل في المباراة = +2 نقطة.</li>
+        <li>واختار لاعب تتوقع إنه يصنع هدف (أسيست): لو عمل أسيست = +1 نقطة.</li>
         <li>11 لاعب كلهم صح = +5 نقاط إضافية.</li>
       </ul></div>
     <div><h3>الترتيب والدوري الخاص</h3>
@@ -260,7 +261,7 @@ textarea { min-height: 110px; resize: vertical; }
       f.type = 'button'; f.setAttribute('aria-label', p ? p.n : 'اختر لاعب');
       f.innerHTML = figure(kit(team, s.g === 'GK'), p ? p.num : null, p ? p.num * 7 : i * 5);
       var tag = el('span', 'tag', p ? p.n.split(' ').slice(-1)[0] : '+'); f.appendChild(tag);
-      if (p && draft.cap === p.num) f.appendChild(el('span', 'c', 'C'));
+      if (p && draft.sc === p.num) f.appendChild(el('span', 'c', '⚽')); if (p && draft.as === p.num) f.appendChild(el('span', 'c a', 'A'));
       if (edit) f.addEventListener('click', function () { openPicker(m, side, i, s.g); });
       slot.appendChild(f); pitch.appendChild(slot);
     });
@@ -276,7 +277,7 @@ textarea { min-height: 110px; resize: vertical; }
       var sh = el('div', 'sh'); sh.style.setProperty('--ring', kit(team, s.g === 'GK')[0]); slot.appendChild(sh);
       var b = el('button', 'fig' + (p ? '' : ' empty') + (draft.open === i ? ' sel' : '')); b.type = 'button'; b.setAttribute('aria-label', p ? p.n : 'اختر لاعب');
       b.innerHTML = figure(kit(team, s.g === 'GK'), p ? p.num : null, p ? p.num * 7 : i * 5);
-      b.appendChild(el('span', 'tag', p ? p.n.split(' ').slice(-1)[0] : '+')); if (p && draft.cap === p.num) b.appendChild(el('span', 'c', 'C'));
+      b.appendChild(el('span', 'tag', p ? p.n.split(' ').slice(-1)[0] : '+')); if (p && draft.sc === p.num) b.appendChild(el('span', 'c', '⚽')); if (p && draft.as === p.num) b.appendChild(el('span', 'c a', 'A'));
       if (edit) b.addEventListener('click', function () { openPicker(m, side, i, s.g); });
       slot.appendChild(b); stage.appendChild(slot);
     });
@@ -293,13 +294,15 @@ textarea { min-height: 110px; resize: vertical; }
       b.addEventListener('click', function () { draft.xi[slotIdx] = p.num; $('sheet').hidden = true; draft.open = null; renderPane(); });
       list.appendChild(b);
     });
-    var tools = el('div', 'row');
+    var tools = el('div', 'row'); tools.style.flexWrap = 'wrap';
     if (cur != null) {
-      var cp = el('button', 'btn ghost', draft.cap === cur ? 'شيل الكابتن' : 'اجعله كابتن'); cp.type = 'button';
-      cp.addEventListener('click', function () { draft.cap = draft.cap === cur ? null : cur; $('sheet').hidden = true; renderPane(); });
+      var cp = el('button', 'btn ghost', draft.sc === cur ? 'شيل توقع التسجيل' : 'توقعه يسجّل (+2)'); cp.type = 'button';
+      cp.addEventListener('click', function () { draft.sc = draft.sc === cur ? null : cur; $('sheet').hidden = true; renderPane(); });
+      var ap = el('button', 'btn ghost', draft.as === cur ? 'شيل توقع الأسيست' : 'توقعه يعمل أسيست (+1)'); ap.type = 'button';
+      ap.addEventListener('click', function () { draft.as = draft.as === cur ? null : cur; $('sheet').hidden = true; renderPane(); });
       var rm = el('button', 'btn ghost', 'شيل اللاعب'); rm.type = 'button';
-      rm.addEventListener('click', function () { if (draft.cap === cur) draft.cap = null; draft.xi[slotIdx] = null; $('sheet').hidden = true; renderPane(); });
-      tools.appendChild(cp); tools.appendChild(rm);
+      rm.addEventListener('click', function () { if (draft.sc === cur) draft.sc = null; if (draft.as === cur) draft.as = null; draft.xi[slotIdx] = null; $('sheet').hidden = true; renderPane(); });
+      tools.appendChild(cp); tools.appendChild(ap); tools.appendChild(rm);
     }
     var x = el('button', 'btn ghost', 'إغلاق'); x.type = 'button'; x.addEventListener('click', function () { $('sheet').hidden = true; });
     put(box, el('div', 'h2', 'اختر لاعب (' + (POSN[grp] || '') + ')'), tools, list, x); $('sheet').hidden = false;
@@ -409,7 +412,7 @@ textarea { min-height: 110px; resize: vertical; }
   }
   function startDraft(m) {
     var mine = st.mylu[m.id];
-    draft = { m: m, side: mine ? mine.side : 'h', form: mine ? mine.form : '4-3-3', xi: mine ? mine.xi.slice() : new Array(11).fill(null), cap: mine ? mine.cap : null, open: null };
+    draft = { m: m, side: mine ? mine.side : 'h', form: mine ? mine.form : '4-3-3', xi: mine ? mine.xi.slice() : new Array(11).fill(null), sc: mine && mine.sc != null ? mine.sc : null, as: mine && mine.as != null ? mine.as : null, open: null };
     renderPane(); window.scrollTo(0, 0);
   }
   function panePlay(p) {
@@ -425,13 +428,13 @@ textarea { min-height: 110px; resize: vertical; }
     p.appendChild(back);
     var h = el('div', 'card'); h.appendChild(el('div', 'h2', m.home + ' × ' + m.away));
     var cd = el('div', 'row'); cd.appendChild(el('span', 'muted', editable ? 'تقفل بعد' : 'اتقفلت')); if (editable) { var c = el('span', 'cd'); c.dataset.until = m.lock; c.textContent = hms(m.lock - Date.now()); cd.appendChild(c); } h.appendChild(cd); p.appendChild(h);
-    var seg = el('div', 'seg'); [['h', m.home], ['a', m.away]].forEach(function (x) { var b = el('button', null, x[1]); b.type = 'button'; b.setAttribute('aria-pressed', String(draft.side === x[0])); b.disabled = !editable; b.addEventListener('click', function () { if (draft.side !== x[0]) { draft.side = x[0]; draft.xi = new Array(11).fill(null); draft.cap = null; renderPane(); } }); seg.appendChild(b); });
+    var seg = el('div', 'seg'); [['h', m.home], ['a', m.away]].forEach(function (x) { var b = el('button', null, x[1]); b.type = 'button'; b.setAttribute('aria-pressed', String(draft.side === x[0])); b.disabled = !editable; b.addEventListener('click', function () { if (draft.side !== x[0]) { draft.side = x[0]; draft.xi = new Array(11).fill(null); draft.sc = null; draft.as = null; renderPane(); } }); seg.appendChild(b); });
     p.appendChild(seg);
-    var fm = el('div', 'forms'); Object.keys(FORMS).forEach(function (f) { var b = el('button', null, f); b.type = 'button'; b.setAttribute('aria-pressed', String(draft.form === f)); b.disabled = !editable; b.addEventListener('click', function () { draft.form = f; draft.xi = new Array(11).fill(null); draft.cap = null; renderPane(); }); fm.appendChild(b); });
+    var fm = el('div', 'forms'); Object.keys(FORMS).forEach(function (f) { var b = el('button', null, f); b.type = 'button'; b.setAttribute('aria-pressed', String(draft.form === f)); b.disabled = !editable; b.addEventListener('click', function () { draft.form = f; draft.xi = new Array(11).fill(null); draft.sc = null; draft.as = null; renderPane(); }); fm.appendChild(b); });
     p.appendChild(fm);
     p.appendChild(pitchEl(m, draft.side, editable));
     var filled = draft.xi.filter(function (x) { return x != null; }).length;
-    p.appendChild(el('div', 'muted', filled + ' / 11 لاعب' + (draft.cap != null ? ' · الكابتن مختار' : ' · اضغط على لاعب علشان تختاره كابتن')));
+    p.appendChild(el('div', 'muted', filled + ' / 11 لاعب' + ' · اضغط على لاعب علشان توقعه يسجّل أو يعمل أسيست (اختياري)'));
     var mine = st.mylu[m.id];
     if (mine && mine.pts != null) p.appendChild(el('div', 'msg ok', 'نقاطك في المباراة: ' + mine.pts));
     if (editable) {
@@ -439,9 +442,9 @@ textarea { min-height: 110px; resize: vertical; }
       var save = el('button', 'btn', mine ? 'حدّث تشكيلي' : 'ثبّت تشكيلي'); save.type = 'button';
       save.addEventListener('click', function () {
         if (filled !== 11) { err.textContent = 'كمّل 11 لاعب الأول.'; err.hidden = false; return; }
-        if (draft.cap == null) { err.textContent = 'اختار كابتن (اضغط على لاعب ثم اجعله كابتن).'; err.hidden = false; return; }
         save.disabled = true;
-        var doc = { uid: user.uid, n: shortName(user), m: m.id, side: draft.side, form: draft.form, xi: draft.xi.slice(), cap: draft.cap, t: Date.now() };
+        var doc = { uid: user.uid, n: shortName(user), m: m.id, side: draft.side, form: draft.form, xi: draft.xi.slice(), t: Date.now() };
+        if (draft.sc != null) doc.sc = draft.sc; if (draft.as != null) doc.as = draft.as;
         db.collection('lineups').doc(m.id + '_' + user.uid).set(doc).then(function () { doc.id = m.id + '_' + user.uid; st.mylu[m.id] = doc; err.className = 'msg ok'; err.textContent = 'اتسجل تشكيلك. تقدر تعدّله لحد القفل.'; err.hidden = false; save.disabled = false; renderBell(); })
           .catch(function (e) { save.disabled = false; err.className = 'msg'; err.textContent = 'مقدرناش نسجّل التشكيل (' + (e.code || e.message) + '). ممكن الوقت خلص.'; err.hidden = false; });
       });
@@ -552,15 +555,15 @@ textarea { min-height: 110px; resize: vertical; }
     var c2 = el('div', 'card'); c2.appendChild(el('div', 'h2', '2) التشكيل الرسمي وحساب النقاط'));
     var ms = el('select'); st.matches.filter(function (m) { return !m.scored; }).forEach(function (m) { var o = el('option', null, m.home + ' × ' + m.away); o.value = m.id; ms.appendChild(o); });
     function inp(ph) { var i = el('input'); i.type = 'text'; i.placeholder = ph; i.setAttribute('aria-label', ph); return i; }
-    var fh = inp('طريقة لعب صاحب الأرض (مثال 4-3-3)'), xh = inp('أرقام الـ11 صاحب الأرض (1,2,3...)'), fa = inp('طريقة لعب الضيف'), xa = inp('أرقام الـ11 الضيف');
+    var xh = inp('أرقام الـ11 صاحب الأرض (1,2,3...)'), xa = inp('أرقام الـ11 الضيف'), sh = inp('أرقام المسجلين: صاحب الأرض'), sa = inp('أرقام المسجلين: الضيف'), ah = inp('أرقام صانعي الأهداف: صاحب الأرض'), aa = inp('أرقام صانعي الأهداف: الضيف');
     var sc = el('button', 'btn', 'احسب النقاط (مرة واحدة)'); sc.type = 'button'; var m2 = el('div', 'msg'); m2.hidden = true;
-    sc.addEventListener('click', function () { if (!ms.value) return; if (!confirm('هيتحسب وتتسجل النقاط نهائيًا. متأكد؟')) return; sc.disabled = true; scoreMatch(ms.value, fh.value.trim(), xh.value, fa.value.trim(), xa.value, m2).then(function () { sc.disabled = false; }); });
-    [ms, fh, xh, fa, xa, sc, m2].forEach(function (x) { c2.appendChild(x); }); p.appendChild(c2);
+    sc.addEventListener('click', function () { if (!ms.value) return; if (!confirm('هيتحسب وتتسجل النقاط نهائيًا. متأكد؟')) return; sc.disabled = true; scoreMatch(ms.value, { xh: xh.value, xa: xa.value, sh: sh.value, sa: sa.value, ah: ah.value, aa: aa.value }, m2).then(function () { sc.disabled = false; }); });
+    [ms, xh, xa, sh, sa, ah, aa, sc, m2].forEach(function (x) { c2.appendChild(x); }); p.appendChild(c2);
   }
   function nums(s) { return s.split(/[,،\s]+/).map(function (x) { return parseInt(x, 10); }).filter(function (x) { return x > 0; }); }
-  function scoreMatch(id, fH, xH, fA, xA, out) {
+  function scoreMatch(id, f, out) {
     function say(t, ok) { out.className = 'msg' + (ok ? ' ok' : ''); out.textContent = t; out.hidden = false; }
-    var off = { h: { f: fH, x: nums(xH) }, a: { f: fA, x: nums(xA) } };
+    var off = { h: { x: nums(f.xh), sc: nums(f.sh), as: nums(f.ah) }, a: { x: nums(f.xa), sc: nums(f.sa), as: nums(f.aa) } };
     if (off.h.x.length !== 11 || off.a.x.length !== 11) { say('لازم 11 رقم لكل فريق.'); return Promise.resolve(); }
     var ref = db.collection('match_lineups').doc(id);
     return ref.get().then(function (d) {
@@ -578,15 +581,15 @@ textarea { min-height: 110px; resize: vertical; }
         var gains = {}, ups = [];
         all.forEach(function (l) {
           var o = off[l.side], pts = 0, hit = 0;
-          l.xi.forEach(function (n) { if (o.x.indexOf(n) >= 0) { var b = tier(l.side, n); pts += b * (n === l.cap ? 2 : 1); hit++; } });
-          if (o.f && l.form === o.f) pts += 3; if (hit === 11) pts += 5;
+          l.xi.forEach(function (n) { if (o.x.indexOf(n) >= 0) { var b = tier(l.side, n); pts += b; hit++; } });
+          if (l.sc != null && o.sc.indexOf(l.sc) >= 0) pts += 2; if (l.as != null && o.as.indexOf(l.as) >= 0) pts += 1; if (hit === 11) pts += 5;
           gains[l.uid] = (gains[l.uid] || 0) + pts; ups.push({ ref: l.ref, pts: pts, uid: l.uid, n: l.n });
         });
         var uids = Object.keys(gains);
         return Promise.all(uids.map(function (u) { return db.collection('lineup_users').doc(u).get(); })).then(function (docs) {
           var ops = []; ups.forEach(function (u) { ops.push(function (b) { b.update(u.ref, { pts: u.pts }); }); });
           docs.forEach(function (d, i) { var u = uids[i], prev = d.exists ? d.data() : {}, nm = ups.filter(function (x) { return x.uid === u; })[0].n; ops.push(function (b) { b.set(db.collection('lineup_users').doc(u), { n: nm, pts: (prev.pts || 0) + gains[u] }); }); });
-          ops.push(function (b) { b.update(ref, { scored: true, xiH: off.h.x, xiA: off.a.x, fH: off.h.f, fA: off.a.f }); });
+          ops.push(function (b) { b.update(ref, { scored: true, xiH: off.h.x, xiA: off.a.x, scH: off.h.sc, scA: off.a.sc, asH: off.h.as, asA: off.a.as }); });
           var chain = Promise.resolve(); for (var i = 0; i < ops.length; i += 400) (function (part) { chain = chain.then(function () { var b = db.batch(); part.forEach(function (f) { f(b); }); return b.commit(); }); })(ops.slice(i, i + 400));
           return chain.then(function () { say('اتحسبت نقاط ' + ups.length + ' مشارك.', true); });
         });
