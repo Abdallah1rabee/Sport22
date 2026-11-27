@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>حسابي | SPORT 22</title>
+<meta name="robots" content="noindex">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="theme-color" content="#10151B">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800&family=Cairo:wght@600;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #10151B; --surface: #18202A; --surface2: #1E2833; --ink: #E9EDF2; --muted: #8B95A1; --line: #252D36;
+  --accent: #7FD6B0; --accent-ink: #10151B; --warn: #F2A862; --warn-bg: #2E2114; --ok-bg: #12301F; --bad: #FF8F86;
+  --logo: 'Barlow Condensed', 'Arial Narrow', Impact, sans-serif;
+  --display: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+  --body: 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.7; padding: 0 max(16px, env(safe-area-inset-left)) 48px max(16px, env(safe-area-inset-right)); min-height: 100vh; }
+button { font-family: inherit; cursor: pointer; color: inherit; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 520px; margin-inline: auto; }
+.mast { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 0 10px; }
+.logo { display: inline-flex; align-items: baseline; text-decoration: none; font-family: var(--logo); font-style: italic; font-weight: 800; line-height: 1; }
+.logo .a { font-size: 1.7rem; text-transform: uppercase; }
+.logo .b { font-size: 1.8rem; background: var(--accent); color: var(--accent-ink); padding: .04em .2em .02em; margin-inline-start: 4px; }
+.who { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.who b { font-family: var(--display); font-weight: 800; font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+.av { flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-family: var(--display); font-weight: 800; }
+.ibtn { position: relative; flex: none; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); display: grid; place-items: center; }
+.ibtn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.badge { position: absolute; top: 2px; left: 2px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 99px; background: var(--warn); color: #1D1204; font-size: 11px; font-weight: 600; display: grid; place-items: center; }
+.rules { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; margin: 6px 0 12px; }
+.rules > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; min-height: 48px; padding: 0 14px; cursor: pointer; font-family: var(--display); font-weight: 800; }
+.rules > summary::-webkit-details-marker { display: none; }
+.rules > summary::after { content: '▾'; color: var(--muted); transition: transform .2s; }
+.rules[open] > summary::after { transform: rotate(180deg); }
+.rules .rb { padding: 0 14px 14px; display: grid; gap: 10px; }
+.rules h3 { margin: 6px 0 2px; font-family: var(--display); font-size: .95rem; color: var(--accent); }
+.rules ul { margin: 0; padding-inline-start: 18px; color: var(--ink); font-size: .9rem; }
+.rules li { margin-bottom: 3px; }
+.tabs { position: sticky; top: 0; z-index: 5; display: flex; gap: 2px; overflow-x: auto; background: var(--bg); border-bottom: 1px solid var(--line); margin-inline: calc(-1 * max(16px, env(safe-area-inset-left))); padding-inline: 12px; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { flex: none; min-height: 46px; padding: 0 14px; border: 0; border-bottom: 3px solid transparent; background: none; color: var(--muted); font-size: .95rem; }
+.tab[aria-selected="true"] { color: var(--ink); font-weight: 600; border-bottom-color: var(--accent); }
+.pane { padding-top: 14px; display: grid; gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; display: grid; gap: 10px; }
+.card h2, .h2 { margin: 0; font-family: var(--display); font-weight: 800; font-size: 1.05rem; }
+.muted { color: var(--muted); font-size: .875rem; }
+.btn { min-height: 46px; padding: 0 18px; border: 0; border-radius: 12px; background: var(--accent); color: var(--accent-ink); font-weight: 600; font-size: .95rem; text-decoration: none; display: inline-grid; place-items: center; }
+.btn.ghost { background: var(--surface2); color: var(--ink); border: 1px solid var(--line); }
+.btn:disabled { opacity: .5; cursor: default; }
+.row { display: flex; align-items: center; gap: 10px; }
+.sp { flex: 1; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px; text-align: center; }
+.stat b { display: block; font-family: var(--logo); font-style: italic; font-weight: 800; font-size: 1.8rem; line-height: 1.1; }
+.stat span { font-size: .78rem; color: var(--muted); }
+.urgent { background: var(--warn-bg); border: 1px solid var(--warn); }
+.cd { font-family: var(--logo); font-style: italic; font-weight: 800; font-size: 1.7rem; line-height: 1; color: var(--warn); direction: ltr; }
+.mrow { display: grid; gap: 8px; }
+.match { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; gap: 8px; }
+.match .t { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-family: var(--display); font-weight: 800; }
+.pill { display: inline-block; padding: 0 10px; border-radius: 99px; border: 1px solid var(--line); font-size: .78rem; color: var(--muted); font-family: var(--body); font-weight: 400; }
+.pill.on { border-color: var(--accent); color: var(--accent); }
+.pill.hot { border-color: var(--warn); color: var(--warn); }
+.seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; background: var(--surface2); padding: 4px; border-radius: 12px; }
+.seg button { min-height: 40px; border: 0; border-radius: 9px; background: none; color: var(--muted); font-size: .9rem; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.forms { display: flex; gap: 8px; overflow-x: auto; direction: ltr; padding-bottom: 2px; scrollbar-width: none; }
+.forms button { flex: none; height: 40px; padding: 0 16px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface2); font-family: var(--logo); font-style: italic; font-weight: 800; font-size: 1.15rem; }
+.forms button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+/* ---- 3D pitch seen from above ---- */
+.stage { perspective: 1000px; perspective-origin: 50% 0%; height: 600px; overflow: hidden; border-radius: 16px; background: radial-gradient(120% 80% at 50% 0%, #1b2733 0%, #10151B 70%); position: relative; }
+.pitch { --tilt: 54deg; position: absolute; left: 50%; top: 84px; width: 330px; height: 520px; margin-left: -165px; transform-style: preserve-3d; transform: rotateX(var(--tilt)); transform-origin: 50% 0; }
+.turf { position: absolute; inset: 0; border-radius: 6px; background: repeating-linear-gradient(to bottom, #1d5a43 0 10%, #226a4e 10% 20%); box-shadow: 0 0 0 6px #123c2d, 0 40px 60px rgba(0,0,0,.6); }
+.turf svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.slot { position: absolute; width: 0; height: 0; transform-style: preserve-3d; }
+.slot .sh { position: absolute; left: -22px; top: -9px; width: 44px; height: 18px; border-radius: 50%; background: radial-gradient(closest-side, rgba(0,0,0,.55), rgba(0,0,0,0)); }
+.fig { position: absolute; left: -26px; bottom: 0; width: 52px; height: 92px; transform-origin: 50% 100%; transform: rotateX(calc(var(--tilt) * -1)); background: none; border: 0; padding: 0; display: block; }
+.fig svg { width: 52px; height: 80px; display: block; overflow: visible; filter: drop-shadow(0 3px 2px rgba(0,0,0,.35)); }
+.fig .tag { position: absolute; left: 50%; top: 80px; transform: translateX(-50%); max-width: 76px; padding: 0 7px; border-radius: 99px; background: #0A1016; color: #E9EDF2; font-size: 11px; line-height: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fig.empty svg { opacity: .55; filter: grayscale(.6) drop-shadow(0 3px 2px rgba(0,0,0,.35)); }
+.fig.empty .tag { background: rgba(10,16,22,.7); color: #9fb0bf; }
+.fig .c { position: absolute; top: 0; right: -2px; width: 19px; height: 19px; border-radius: 50%; background: var(--warn); color: #1D1204; font-size: 11px; font-weight: 800; display: grid; place-items: center; border: 2px solid #1d5a43; }
+.fig.sel svg { filter: drop-shadow(0 0 8px #7FD6B0) drop-shadow(0 3px 2px rgba(0,0,0,.35)); }
+.sheet { position: fixed; inset: 0; z-index: 20; background: rgba(5,8,12,.6); display: flex; align-items: flex-end; justify-content: center; }
+.sheet .in { width: 100%; max-width: 520px; max-height: 78vh; overflow: auto; background: var(--surface); border-radius: 20px 20px 0 0; border: 1px solid var(--line); padding: 14px 16px 22px; display: grid; gap: 10px; }
+.plist { display: grid; gap: 6px; }
+.pl { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface2); text-align: right; width: 100%; }
+.pl .n { width: 30px; font-family: var(--logo); font-style: italic; font-weight: 800; font-size: 1.2rem; color: var(--accent); }
+.pl[disabled] { opacity: .4; }
+.lb { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.lb li { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px; border-bottom: 1px solid var(--line); }
+.lb li:last-child { border-bottom: 0; }
+.lb li.you { background: var(--ok-bg); box-shadow: inset -3px 0 0 var(--accent); }
+.lb .rk { width: 26px; font-family: var(--logo); font-style: italic; font-weight: 800; font-size: 1.2rem; color: var(--muted); }
+.lb .pt { font-family: var(--logo); font-style: italic; font-weight: 800; font-size: 1.25rem; }
+input[type=text], textarea, select { width: 100%; min-height: 46px; padding: 8px 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface2); color: var(--ink); font: inherit; }
+textarea { min-height: 110px; resize: vertical; }
+.msg { padding: 10px 12px; border-radius: 12px; background: var(--warn-bg); border: 1px solid var(--warn); font-size: .9rem; }
+.msg.ok { background: var(--ok-bg); border-color: var(--accent); }
+.nt { display: flex; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line); align-items: flex-start; }
+.nt:last-child { border-bottom: 0; }
+.nt .d { flex: none; width: 10px; height: 10px; margin-top: 9px; border-radius: 50%; background: var(--line); }
+.nt.new .d { background: var(--warn); }
+.nt b { font-family: var(--display); }
+.op { border-top: 1px solid var(--line); padding-top: 10px; }
+.op:first-child { border-top: 0; padding-top: 0; }
+@media (max-width: 380px) { .pitch { transform: rotateX(var(--tilt)) scale(.92); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="mast">
+  <a class="logo" dir="ltr" href="../" aria-label="SPORT 22 - الرئيسية"><span class="a">Sport</span><span class="b">22</span></a>
+  <div class="who" id="who" hidden>
+    <b id="uname"></b>
+    <span class="av" id="uav"></span>
+    <button class="ibtn" id="bell" aria-label="الإشعارات"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15zM10 21h4"/></svg><span class="badge" id="bb" hidden>0</span></button>
+  </div>
+</header>
+
+<details class="rules" id="rules">
+  <summary>القوانين وطريقة اللعب</summary>
+  <div class="rb">
+    <div><h3>التحدي اليومي</h3>
+      <ul><li>أسئلة جديدة كل يوم. جاوب قبل منتصف الليل بتوقيت القاهرة.</li><li>الإجابة المتتالية يوم بعد يوم بتبني لك سلسلة أيام (streak).</li></ul></div>
+    <div><h3>اختر تشكيلك</h3>
+      <ul>
+        <li>اللعبة بتفتح قبل المباراة بـ 48 ساعة وبتقفل قبلها بـ 10 ساعات، وقبل ما التشكيل الرسمي يتعلن.</li>
+        <li>اختار الفريق اللي هتتوقع تشكيله، وطريقة اللعب، و11 لاعب من قائمة الفريق. تقدر تعدّل لحد وقت القفل.</li>
+        <li>بعد التشكيل الرسمي: كل لاعب من اختيارك شارك أساسيًا = 1 نقطة.</li>
+        <li>اللاعب النادر (اللي أقل ناس اختارته) بيدّي 3 نقاط، والمتوسط 2، والشائع 1. ده بيشتغل بس لو لعب المباراة 30 مشارك أو أكتر.</li>
+        <li>طريقة اللعب مطابقة للرسمي = +3 نقاط.</li>
+        <li>الكابتن نقاطه ×2.</li>
+        <li>11 لاعب كلهم صح = +5 نقاط إضافية.</li>
+      </ul></div>
+    <div><h3>الترتيب والدوري الخاص</h3>
+      <ul><li>الترتيب بيجمع نقاط التحدي ونقاط اختر تشكيلك.</li><li>اعمل دوري خاص (حتى 20 شخص) وشاركهم الكود. نقاط الدوري هي نقاط الموسم.</li><li>النقاط بتتحسب من لوحة الموقع، مش من جهازك. لا يوجد أي رهان أو مال.</li></ul></div>
+  </div>
+</details>
+
+<div id="s-load" class="card" style="text-align:center">جار التحميل...</div>
+<div id="s-login" class="card" hidden>
+  <h2>سجّل دخولك بجوجل</h2>
+  <p class="muted" style="margin:0">حسابك فيه التحدي اليومي، اختر تشكيلك، ترتيبك، آراؤك، ودوريك الخاص مع صحابك.</p>
+  <button class="btn" id="glogin">الدخول بجوجل</button>
+  <div class="msg" id="lerr" hidden></div>
+</div>
+
+<main id="app" hidden>
+  <nav class="tabs" role="tablist" aria-label="أقسام حسابي" id="tabs"></nav>
+  <section class="pane" id="pane"></section>
+</main>
+</div>
+
+<div class="sheet" id="sheet" hidden><div class="in" id="sheetin"></div></div>
+
+<script src="../firebase-config.js"></script>
+<script>
+(function () {
+  var TZ = 'Africa/Cairo', FBV = 'https://www.gstatic.com/firebasejs/10.12.2/';
+  var EDITORS = ['abdallahrabee80@gmail.com', 'fatmayasein09@gmail.com', 'fatmayasein33@gmail.com', 'abdallahrabee212@gmail.com'];
+  var FORMS = { '4-3-3': [4, 3, 3], '4-2-3-1': [4, 2, 3, 1], '4-4-2': [4, 4, 2], '3-5-2': [3, 5, 2], '3-4-3': [3, 4, 3], '5-3-2': [5, 3, 2] };
+  var TABS = [['home', 'أنا'], ['play', 'العب'], ['rank', 'الترتيب'], ['ops', 'آرائي'], ['lg', 'دوري']];
+  var $ = function (id) { return document.getElementById(id); };
+  var db, auth, user = null, tab = 'home', now = Date.now();
+  var st = { quizDone: null, qprof: null, lprof: null, matches: [], mylu: {}, today: null, fixtures: [] };
+  var draft = null, pitchTab = 'week';
+
+  function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  function put(parent) { parent.replaceChildren.apply(parent, [].slice.call(arguments, 1).filter(Boolean)); return parent; }
+  function lsGet(k, d) { try { var v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function loadScript(src) { return new Promise(function (res, rej) { var s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); }); }
+  function cairoDate(ms) { return new Intl.DateTimeFormat('en-CA', { timeZone: TZ }).format(new Date(ms || Date.now())); }
+  function dayNum(d) { return Math.floor(Date.parse(d + 'T00:00:00Z') / 86400000); }
+  function weekId(d) { return Math.floor((dayNum(d) + 3) / 7); }
+  function shortName(u) { var p = String(u.displayName || 'مشجع').trim().split(/\s+/); return (p[0] + (p[1] ? ' ' + p[1].charAt(0) + '.' : '')).slice(0, 30); }
+  function hms(ms) { if (ms < 0) ms = 0; var s = Math.floor(ms / 1000), h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60); function p(x) { return String(x).padStart(2, '0'); } return p(h) + ':' + p(m) + ':' + p(s % 60); }
+  function dur(ms) { var m = Math.max(0, Math.round(ms / 60000)), h = Math.floor(m / 60); if (h >= 24) return Math.floor(h / 24) + ' يوم'; return h ? h + ' ساعة' : m + ' دقيقة'; }
+  function when(ms) { try { return new Intl.DateTimeFormat('ar-EG-u-nu-latn', { weekday: 'long', hour: 'numeric', minute: '2-digit', timeZone: TZ }).format(new Date(ms)); } catch (e) { return ''; } }
+  function hue(s) { var n = 0; for (var i = 0; i < s.length; i++) n = (n * 31 + s.charCodeAt(i)) % 360; return n; }
+  function mid(t, h, a) { var n = 0, s = h + '|' + a; for (var i = 0; i < s.length; i++) n = (n * 31 + s.charCodeAt(i)) >>> 0; return t + '-' + n.toString(36); }
+  function seasonPts(q, l) { return ((q && q.total) || 0) + ((l && l.pts) || 0); }
+
+  /* ---------- mini figure (inline SVG, shaded like a toy figurine) ---------- */
+  var KITS = { 'الأهلي': ['#D8232A', '#FFFFFF', '#D8232A'], 'الزمالك': ['#F2F2EE', '#C8102E', '#F2F2EE'], 'بيراميدز': ['#4DB4F0', '#0B3A66', '#4DB4F0'], 'المصري': ['#1F8F4E', '#111111', '#1F8F4E'], 'مصر': ['#C8102E', '#FFFFFF', '#111111'] };
+  function kit(name, gk) {
+    if (gk) return ['#F2A862', '#1D1204', '#F2A862'];
+    return KITS[name] || ['hsl(' + hue(name) + ' 55% 46%)', '#F5F5F2', 'hsl(' + hue(name) + ' 55% 46%)'];
+  }
+  var SKIN = ['#F1C9A5', '#D9A47A', '#A8734B', '#7A4F31'], HAIR = ['#2B1B10', '#111', '#5A3A1E', '#C9A24B'];
+  var uidc = 0;
+  function figure(k, num, seed) {
+    var id = 'g' + (++uidc), sk = SKIN[seed % 4], hr = HAIR[(seed >> 2) % 4], sv = k[0];
+    var svg = '<svg viewBox="0 0 52 80" aria-hidden="true"><defs>' +
+      '<linearGradient id="' + id + 'j" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".28"/><stop offset=".5" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".38"/></linearGradient>' +
+      '<radialGradient id="' + id + 'h" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".45"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></radialGradient></defs>' +
+      // legs + socks + boots
+      '<rect x="17" y="51" width="7.5" height="19" rx="3" fill="' + sk + '"/><rect x="27.5" y="51" width="7.5" height="19" rx="3" fill="' + sk + '"/>' +
+      '<rect x="17" y="60" width="7.5" height="12" rx="3" fill="' + k[2] + '"/><rect x="27.5" y="60" width="7.5" height="12" rx="3" fill="' + k[2] + '"/>' +
+      '<rect x="17" y="60" width="7.5" height="12" rx="3" fill="url(#' + id + 'j)"/><rect x="27.5" y="60" width="7.5" height="12" rx="3" fill="url(#' + id + 'j)"/>' +
+      '<rect x="14.5" y="70" width="11" height="6" rx="3" fill="#161616"/><rect x="26.5" y="70" width="11" height="6" rx="3" fill="#161616"/>' +
+      // shorts
+      '<path d="M15 44h22l1.5 13H27l-1-6-1 6H13.5z" fill="' + k[1] + '"/><path d="M15 44h22l1.5 13H27l-1-6-1 6H13.5z" fill="url(#' + id + 'j)"/>' +
+      // arms
+      '<rect x="6.5" y="21" width="8" height="20" rx="4" fill="' + sk + '"/><rect x="37.5" y="21" width="8" height="20" rx="4" fill="' + sk + '"/>' +
+      '<rect x="6.5" y="21" width="8" height="10" rx="4" fill="' + sv + '"/><rect x="37.5" y="21" width="8" height="10" rx="4" fill="' + sv + '"/>' +
+      // torso
+      '<path d="M14 19c4-3 20-3 24 0l2 26H12z" fill="' + sv + '"/><path d="M14 19c4-3 20-3 24 0l2 26H12z" fill="url(#' + id + 'j)"/>' +
+      '<text x="26" y="38" text-anchor="middle" font-family="Barlow Condensed,Arial Narrow,sans-serif" font-style="italic" font-weight="800" font-size="16" fill="' + k[1] + '" stroke="rgba(0,0,0,.25)" stroke-width=".4">' + (num == null ? '?' : num) + '</text>' +
+      // neck + head
+      '<rect x="22.5" y="14" width="7" height="6" rx="2" fill="' + sk + '"/>' +
+      '<circle cx="26" cy="9.5" r="9" fill="' + sk + '"/><path d="M17 8.5c0-6 4-8.6 9-8.6s9 2.6 9 8.6c-2-3-5-4-9-4s-7 1-9 4z" fill="' + hr + '"/>' +
+      '<circle cx="26" cy="9.5" r="9" fill="url(#' + id + 'h)"/></svg>';
+    return svg;
+  }
+
+  /* ---------- pitch ---------- */
+  function slotsFor(form) {
+    var rows = FORMS[form] || FORMS['4-3-3'], out = [{ x: 50, y: 88, g: 'GK' }], n = rows.length;
+    rows.forEach(function (c, r) {
+      var y = 70 - r * (48 / (n - 1 || 1)), g = r === 0 ? 'DF' : (r === n - 1 ? 'FW' : 'MF');
+      for (var i = 0; i < c; i++) out.push({ x: (i + 1) / (c + 1) * 100, y: y, g: g });
+    });
+    return out;
+  }
+  function pitchEl(m, side, edit) {
+    var sq = side === 'h' ? m.sqH : m.sqA, team = side === 'h' ? m.home : m.away, slots = slotsFor(draft.form);
+    var stage = el('div', 'stage'), pitch = el('div', 'pitch'), turf = el('div', 'turf');
+    turf.innerHTML = '<svg viewBox="0 0 66 100" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="rgba(255,255,255,.55)" stroke-width=".5"><rect x="1" y="1" width="64" height="98"/><line x1="1" y1="50" x2="65" y2="50"/><circle cx="33" cy="50" r="9"/><rect x="13" y="1" width="40" height="16"/><rect x="24" y="1" width="18" height="6"/><rect x="13" y="83" width="40" height="16"/><rect x="24" y="93" width="18" height="6"/></g></svg>';
+    pitch.appendChild(turf);
+    // far rows first so near figures paint on top
+    slots.map(function (s, i) { return { s: s, i: i }; }).sort(function (a, b) { return a.s.y - b.s.y; }).forEach(function (o) {
+      var s = o.s, i = o.i, num = draft.xi[i], p = sq.filter(function (x) { return x.num === num; })[0];
+      var slot = el('div', 'slot'); slot.style.left = s.x + '%'; slot.style.top = s.y + '%';
+      slot.appendChild(el('div', 'sh'));
+      var f = el('button', 'fig' + (p ? '' : ' empty') + (draft.open === i ? ' sel' : ''));
+      f.type = 'button'; f.setAttribute('aria-label', p ? p.n : 'اختر لاعب');
+      f.innerHTML = figure(kit(team, s.g === 'GK'), p ? p.num : null, p ? p.num * 7 : i * 5);
+      var tag = el('span', 'tag', p ? p.n.split(' ').slice(-1)[0] : '+'); f.appendChild(tag);
+      if (p && draft.cap === p.num) f.appendChild(el('span', 'c', 'C'));
+      if (edit) f.addEventListener('click', function () { openPicker(m, side, i, s.g); });
+      slot.appendChild(f); pitch.appendChild(slot);
+    });
+    stage.appendChild(pitch); return stage;
+  }
+  var POSN = { GK: 'حارس', DF: 'مدافع', MF: 'وسط', FW: 'مهاجم' };
+  function openPicker(m, side, slotIdx, grp) {
+    var sq = side === 'h' ? m.sqH : m.sqA, used = {}; draft.xi.forEach(function (n, i) { if (n != null && i !== slotIdx) used[n] = 1; });
+    var cur = draft.xi[slotIdx], box = $('sheetin'), list = el('div', 'plist');
+    var sorted = sq.slice().sort(function (a, b) { return (a.pos === grp ? 0 : 1) - (b.pos === grp ? 0 : 1) || a.num - b.num; });
+    sorted.forEach(function (p) {
+      var b = el('button', 'pl'); b.type = 'button'; b.disabled = !!used[p.num];
+      b.appendChild(el('span', 'n', String(p.num))); b.appendChild(el('span', 'sp', p.n)); b.appendChild(el('span', 'pill' + (p.pos === grp ? ' on' : ''), POSN[p.pos] || p.pos));
+      b.addEventListener('click', function () { draft.xi[slotIdx] = p.num; $('sheet').hidden = true; draft.open = null; renderPane(); });
+      list.appendChild(b);
+    });
+    var tools = el('div', 'row');
+    if (cur != null) {
+      var cp = el('button', 'btn ghost', draft.cap === cur ? 'شيل الكابتن' : 'اجعله كابتن'); cp.type = 'button';
+      cp.addEventListener('click', function () { draft.cap = draft.cap === cur ? null : cur; $('sheet').hidden = true; renderPane(); });
+      var rm = el('button', 'btn ghost', 'شيل اللاعب'); rm.type = 'button';
+      rm.addEventListener('click', function () { if (draft.cap === cur) draft.cap = null; draft.xi[slotIdx] = null; $('sheet').hidden = true; renderPane(); });
+      tools.appendChild(cp); tools.appendChild(rm);
+    }
+    var x = el('button', 'btn ghost', 'إغلاق'); x.type = 'button'; x.addEventListener('click', function () { $('sheet').hidden = true; });
+    put(box, el('div', 'h2', 'اختر لاعب (' + (POSN[grp] || '') + ')'), tools, list, x); $('sheet').hidden = false;
+  }
+  $('sheet').addEventListener('click', function (e) { if (e.target === $('sheet')) $('sheet').hidden = true; });
+
+  /* ---------- data ---------- */
+  function ts(x) { return x && x.toMillis ? x.toMillis() : Number(x) || 0; }
+  function loadAll() {
+    var uid = user.uid, today = cairoDate();
+    return Promise.all([
+      db.collection('quiz_users').doc(uid).get(), db.collection('quiz_days').doc(today + '_' + uid).get(), db.collection('lineup_users').doc(uid).get(),
+      db.collection('match_lineups').where('time', '>', Date.now() - 4 * 86400000).get(),
+      db.collection('lineups').where('uid', '==', uid).get(),
+      fetch('../today.json?v=' + today).then(function (r) { return r.json(); }).catch(function () { return { days: {} }; })
+    ]).then(function (r) {
+      st.qprof = r[0].exists ? r[0].data() : null; st.quizDone = r[1].exists && r[1].data().done ? r[1].data() : null; st.lprof = r[2].exists ? r[2].data() : null;
+      st.matches = []; r[3].forEach(function (d) { var x = d.data(); x.id = d.id; x.open = ts(x.open); x.lock = ts(x.lock); st.matches.push(x); });
+      st.matches.sort(function (a, b) { return a.time - b.time; });
+      st.mylu = {}; r[4].forEach(function (d) { var x = d.data(); x.id = d.id; st.mylu[x.m] = x; });
+      st.fixtures = []; var days = (r[5] && r[5].days) || {};
+      Object.keys(days).forEach(function (k) { days[k].forEach(function (m) { if (m.time > Date.now() - 6 * 3600000 && m.time < Date.now() + 6 * 86400000) st.fixtures.push(m); }); });
+      st.fixtures.sort(function (a, b) { return a.time - b.time; });
+    });
+  }
+  function mstate(m) { var n = Date.now(); if (m.scored) return 'scored'; if (n < m.open) return 'soon'; if (n < m.lock) return 'open'; return 'locked'; }
+
+  /* ---------- notifications (in-app) ---------- */
+  function notifs() {
+    var out = [], n = Date.now(), nm = [];
+    if (!st.quizDone) out.push({ id: 'q' + cairoDate(), t: 'تحدي اليوم مستنيك', d: 'أسئلة جديدة النهاردة. جاوب قبل منتصف الليل' + (st.qprof && st.qprof.streak ? ' وحافظ على سلسلة ' + st.qprof.streak + ' يوم.' : '.'), href: '../quiz/', a: 'ابدأ التحدي' });
+    st.matches.forEach(function (m) {
+      var s = mstate(m), mine = st.mylu[m.id], title = m.home + ' × ' + m.away;
+      if (s === 'open' && !mine) out.push({ id: 'o' + m.id, t: 'اختر تشكيلك: ' + title, d: 'تقفل بعد ' + dur(m.lock - n) + '.', tab: 'play', a: 'اختار التشكيل', hot: m.lock - n < 3 * 3600000 });
+      if (s === 'open' && mine && m.lock - n < 2 * 3600000) out.push({ id: 'l' + m.id, t: 'آخر فرصة للتعديل', d: title + ' تقفل بعد ' + dur(m.lock - n) + '.', tab: 'play', a: 'عدّل' });
+      if (s === 'soon' && m.open - n < 12 * 3600000) out.push({ id: 's' + m.id, t: 'هتفتح قريب: ' + title, d: 'تفتح بعد ' + dur(m.open - n) + '.', tab: 'play', a: 'التفاصيل' });
+      if (s === 'scored' && mine && mine.pts != null) out.push({ id: 'p' + m.id, t: 'اتحسبت نقاطك: +' + mine.pts, d: title, tab: 'play', a: 'شوف التفاصيل' });
+    });
+    return out;
+  }
+  function renderBell() {
+    var seen = lsGet('me-seen', {}), c = notifs().filter(function (x) { return !seen[x.id]; }).length;
+    $('bb').hidden = !c; $('bb').textContent = c;
+  }
+  $('bell').addEventListener('click', function () {
+    var list = notifs(), seen = lsGet('me-seen', {}), box = el('div', 'card');
+    box.appendChild(el('div', 'h2', 'الإشعارات'));
+    if (!list.length) box.appendChild(el('div', 'muted', 'مفيش جديد دلوقتي. هنبلغك لما حاجة تتفتح أو تقفل.'));
+    list.forEach(function (x) {
+      var r = el('div', 'nt' + (seen[x.id] ? '' : ' new')); r.appendChild(el('span', 'd'));
+      var b = el('div', 'sp'); b.appendChild(el('b', null, x.t)); b.appendChild(el('div', 'muted', x.d));
+      if (x.a) { var go = el('a', 'btn ghost', x.a); go.style.marginTop = '8px'; go.style.minHeight = '40px'; go.href = x.href || '#'; if (x.tab) go.addEventListener('click', function (e) { e.preventDefault(); $('sheet').hidden = true; setTab(x.tab); }); b.appendChild(go); }
+      r.appendChild(b); box.appendChild(r); seen[x.id] = 1;
+    });
+    var note = el('div', 'muted', 'الإشعارات هنا جوه الموقع. التنبيه على الموبايل وهو مقفول محتاج خدمة إرسال لسه مش متفعلة.');
+    var x = el('button', 'btn ghost', 'إغلاق'); x.type = 'button'; x.addEventListener('click', function () { $('sheet').hidden = true; });
+    put($('sheetin'), box, note, x); $('sheet').hidden = false; lsSet('me-seen', seen); renderBell();
+  });
+
+  /* ---------- tabs ---------- */
+  function drawTabs() {
+    var nav = $('tabs'); nav.replaceChildren();
+    var tl = TABS.slice(); if (isEditor()) tl.push(['adm', 'الإدارة']);
+    tl.forEach(function (t) {
+      var b = el('button', 'tab', t[1]); b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(t[0] === tab));
+      b.addEventListener('click', function () { setTab(t[0]); }); nav.appendChild(b);
+    });
+  }
+  function setTab(t) { tab = t; draft = null; drawTabs(); renderPane(); window.scrollTo(0, 0); }
+  function isEditor() { return user && user.emailVerified && EDITORS.indexOf(user.email) >= 0; }
+  function renderPane() { var p = $('pane'); p.replaceChildren(); ({ home: paneHome, play: panePlay, rank: paneRank, ops: paneOps, lg: paneLg, adm: paneAdm })[tab](p); renderBell(); }
+
+  function paneHome(p) {
+    var q = st.qprof || {}, rank = st.myRank;
+    var stats = el('div', 'stats');
+    [[seasonPts(st.qprof, st.lprof), 'نقاط الموسم'], [q.streak || 0, 'أيام متتالية'], [rank || '—', 'مركزك']].forEach(function (s) { var d = el('div', 'stat'); d.appendChild(el('b', null, String(s[0]))); d.appendChild(el('span', null, s[1])); stats.appendChild(d); });
+    p.appendChild(stats);
+    var open = st.matches.filter(function (m) { return mstate(m) === 'open'; })[0];
+    if (open) {
+      var c = el('div', 'card urgent'), mine = st.mylu[open.id];
+      c.appendChild(el('div', 'h2', mine ? 'تشكيلك متسجل. تقدر تعدّله' : 'المطلوب منك دلوقتي'));
+      c.appendChild(el('div', null, open.home + ' × ' + open.away));
+      var cd = el('div', 'cd'); cd.dataset.until = open.lock; cd.textContent = hms(open.lock - Date.now()); c.appendChild(cd);
+      c.appendChild(el('div', 'muted', 'الوقت المتبقي لقفل التشكيل'));
+      var go = el('button', 'btn', mine ? 'عدّل تشكيلك' : 'اختر تشكيلك'); go.type = 'button'; go.addEventListener('click', function () { setTab('play'); startDraft(open); }); c.appendChild(go); p.appendChild(c);
+    }
+    var qc = el('div', 'card'); qc.appendChild(el('div', 'h2', 'تحدي اليوم'));
+    qc.appendChild(el('div', 'muted', st.quizDone ? 'خلّصته النهاردة وجبت ' + st.quizDone.pts + ' نقطة. التحدي الجاي بعد منتصف الليل.' : 'لسه ما حليتوش. أسئلة جديدة كل يوم.'));
+    var qa = el('a', st.quizDone ? 'btn ghost' : 'btn', st.quizDone ? 'شوف الترتيب' : 'ابدأ التحدي'); qa.href = '../quiz/'; qc.appendChild(qa); p.appendChild(qc);
+    var ms = st.matches.filter(function (m) { return mstate(m) !== 'scored' || st.mylu[m.id]; }).slice(0, 4);
+    if (ms.length) { p.appendChild(el('div', 'h2', 'مبارياتك')); var l = el('div', 'mrow'); ms.forEach(function (m) { l.appendChild(matchCard(m)); }); p.appendChild(l); }
+    if (st.lprof && st.lprof.pts) p.appendChild(el('div', 'muted', 'نقاط اختر تشكيلك: ' + st.lprof.pts));
+    var out = el('button', 'btn ghost', 'تسجيل الخروج'); out.type = 'button'; out.addEventListener('click', function () { auth.signOut(); }); p.appendChild(out);
+  }
+  function matchCard(m) {
+    var s = mstate(m), c = el('div', 'match'), t = el('div', 't'), mine = st.mylu[m.id];
+    t.appendChild(el('span', null, m.home + ' × ' + m.away));
+    t.appendChild(el('span', 'pill ' + (s === 'open' ? 'hot' : ''), s === 'soon' ? 'لسه ما فتحتش' : s === 'open' ? 'مفتوحة' : s === 'locked' ? 'اتقفلت' : 'اتحسبت'));
+    c.appendChild(t); c.appendChild(el('div', 'muted', m.comp + ' · ' + when(m.time)));
+    var info = el('div', 'muted');
+    if (s === 'soon') info.textContent = 'تفتح بعد ' + dur(m.open - Date.now()); else if (s === 'open') { info.textContent = (mine ? 'متسجل ✓ · ' : '') + 'تقفل بعد '; var sp = el('b'); sp.dataset.until = m.lock; sp.textContent = hms(m.lock - Date.now()); info.appendChild(sp); }
+    else if (s === 'locked') info.textContent = mine ? 'تشكيلك متسجل. بانتظار التشكيل الرسمي.' : 'فاتك التسجيل في المباراة دي.';
+    else info.textContent = mine && mine.pts != null ? 'جبت ' + mine.pts + ' نقطة' : 'اتحسبت المباراة';
+    c.appendChild(info);
+    if (s === 'open') { var b = el('button', 'btn', mine ? 'عدّل تشكيلك' : 'اختر تشكيلك'); b.type = 'button'; b.addEventListener('click', function () { setTab('play'); startDraft(m); }); c.appendChild(b); }
+    return c;
+  }
+  function startDraft(m) {
+    var mine = st.mylu[m.id];
+    draft = { m: m, side: mine ? mine.side : 'h', form: mine ? mine.form : '4-3-3', xi: mine ? mine.xi.slice() : new Array(11).fill(null), cap: mine ? mine.cap : null, open: null };
+    renderPane(); window.scrollTo(0, 0);
+  }
+  function panePlay(p) {
+    if (draft) return paneDraft(p);
+    p.appendChild(el('div', 'h2', 'مباريات اختر تشكيلك'));
+    var l = el('div', 'mrow'); st.matches.forEach(function (m) { l.appendChild(matchCard(m)); });
+    if (!st.matches.length) { var e = el('div', 'card'); e.appendChild(el('div', 'h2', 'مفيش مباراة متاحة دلوقتي')); e.appendChild(el('div', 'muted', 'بنضيف قائمة لاعبي الفريقين قبل المباراة بـ 48 ساعة. هتلاقي هنا إشعار أول ما تتفتح.')); l.appendChild(e); }
+    p.appendChild(l);
+  }
+  function paneDraft(p) {
+    var m = draft.m, s = mstate(m), editable = s === 'open';
+    var back = el('button', 'btn ghost', '→ كل المباريات'); back.type = 'button'; back.addEventListener('click', function () { draft = null; renderPane(); });
+    p.appendChild(back);
+    var h = el('div', 'card'); h.appendChild(el('div', 'h2', m.home + ' × ' + m.away));
+    var cd = el('div', 'row'); cd.appendChild(el('span', 'muted', editable ? 'تقفل بعد' : 'اتقفلت')); if (editable) { var c = el('span', 'cd'); c.dataset.until = m.lock; c.textContent = hms(m.lock - Date.now()); cd.appendChild(c); } h.appendChild(cd); p.appendChild(h);
+    var seg = el('div', 'seg'); [['h', m.home], ['a', m.away]].forEach(function (x) { var b = el('button', null, x[1]); b.type = 'button'; b.setAttribute('aria-pressed', String(draft.side === x[0])); b.disabled = !editable; b.addEventListener('click', function () { if (draft.side !== x[0]) { draft.side = x[0]; draft.xi = new Array(11).fill(null); draft.cap = null; renderPane(); } }); seg.appendChild(b); });
+    p.appendChild(seg);
+    var fm = el('div', 'forms'); Object.keys(FORMS).forEach(function (f) { var b = el('button', null, f); b.type = 'button'; b.setAttribute('aria-pressed', String(draft.form === f)); b.disabled = !editable; b.addEventListener('click', function () { draft.form = f; draft.xi = new Array(11).fill(null); draft.cap = null; renderPane(); }); fm.appendChild(b); });
+    p.appendChild(fm);
+    p.appendChild(pitchEl(m, draft.side, editable));
+    var filled = draft.xi.filter(function (x) { return x != null; }).length;
+    p.appendChild(el('div', 'muted', filled + ' / 11 لاعب' + (draft.cap != null ? ' · الكابتن مختار' : ' · اضغط على لاعب علشان تختاره كابتن')));
+    var mine = st.mylu[m.id];
+    if (mine && mine.pts != null) p.appendChild(el('div', 'msg ok', 'نقاطك في المباراة: ' + mine.pts));
+    if (editable) {
+      var err = el('div', 'msg'); err.hidden = true;
+      var save = el('button', 'btn', mine ? 'حدّث تشكيلي' : 'ثبّت تشكيلي'); save.type = 'button';
+      save.addEventListener('click', function () {
+        if (filled !== 11) { err.textContent = 'كمّل 11 لاعب الأول.'; err.hidden = false; return; }
+        if (draft.cap == null) { err.textContent = 'اختار كابتن (اضغط على لاعب ثم اجعله كابتن).'; err.hidden = false; return; }
+        save.disabled = true;
+        var doc = { uid: user.uid, n: shortName(user), m: m.id, side: draft.side, form: draft.form, xi: draft.xi.slice(), cap: draft.cap, t: Date.now() };
+        db.collection('lineups').doc(m.id + '_' + user.uid).set(doc).then(function () { doc.id = m.id + '_' + user.uid; st.mylu[m.id] = doc; err.className = 'msg ok'; err.textContent = 'اتسجل تشكيلك. تقدر تعدّله لحد القفل.'; err.hidden = false; save.disabled = false; renderBell(); })
+          .catch(function (e) { save.disabled = false; err.className = 'msg'; err.textContent = 'مقدرناش نسجّل التشكيل (' + (e.code || e.message) + '). ممكن الوقت خلص.'; err.hidden = false; });
+      });
+      p.appendChild(save); p.appendChild(err);
+      p.appendChild(el('div', 'muted', 'تقدر تعدّل لحد ' + when(m.lock) + '.'));
+    }
+  }
+
+  /* ---------- ranking ---------- */
+  function paneRank(p) {
+    var seg = el('div', 'seg'); [['day', 'اليوم'], ['week', 'الأسبوع'], ['all', 'الموسم']].forEach(function (x) { var b = el('button', null, x[1]); b.type = 'button'; b.setAttribute('aria-pressed', String(pitchTab === x[0])); b.addEventListener('click', function () { pitchTab = x[0]; renderPane(); }); seg.appendChild(b); });
+    p.appendChild(seg);
+    var box = el('div'); box.appendChild(el('div', 'muted', 'جار تحميل الترتيب...')); p.appendChild(box);
+    var today = cairoDate(), q, map;
+    if (pitchTab === 'day') { q = db.collection('quiz_days').where('date', '==', today).limit(200); map = function (x) { return x.done ? { id: x.uid, n: x.n, p: x.pts } : null; }; }
+    else if (pitchTab === 'week') { q = db.collection('quiz_users').where('wk', '==', weekId(today)).limit(200); map = function (x, id) { return { id: id, n: x.n, p: x.wkPts || 0 }; }; }
+    else { q = db.collection('quiz_users').orderBy('total', 'desc').limit(100); map = function (x, id) { return { id: id, n: x.n, p: x.total }; }; }
+    Promise.all([q.get(), pitchTab === 'all' ? db.collection('lineup_users').limit(300).get() : Promise.resolve(null)]).then(function (r) {
+      var rows = {}; r[0].forEach(function (d) { var x = map(d.data(), d.id); if (x && x.n) rows[x.id] = x; });
+      if (r[1]) r[1].forEach(function (d) { var x = d.data(); if (rows[d.id]) rows[d.id].p += x.pts || 0; else if (x.n) rows[d.id] = { id: d.id, n: x.n, p: x.pts || 0 }; });
+      var arr = Object.keys(rows).map(function (k) { return rows[k]; }).sort(function (a, b) { return b.p - a.p; });
+      var idx = arr.findIndex(function (x) { return x.id === user.uid; });
+      if (pitchTab === 'all' && idx >= 0) { st.myRank = idx + 1; }
+      var ul = el('ul', 'lb');
+      if (!arr.length) ul.appendChild(el('li', null, 'لسه مفيش نتائج في الفترة دي.'));
+      arr.slice(0, 20).forEach(function (r2, i) { var li = el('li', r2.id === user.uid ? 'you' : ''); li.appendChild(el('span', 'rk', String(i + 1))); li.appendChild(el('span', 'sp', r2.n + (r2.id === user.uid ? ' (أنت)' : ''))); li.appendChild(el('span', 'pt', String(r2.p))); ul.appendChild(li); });
+      if (idx >= 20) { var li = el('li', 'you'); li.appendChild(el('span', 'rk', String(idx + 1))); li.appendChild(el('span', 'sp', arr[idx].n + ' (أنت)')); li.appendChild(el('span', 'pt', String(arr[idx].p))); ul.appendChild(li); }
+      put(box, ul);
+    }).catch(function (e) { put(box, el('div', 'msg', 'مقدرناش نحمل الترتيب (' + (e.code || e.message) + ').')); });
+  }
+
+  /* ---------- opinions ---------- */
+  function paneOps(p) {
+    p.appendChild(el('div', 'h2', 'آرائي على الأخبار'));
+    var box = el('div', 'card'); box.appendChild(el('div', 'muted', 'جار التحميل...')); p.appendChild(box);
+    db.collection('comments').where('uid', '==', user.uid).where('approved', '==', true).limit(50).get().then(function (s) {
+      var rows = []; s.forEach(function (d) { var x = d.data(); x.ts = ts(x.ts); rows.push(x); }); rows.sort(function (a, b) { return b.ts - a.ts; });
+      box.replaceChildren();
+      if (!rows.length) { box.appendChild(el('div', 'muted', 'لسه مفيش آراء ظاهرة. اكتب رأيك تحت أي خبر وانت مسجل دخول، وبعد المراجعة هيظهر هنا.')); return; }
+      rows.forEach(function (x) {
+        var o = el('div', 'op'); o.appendChild(el('div', null, x.t));
+        var a = el('a', 'muted', 'افتح الخبر'); a.href = /^n[a-z0-9]+$/.test(x.art) ? '../#a-' + x.art : '../news/' + encodeURIComponent(x.art) + '/'; o.appendChild(a); box.appendChild(o);
+      });
+    }).catch(function (e) { box.replaceChildren(el('div', 'msg', 'مقدرناش نحمل آراءك (' + (e.code || e.message) + ').')); });
+  }
+
+  /* ---------- private leagues ---------- */
+  function code6() { var c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s = ''; for (var i = 0; i < 6; i++) s += c[Math.floor(Math.random() * c.length)]; return s; }
+  function paneLg(p) {
+    var mk = el('div', 'card'); mk.appendChild(el('div', 'h2', 'دوري خاص'));
+    mk.appendChild(el('div', 'muted', 'اعمل دوري لك ولصحابك (لحد 20 شخص) أو ادخل بكود.'));
+    var nm = el('input'); nm.type = 'text'; nm.placeholder = 'اسم الدوري (مثلًا: شلة الكورة)'; nm.maxLength = 30; nm.setAttribute('aria-label', 'اسم الدوري');
+    var cr = el('button', 'btn', 'إنشاء دوري'); cr.type = 'button';
+    var cd = el('input'); cd.type = 'text'; cd.placeholder = 'كود الدوري'; cd.maxLength = 6; cd.style.textTransform = 'uppercase'; cd.setAttribute('aria-label', 'كود الدوري');
+    var jn = el('button', 'btn ghost', 'انضم'); jn.type = 'button'; var msg = el('div', 'msg'); msg.hidden = true;
+    function say(t, ok) { msg.className = 'msg' + (ok ? ' ok' : ''); msg.textContent = t; msg.hidden = false; }
+    cr.addEventListener('click', function () {
+      var n = nm.value.trim(); if (n.length < 2) { say('اكتب اسم للدوري.'); return; } cr.disabled = true; var c = code6(), mn = {}; mn[user.uid] = shortName(user);
+      db.collection('leagues').doc(c).set({ name: n, owner: user.uid, members: [user.uid], mn: mn }).then(function () { say('اتعمل الدوري. الكود: ' + c, true); setTimeout(renderPane, 1200); }).catch(function (e) { cr.disabled = false; say('مقدرناش نعمل الدوري (' + (e.code || e.message) + ').'); });
+    });
+    jn.addEventListener('click', function () {
+      var c = cd.value.trim().toUpperCase(); if (c.length !== 6) { say('الكود 6 حروف.'); return; } jn.disabled = true;
+      db.collection('leagues').doc(c).get().then(function (d) {
+        if (!d.exists) { jn.disabled = false; say('الكود ده مش موجود.'); return; }
+        var x = d.data(); if (x.members.indexOf(user.uid) >= 0) { jn.disabled = false; say('انت أصلًا في الدوري ده.'); return; }
+        if (x.members.length >= 20) { jn.disabled = false; say('الدوري اكتمل (20 شخص).'); return; }
+        var mn = x.mn || {}; mn[user.uid] = shortName(user);
+        return db.collection('leagues').doc(c).update({ members: x.members.concat([user.uid]), mn: mn }).then(function () { say('انضميت للدوري ' + x.name, true); setTimeout(renderPane, 1000); });
+      }).catch(function (e) { jn.disabled = false; say('مقدرناش ننضم (' + (e.code || e.message) + ').'); });
+    });
+    mk.appendChild(nm); mk.appendChild(cr); mk.appendChild(cd); mk.appendChild(jn); mk.appendChild(msg); p.appendChild(mk);
+    var box = el('div', 'mrow'); p.appendChild(box);
+    db.collection('leagues').where('members', 'array-contains', user.uid).get().then(function (s) {
+      s.forEach(function (d) {
+        var x = d.data(), card = el('div', 'card'), head = el('div', 'row');
+        head.appendChild(el('div', 'h2 sp', x.name)); var cp = el('button', 'btn ghost', 'كود: ' + d.id); cp.type = 'button'; cp.style.minHeight = '40px';
+        cp.addEventListener('click', function () { var t = 'ادخل دوري "' + x.name + '" على SPORT 22. الكود: ' + d.id + ' ' + location.origin + location.pathname; if (navigator.share) navigator.share({ text: t }).catch(function () {}); else if (navigator.clipboard) navigator.clipboard.writeText(t).then(function () { cp.textContent = 'اتنسخ ✓'; }); });
+        head.appendChild(cp); card.appendChild(head); var ul = el('ul', 'lb'); card.appendChild(ul); box.appendChild(card);
+        Promise.all(x.members.map(function (u) { return Promise.all([db.collection('quiz_users').doc(u).get(), db.collection('lineup_users').doc(u).get()]).then(function (r) { return { id: u, n: (x.mn && x.mn[u]) || 'لاعب', p: seasonPts(r[0].exists ? r[0].data() : null, r[1].exists ? r[1].data() : null) }; }); })).then(function (rows) {
+          rows.sort(function (a, b) { return b.p - a.p; }); rows.forEach(function (r, i) { var li = el('li', r.id === user.uid ? 'you' : ''); li.appendChild(el('span', 'rk', String(i + 1))); li.appendChild(el('span', 'sp', r.n)); li.appendChild(el('span', 'pt', String(r.p))); ul.appendChild(li); });
+        });
+      });
+      if (s.empty) box.appendChild(el('div', 'muted', 'مش في أي دوري لسه.'));
+    }).catch(function (e) { box.appendChild(el('div', 'msg', 'مقدرناش نحمل دورياتك (' + (e.code || e.message) + ').')); });
+  }
+
+  /* ---------- editors only: publish squads, official XI, scoring ---------- */
+  function parseSquad(t) {
+    var map = { 'حارس': 'GK', 'مدافع': 'DF', 'وسط': 'MF', 'مهاجم': 'FW', GK: 'GK', DF: 'DF', MF: 'MF', FW: 'FW' }, out = [];
+    t.split('\n').forEach(function (ln) { var a = ln.split('|').map(function (x) { return x.trim(); }); if (a.length < 3) return; var n = parseInt(a[0], 10), pos = map[a[1]]; if (!n || !pos || !a[2]) return; out.push({ num: n, pos: pos, n: a[2] }); });
+    return out;
+  }
+  function paneAdm(p) {
+    p.appendChild(el('div', 'h2', 'إدارة اختر تشكيلك'));
+    var c = el('div', 'card'); c.appendChild(el('div', 'h2', '1) نشر قوائم الفريقين'));
+    c.appendChild(el('div', 'muted', 'كل سطر: رقم | مركز (حارس/مدافع/وسط/مهاجم) | الاسم. مثال: 1 | حارس | محمد الشناوي'));
+    var sel = el('select'); st.fixtures.forEach(function (m, i) { var o = el('option', null, m.home + ' × ' + m.away + ' — ' + when(m.time)); o.value = i; sel.appendChild(o); });
+    var th = el('textarea'); th.placeholder = 'قائمة صاحب الأرض'; var ta = el('textarea'); ta.placeholder = 'قائمة الضيف';
+    var go = el('button', 'btn', 'نشر المباراة'); go.type = 'button'; var msg = el('div', 'msg'); msg.hidden = true;
+    go.addEventListener('click', function () {
+      var m = st.fixtures[sel.value]; if (!m) return; var sh = parseSquad(th.value), sa = parseSquad(ta.value);
+      if (sh.length < 14 || sa.length < 14) { msg.textContent = 'كل قائمة لازم يكون فيها 14 لاعب على الأقل (عدد الصحيح: ' + sh.length + ' / ' + sa.length + ').'; msg.className = 'msg'; msg.hidden = false; return; }
+      var T = firebase.firestore.Timestamp, id = mid(m.time, m.home, m.away);
+      db.collection('match_lineups').doc(id).set({ home: m.home, away: m.away, comp: m.comp, time: m.time, open: T.fromMillis(m.time - 48 * 3600000), lock: T.fromMillis(m.time - 10 * 3600000), sqH: sh, sqA: sa, by: user.email })
+        .then(function () { msg.className = 'msg ok'; msg.textContent = 'اتنشرت المباراة. هتفتح للاعبين قبلها بـ 48 ساعة.'; msg.hidden = false; }).catch(function (e) { msg.className = 'msg'; msg.textContent = 'فشل النشر (' + (e.code || e.message) + ')'; msg.hidden = false; });
+    });
+    [sel, th, ta, go, msg].forEach(function (x) { c.appendChild(x); }); p.appendChild(c);
+    var c2 = el('div', 'card'); c2.appendChild(el('div', 'h2', '2) التشكيل الرسمي وحساب النقاط'));
+    var ms = el('select'); st.matches.filter(function (m) { return !m.scored; }).forEach(function (m) { var o = el('option', null, m.home + ' × ' + m.away); o.value = m.id; ms.appendChild(o); });
+    function inp(ph) { var i = el('input'); i.type = 'text'; i.placeholder = ph; i.setAttribute('aria-label', ph); return i; }
+    var fh = inp('طريقة لعب صاحب الأرض (مثال 4-3-3)'), xh = inp('أرقام الـ11 صاحب الأرض (1,2,3...)'), fa = inp('طريقة لعب الضيف'), xa = inp('أرقام الـ11 الضيف');
+    var sc = el('button', 'btn', 'احسب النقاط (مرة واحدة)'); sc.type = 'button'; var m2 = el('div', 'msg'); m2.hidden = true;
+    sc.addEventListener('click', function () { if (!ms.value) return; if (!confirm('هيتحسب وتتسجل النقاط نهائيًا. متأكد؟')) return; sc.disabled = true; scoreMatch(ms.value, fh.value.trim(), xh.value, fa.value.trim(), xa.value, m2).then(function () { sc.disabled = false; }); });
+    [ms, fh, xh, fa, xa, sc, m2].forEach(function (x) { c2.appendChild(x); }); p.appendChild(c2);
+  }
+  function nums(s) { return s.split(/[,،\s]+/).map(function (x) { return parseInt(x, 10); }).filter(function (x) { return x > 0; }); }
+  function scoreMatch(id, fH, xH, fA, xA, out) {
+    function say(t, ok) { out.className = 'msg' + (ok ? ' ok' : ''); out.textContent = t; out.hidden = false; }
+    var off = { h: { f: fH, x: nums(xH) }, a: { f: fA, x: nums(xA) } };
+    if (off.h.x.length !== 11 || off.a.x.length !== 11) { say('لازم 11 رقم لكل فريق.'); return Promise.resolve(); }
+    var ref = db.collection('match_lineups').doc(id);
+    return ref.get().then(function (d) {
+      var m = d.data(); if (m.scored) { say('المباراة اتحسبت قبل كده.'); return; }
+      if (Date.now() < ts(m.lock)) { say('لسه ما اتقفلتش. استنى القفل.'); return; }
+      return db.collection('lineups').where('m', '==', id).get().then(function (s) {
+        var all = []; s.forEach(function (x) { var v = x.data(); v.ref = x.ref; all.push(v); });
+        var cnt = { h: {}, a: {} }, tot = { h: 0, a: 0 };
+        all.forEach(function (l) { tot[l.side]++; l.xi.forEach(function (n) { cnt[l.side][n] = (cnt[l.side][n] || 0) + 1; }); });
+        function tier(side, n) {
+          if (tot.h + tot.a < 30) return 1;
+          var sq = (side === 'h' ? m.sqH : m.sqA).map(function (p) { return { n: p.num, c: cnt[side][p.num] || 0 }; }).sort(function (a, b) { return b.c - a.c; });
+          var i = sq.findIndex(function (p) { return p.n === n; }), third = sq.length / 3; return i < third ? 1 : i < 2 * third ? 2 : 3;
+        }
+        var gains = {}, ups = [];
+        all.forEach(function (l) {
+          var o = off[l.side], pts = 0, hit = 0;
+          l.xi.forEach(function (n) { if (o.x.indexOf(n) >= 0) { var b = tier(l.side, n); pts += b * (n === l.cap ? 2 : 1); hit++; } });
+          if (o.f && l.form === o.f) pts += 3; if (hit === 11) pts += 5;
+          gains[l.uid] = (gains[l.uid] || 0) + pts; ups.push({ ref: l.ref, pts: pts, uid: l.uid, n: l.n });
+        });
+        var uids = Object.keys(gains);
+        return Promise.all(uids.map(function (u) { return db.collection('lineup_users').doc(u).get(); })).then(function (docs) {
+          var ops = []; ups.forEach(function (u) { ops.push(function (b) { b.update(u.ref, { pts: u.pts }); }); });
+          docs.forEach(function (d, i) { var u = uids[i], prev = d.exists ? d.data() : {}, nm = ups.filter(function (x) { return x.uid === u; })[0].n; ops.push(function (b) { b.set(db.collection('lineup_users').doc(u), { n: nm, pts: (prev.pts || 0) + gains[u] }); }); });
+          ops.push(function (b) { b.update(ref, { scored: true, xiH: off.h.x, xiA: off.a.x, fH: off.h.f, fA: off.a.f }); });
+          var chain = Promise.resolve(); for (var i = 0; i < ops.length; i += 400) (function (part) { chain = chain.then(function () { var b = db.batch(); part.forEach(function (f) { f(b); }); return b.commit(); }); })(ops.slice(i, i + 400));
+          return chain.then(function () { say('اتحسبت نقاط ' + ups.length + ' مشارك.', true); });
+        });
+      });
+    }).catch(function (e) { say('فشل الحساب (' + (e.code || e.message) + ').'); });
+  }
+
+  /* ---------- boot ---------- */
+  function show(id) { ['s-load', 's-login'].forEach(function (s) { $(s).hidden = s !== id; }); $('app').hidden = id !== 'app'; if (id === 'app') { $('s-load').hidden = true; $('s-login').hidden = true; } }
+  function onUser(u) {
+    user = u;
+    if (!u) { $('who').hidden = true; show('s-login'); return; }
+    show('s-load'); $('who').hidden = false; $('uname').textContent = shortName(u); $('uav').textContent = shortName(u).charAt(0);
+    loadAll().then(function () {
+      show('app'); drawTabs(); renderPane();
+      db.collection('quiz_users').orderBy('total', 'desc').limit(100).get().then(function (s) { var i = 0, r = 0; s.forEach(function (d) { i++; if (d.id === user.uid) r = i; }); if (r) { st.myRank = r; if (tab === 'home') renderPane(); } }).catch(function () {});
+    }).catch(function (e) { show('s-login'); var er = $('lerr'); er.textContent = 'حصلت مشكلة في التحميل (' + (e.code || e.message) + '). حدّث الصفحة.'; er.hidden = false; });
+  }
+  $('glogin').addEventListener('click', function () {
+    var er = $('lerr'); er.hidden = true;
+    auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function (e) {
+      if (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request') return;
+      er.textContent = e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-this-environment' ? 'الدخول بجوجل مش شغال داخل المتصفح ده. افتح اللينك في Chrome مباشرة (مش من جوه واتساب أو فيسبوك) وتأكد إن النوافذ المنبثقة مسموحة.' : e.code === 'auth/unauthorized-domain' ? 'الدومين لسه مش مضاف في إعدادات Firebase.' : 'مقدرناش نسجل دخولك (' + (e.code || e.message) + ').';
+      er.hidden = false;
+    });
+  });
+  try { if (lsGet('me-rules-seen', false)) $('rules').open = false; else { $('rules').open = true; lsSet('me-rules-seen', true); } } catch (e) {}
+  setInterval(function () { document.querySelectorAll('[data-until]').forEach(function (n) { n.textContent = hms(Number(n.dataset.until) - Date.now()); }); }, 1000);
+  if (!window.S22_FB) { show('s-login'); $('glogin').disabled = true; return; }
+  loadScript(FBV + 'firebase-app-compat.js').then(function () { return loadScript(FBV + 'firebase-auth-compat.js'); }).then(function () { return loadScript(FBV + 'firebase-firestore-compat.js'); }).then(function () {
+    firebase.initializeApp(window.S22_FB); auth = firebase.auth(); db = firebase.firestore(); auth.onAuthStateChanged(onUser);
+  }).catch(function () { show('s-login'); $('glogin').disabled = true; var er = $('lerr'); er.textContent = 'مقدرناش نحمّل الخدمة. تأكد من النت وحدّث الصفحة.'; er.hidden = false; });
+})();
+</script>
+</body>
+</html>
