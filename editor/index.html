@@ -105,8 +105,8 @@ textarea { min-height:240px; resize:vertical; }
 [hidden] { display:none !important; }
 :focus-visible { outline:3px solid #E8590C; outline-offset:2px; }
 
-#mrTab { text-decoration:none; position:fixed; left:0; top:45%; z-index:30; writing-mode:vertical-rl; background:var(--accent); color:var(--accent-ink); border:0; padding:14px 8px; font:inherit; font-weight:700; font-size:.85rem; cursor:pointer; border-radius:0 8px 8px 0; }
-#mrTab[hidden] { display:none; }
+.mrl { background:var(--accent); color:var(--accent-ink); font-weight:700; font-size:.85rem; padding:7px 12px; text-decoration:none; white-space:nowrap; }
+.mrl[hidden] { display:none; }
 .mrH { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px; }
 .mrT { display:flex; gap:6px; margin-bottom:10px; }
 .mrT button { flex:1; font:inherit; padding:6px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink); cursor:pointer; }
@@ -125,6 +125,7 @@ textarea { min-height:240px; resize:vertical; }
 <div class="wrap">
   <div class="mast">
     <div class="logo"><span>SPORT</span><span class="n">22</span></div>
+    <a id="mrTab" class="mrl" href="results.html" target="_blank" rel="noopener" hidden>نتايج الماتشات</a>
     <div class="who" id="who"></div>
   </div>
 
@@ -211,7 +212,6 @@ textarea { min-height:240px; resize:vertical; }
     <button type="button" id="pvD" class="on">كمبيوتر</button><button type="button" id="pvM">موبايل</button><button type="button" id="pvX">رجوع للتعديل</button></div>
   <div class="stage"><iframe id="pvf" title="معاينة"></iframe></div>
 </div>
-<a id="mrTab" href="results.html" target="_blank" rel="noopener" hidden>نتايج الماتشات</a>
 <script src="../firebase-config.js"></script>
 <script>
 (function () {
