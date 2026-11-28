@@ -131,6 +131,7 @@ h1 { font-family: var(--display); font-weight: 800; font-size: clamp(1.5rem, 6vw
 </head>
 <body>
 <div class="wrap">
+<p class="demo-note" id="trialnote" hidden>افتتاح تجريبي: نقاطك بتتحفظ على جهازك بس ومش بتتحسب في أي ترتيب، وتقدر تلعب التحدي أكتر من مرة للتجربة.</p>
   <div class="mast">
     <a class="logo" href="../" style="text-decoration:none;color:inherit"><span>SPORT</span><span class="n">22</span></a>
     <div class="stats" id="stats" hidden>
@@ -214,6 +215,10 @@ h1 { font-family: var(--display); font-weight: 800; font-size: clamp(1.5rem, 6vw
 <script>
 (function () {
   var $ = function (id) { return document.getElementById(id); };
+  var TRIAL = Date.now() < (window.S22_REAL_FROM || 9e15);
+  if (TRIAL) document.getElementById('trialnote').hidden = false;
+  function qt() { try { return JSON.parse(localStorage.getItem('q-trial')) || { u: null, days: {} }; } catch (e) { return { u: null, days: {} }; } }
+  function qtSave(o) { try { localStorage.setItem('q-trial', JSON.stringify(o)); } catch (e) {} }
   var TZ = 'Africa/Cairo', FBV = 'https://www.gstatic.com/firebasejs/10.12.2/';
   var db, auth, user, data, day, team = null, qs = [], idx = 0, score = 0, ct = 0, cg = 0, locked = false, tLeft = 20, tick = null, tab = 'day', profile = null, today = null;
 
@@ -255,8 +260,8 @@ h1 { font-family: var(--display); font-weight: 800; font-size: clamp(1.5rem, 6vw
     user = u; err('');
     if (!u) { profile = null; setStats(); show('s-login'); return; }
     show('s-load');
-    var uid = u.uid, ref = db.collection('quiz_days').doc(today + '_' + uid);
-    Promise.all([db.collection('quiz_users').doc(uid).get(), ref.get()]).then(function (r) {
+    var uid = u.uid, ref = TRIAL ? null : db.collection('quiz_days').doc(today + '_' + uid), T0 = qt();
+    Promise.all([TRIAL ? Promise.resolve({ exists: !!T0.u, data: function () { return T0.u; } }) : db.collection('quiz_users').doc(uid).get(), TRIAL ? Promise.resolve({ exists: false }) : ref.get()]).then(function (r) {
       profile = r[0].exists ? r[0].data() : null; setStats();
       $('hello').textContent = 'أهلاً ' + shortName(u);
       if (profile && profile.team && data.teams[profile.team]) team = profile.team;
@@ -270,7 +275,7 @@ h1 { font-family: var(--display); font-weight: 800; font-size: clamp(1.5rem, 6vw
   function start() {
     if (!team || !user) return;
     $('go').disabled = true;
-    db.collection('quiz_days').doc(today + '_' + user.uid).set({ uid: user.uid, n: shortName(user), team: team, date: today, pts: 0, ct: 0, cg: 0, done: false }).then(function () {
+    (TRIAL ? Promise.resolve() : db.collection('quiz_days').doc(today + '_' + user.uid).set({ uid: user.uid, n: shortName(user), team: team, date: today, pts: 0, ct: 0, cg: 0, done: false })).then(function () {
       qs = pickQuestions(team); idx = 0; score = 0; ct = 0; cg = 0; show('s-quiz'); ask();
     }).catch(function (e) { $('go').disabled = false; err('مقدرناش نبدأ التحدي (' + (e.code || e.message) + ').'); });
   }
@@ -308,9 +313,9 @@ h1 { font-family: var(--display); font-weight: 800; font-size: clamp(1.5rem, 6vw
       streak: prev.last === fromNum(dayNum(today) - 1) ? (prev.streak || 0) + 1 : 1,
       last: today, wk: wk, wkPts: (prev.wk === wk ? (prev.wkPts || 0) : 0) + score
     };
-    var batch = db.batch();
-    batch.update(db.collection('quiz_days').doc(today + '_' + user.uid), { pts: score, ct: ct, cg: cg, done: true });
-    batch.set(db.collection('quiz_users').doc(user.uid), np);
+    var batch = TRIAL ? { commit: function () { var o = qt(); o.u = np; o.days[today] = { uid: user.uid, n: np.n, team: team, date: today, pts: score, ct: ct, cg: cg, done: true }; qtSave(o); return Promise.resolve(); } } : db.batch();
+    if (!TRIAL) { batch.update(db.collection('quiz_days').doc(today + '_' + user.uid), { pts: score, ct: ct, cg: cg, done: true });
+    batch.set(db.collection('quiz_users').doc(user.uid), np); }
     batch.commit().then(function () { profile = np; setStats(); showResult({ pts: score, ct: ct, cg: cg }); })
       .catch(function (e) { $('nextq').disabled = false; err('مقدرناش نحفظ نتيجتك (' + (e.code || e.message) + '). جرب تاني.'); });
   }
@@ -324,6 +329,7 @@ h1 { font-family: var(--display); font-weight: 800; font-size: clamp(1.5rem, 6vw
   function drawLb() {
     var lb = $('lb'); lb.replaceChildren(el('li', null, 'جاري تحميل الترتيب…'));
     var q, mapRow;
+    if (TRIAL) { lb.replaceChildren(); var me0 = profile || { total: 0 }, li0 = el('li', 'me'); li0.appendChild(el('span', 'r', '1')); var w0 = el('span', 'who'); w0.appendChild(el('span', 'nm', (user ? shortName(user) : '') + ' (أنت)')); li0.appendChild(w0); li0.appendChild(el('span', 'p', String(tab === 'day' ? (qt().days[today] || { pts: 0 }).pts : tab === 'week' ? (me0.wkPts || 0) : (me0.total || 0)))); lb.appendChild(li0); lb.appendChild(el('li', null, 'الترتيب بين الناس هيشتغل لما نبدأ بجد. دلوقتي ده نقاطك على جهازك.')); return; }
     if (tab === 'day') { q = db.collection('quiz_days').where('date', '==', today).limit(200); mapRow = function (x) { return x.done ? { id: x.uid, n: x.n, t: x.team, p: x.pts } : null; }; }
     else if (tab === 'week') { q = db.collection('quiz_users').where('wk', '==', weekId(today)).limit(200); mapRow = function (x, id) { return { id: id, n: x.n, t: x.team, p: x.wkPts }; }; }
     else { q = db.collection('quiz_users').orderBy('total', 'desc').limit(50); mapRow = function (x, id) { return { id: id, n: x.n, t: x.team, p: x.total }; }; }

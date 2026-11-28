@@ -123,7 +123,7 @@ textarea { min-height: 110px; resize: vertical; }
   </div>
 </header>
 
-<div class="msg" id="trial" style="margin-top:6px"><b>افتتاح تجريبي</b><br>اللعبة في فترة التجربة. كل المباريات مفتوحة من غير مواعيد، والتشكيلات والنقاط تجريبية ومش بتتحسب في الترتيب. جرّب كل حاجة وقولنا لو لقيت أي غلطة.</div>
+<div class="msg" id="trial" style="margin-top:6px"><b>افتتاح تجريبي</b><br>كل حاجة هنا تجريبية: التحدي والتشكيلات والنقاط والدوريات. المباريات مفتوحة من غير مواعيد، والنتائج بتتحفظ على جهازك بس ومش بتتحسب في أي ترتيب. جرّب كل حاجة وقولنا لو لقيت أي غلطة.</div>
 <details class="rules" id="rules">
   <summary>القوانين وطريقة اللعب</summary>
   <div class="rb">
@@ -141,7 +141,7 @@ textarea { min-height: 110px; resize: vertical; }
         <li>11 لاعب كلهم صح = +5 نقاط إضافية.</li>
       </ul></div>
     <div><h3>الترتيب والدوري الخاص</h3>
-      <ul><li>الترتيب بيجمع نقاط التحدي ونقاط اختر تشكيلك.</li><li>اعمل دوري خاص (حتى 20 شخص) وشاركهم الكود. نقاط الدوري هي نقاط الموسم.</li><li>النقاط بتتحسب من لوحة الموقع، مش من جهازك. لا يوجد أي رهان أو مال.</li></ul></div>
+      <ul><li><b>في التجربة:</b> الترتيب والدوريات بتظهر لك شكلها بس، ومفيش حاجة بتتحفظ على السيرفر. الترتيب الحقيقي بيبدأ مع التشغيل الفعلي.</li><li>الترتيب بيجمع نقاط التحدي ونقاط اختر تشكيلك.</li><li>اعمل دوري خاص (حتى 20 شخص) وشاركهم الكود. نقاط الدوري هي نقاط الموسم.</li><li>النقاط بتتحسب من لوحة الموقع، مش من جهازك. لا يوجد أي رهان أو مال.</li></ul></div>
   </div>
 </details>
 
@@ -164,8 +164,8 @@ textarea { min-height: 110px; resize: vertical; }
 <script src="../firebase-config.js"></script>
 <script>
 (function () {
-  /* الافتتاح التجريبي: كل المباريات قبل REAL_FROM تجريبية (مفتوحة طول الوقت ومبتتسجلش على السيرفر). لبدء اللعب الحقيقي حط هنا توقيت ركلة بداية أول مباراة حقيقية بالميلي ثانية. */
-  var REAL_FROM = 9e15;
+  var REAL_FROM = window.S22_REAL_FROM || 9e15;
+  function isTrial() { return Date.now() < REAL_FROM; }
   var TZ = 'Africa/Cairo', FBV = 'https://www.gstatic.com/firebasejs/10.12.2/';
   var EDITORS = ['abdallahrabee80@gmail.com', 'fatmayasein09@gmail.com', 'fatmayasein33@gmail.com', 'abdallahrabee212@gmail.com'];
   var FORMS = { '4-3-3': [4, 3, 3], '4-2-3-1': [4, 2, 3, 1], '4-4-2': [4, 4, 2], '3-5-2': [3, 5, 2], '3-4-3': [3, 4, 3], '5-3-2': [5, 3, 2] };
@@ -251,10 +251,13 @@ textarea { min-height: 110px; resize: vertical; }
   function ts(x) { return x && x.toMillis ? x.toMillis() : Number(x) || 0; }
   function loadAll() {
     var uid = user.uid, today = cairoDate();
+    var T = isTrial(), none = { exists: false, data: function () { return {}; } }, empty = { forEach: function () {} }, qt = lsGet('q-trial', { u: null, days: {} });
     return Promise.all([
-      db.collection('quiz_users').doc(uid).get(), db.collection('quiz_days').doc(today + '_' + uid).get(), db.collection('lineup_users').doc(uid).get(),
-      db.collection('match_lineups').where('time', '>', Date.now() - 4 * 86400000).get(),
-      db.collection('lineups').where('uid', '==', uid).get(),
+      T ? Promise.resolve({ exists: !!qt.u, data: function () { return qt.u; } }) : db.collection('quiz_users').doc(uid).get(),
+      T ? Promise.resolve({ exists: !!qt.days[today], data: function () { return qt.days[today]; } }) : db.collection('quiz_days').doc(today + '_' + uid).get(),
+      T ? Promise.resolve(none) : db.collection('lineup_users').doc(uid).get(),
+      T ? Promise.resolve(empty) : db.collection('match_lineups').where('time', '>', Date.now() - 4 * 86400000).get(),
+      T ? Promise.resolve(empty) : db.collection('lineups').where('uid', '==', uid).get(),
       fetch('../today.json?v=' + today).then(function (r) { return r.json(); }).catch(function () { return { days: {} }; }),
       fetch('../squads.json?v=' + today).then(function (r) { return r.json(); }).catch(function () { return {}; })
     ]).then(function (r) {
@@ -449,6 +452,12 @@ textarea { min-height: 110px; resize: vertical; }
 
   /* ---------- ranking ---------- */
   function paneRank(p) {
+    if (isTrial()) {
+      var q0 = st.qprof || {}, c0 = el('div', 'card'); c0.appendChild(el('div', 'h2', 'الترتيب (تجريبي)'));
+      c0.appendChild(el('div', 'muted', 'في فترة التجربة مفيش ترتيب بين الناس، ده شكل الصفحة بس. هتشوف هنا اسمك ونقاطك من جهازك.'));
+      var u0 = el('ul', 'lb'), l0 = el('li', 'you'); l0.appendChild(el('span', 'rk', '1')); l0.appendChild(el('span', 'sp', shortName(user) + ' (أنت)')); l0.appendChild(el('span', 'pt', String(q0.total || 0))); u0.appendChild(l0);
+      p.appendChild(c0); p.appendChild(u0); return;
+    }
     var seg = el('div', 'seg'); [['day', 'اليوم'], ['week', 'الأسبوع'], ['all', 'الموسم']].forEach(function (x) { var b = el('button', null, x[1]); b.type = 'button'; b.setAttribute('aria-pressed', String(pitchTab === x[0])); b.addEventListener('click', function () { pitchTab = x[0]; renderPane(); }); seg.appendChild(b); });
     p.appendChild(seg);
     var box = el('div'); box.appendChild(el('div', 'muted', 'جار تحميل الترتيب...')); p.appendChild(box);
@@ -472,6 +481,7 @@ textarea { min-height: 110px; resize: vertical; }
 
   /* ---------- opinions ---------- */
   function paneOps(p) {
+    if (isTrial()) { var o0 = el('div', 'card'); o0.appendChild(el('div', 'h2', 'آرائي على الأخبار (تجريبي)')); o0.appendChild(el('div', 'muted', 'آراءك هتظهر هنا لما يبدأ التشغيل الحقيقي. دلوقتي الصفحة للتجربة بس.')); p.appendChild(o0); return; }
     p.appendChild(el('div', 'h2', 'آرائي على الأخبار'));
     var box = el('div', 'card'); box.appendChild(el('div', 'muted', 'جار التحميل...')); p.appendChild(box);
     db.collection('comments').where('uid', '==', user.uid).where('approved', '==', true).limit(50).get().then(function (s) {
@@ -488,6 +498,16 @@ textarea { min-height: 110px; resize: vertical; }
   /* ---------- private leagues ---------- */
   function code6() { var c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', s = ''; for (var i = 0; i < 6; i++) s += c[Math.floor(Math.random() * c.length)]; return s; }
   function paneLg(p) {
+    if (isTrial()) {
+      var L = lsGet('me-trial-lg', []), k = el('div', 'card'); k.appendChild(el('div', 'h2', 'دوري خاص (تجريبي)'));
+      k.appendChild(el('div', 'muted', 'في التجربة تقدر تعمل دوري تشوف شكله بس. الانضمام بكود وأصحابك هيشتغلوا لما نبدأ بجد.'));
+      var n1 = el('input'); n1.type = 'text'; n1.placeholder = 'اسم الدوري'; n1.maxLength = 30; n1.setAttribute('aria-label', 'اسم الدوري');
+      var b1 = el('button', 'btn', 'إنشاء دوري تجريبي'); b1.type = 'button';
+      b1.addEventListener('click', function () { var v = n1.value.trim(); if (v.length < 2) return; L.push({ name: v, code: code6() }); lsSet('me-trial-lg', L); renderPane(); });
+      k.appendChild(n1); k.appendChild(b1); p.appendChild(k);
+      L.forEach(function (x) { var c1 = el('div', 'card'); c1.appendChild(el('div', 'h2', x.name)); c1.appendChild(el('div', 'muted', 'الكود: ' + x.code)); var u1 = el('ul', 'lb'), l1 = el('li', 'you'); l1.appendChild(el('span', 'rk', '1')); l1.appendChild(el('span', 'sp', shortName(user) + ' (أنت)')); l1.appendChild(el('span', 'pt', String((st.qprof && st.qprof.total) || 0))); u1.appendChild(l1); c1.appendChild(u1); p.appendChild(c1); });
+      return;
+    }
     var mk = el('div', 'card'); mk.appendChild(el('div', 'h2', 'دوري خاص'));
     mk.appendChild(el('div', 'muted', 'اعمل دوري لك ولصحابك (لحد 20 شخص) أو ادخل بكود.'));
     var nm = el('input'); nm.type = 'text'; nm.placeholder = 'اسم الدوري (مثلًا: شلة الكورة)'; nm.maxLength = 30; nm.setAttribute('aria-label', 'اسم الدوري');
@@ -626,7 +646,7 @@ textarea { min-height: 110px; resize: vertical; }
     loadAll().then(function () {
       show('app'); drawTabs(); renderPane();
       if (isEditor()) publishFixtures().then(function (n) { if (n) loadAll().then(function () { renderPane(); }); }).catch(function () {});
-      db.collection('quiz_users').orderBy('total', 'desc').limit(100).get().then(function (s) { var i = 0, r = 0; s.forEach(function (d) { i++; if (d.id === user.uid) r = i; }); if (r) { st.myRank = r; if (tab === 'home') renderPane(); } }).catch(function () {});
+      if (!isTrial()) db.collection('quiz_users').orderBy('total', 'desc').limit(100).get().then(function (s) { var i = 0, r = 0; s.forEach(function (d) { i++; if (d.id === user.uid) r = i; }); if (r) { st.myRank = r; if (tab === 'home') renderPane(); } }).catch(function () {});
     }).catch(function (e) { show('s-login'); var er = $('lerr'); er.textContent = 'حصلت مشكلة في التحميل (' + (e.code || e.message) + '). حدّث الصفحة.'; er.hidden = false; });
   }
   $('glogin').addEventListener('click', function () {
