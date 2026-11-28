@@ -208,40 +208,39 @@ textarea { min-height: 110px; resize: vertical; }
     pitch.innerHTML = '<svg viewBox="0 0 68 100" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="rgba(255,255,255,.45)" stroke-width=".45"><rect x="3" y="3" width="62" height="94"/><line x1="3" y1="50" x2="65" y2="50"/><circle cx="34" cy="50" r="8.5"/><rect x="14" y="3" width="40" height="16"/><rect x="25" y="3" width="18" height="6"/><rect x="14" y="81" width="40" height="16"/><rect x="25" y="91" width="18" height="6"/></g></svg>';
     slots.forEach(function (s, i) {
       var k = kit(team, s.g === 'GK'), num = draft.xi[i], p = sq.filter(function (x) { return x.num === num; })[0];
-      var t = el('button', 'tok' + (draft.open === i ? ' sel' : '')); t.type = 'button'; t.style.left = s.x + '%'; t.style.top = s.y + '%'; t.setAttribute('aria-label', p ? p.n : 'اختر لاعب');
+      var t = el('button', 'tok' + (draft.sel === i ? ' sel' : '')); t.type = 'button'; t.style.left = s.x + '%'; t.style.top = s.y + '%'; t.setAttribute('aria-label', p ? p.n : 'اختر لاعب');
       var d = el('span', 'disc' + (p ? '' : ' empty'), p ? String(p.num) : '+'); d.style.background = p ? k[0] : 'transparent'; d.style.color = p ? k[3] : '#cfe3da'; if (p && k[0] === '#F7F7F4') d.style.color = '#C8102E';
       if (p && draft.sc === p.num) d.appendChild(el('span', 'bd', '⚽')); if (p && draft.as === p.num) d.appendChild(el('span', 'bd a', 'A'));
       t.appendChild(d); t.appendChild(el('span', 'nm', p ? shortN(p.n) : POSN[s.g]));
-      if (edit) t.addEventListener('click', function () { openPicker(m, side, i, s.g); });
+      if (edit) t.addEventListener('click', function () { tapSlot(i); });
       pitch.appendChild(t);
     });
     return pitch;
   }
   function shortN(n) { var q = /«([^»]+)»/.exec(n); return q ? q[1] : n.split(' ').slice(-1)[0]; }
   var POSN = { GK: 'حارس', DF: 'مدافع', MF: 'وسط', FW: 'مهاجم' };
-  function openPicker(m, side, slotIdx, grp) {
-    var sq = side === 'h' ? m.sqH : m.sqA, used = {}; draft.xi.forEach(function (n, i) { if (n != null && i !== slotIdx) used[n] = 1; });
-    var cur = draft.xi[slotIdx], box = $('sheetin'), list = el('div', 'plist');
-    var sorted = sq.slice().sort(function (a, b) { return (a.pos === grp ? 0 : 1) - (b.pos === grp ? 0 : 1) || a.num - b.num; });
-    sorted.forEach(function (p) {
-      var b = el('button', 'pl'); b.type = 'button'; b.disabled = !!used[p.num];
-      b.appendChild(el('span', 'n', String(p.num))); b.appendChild(el('span', 'sp', p.n)); b.appendChild(el('span', 'pill' + (p.pos === grp ? ' on' : ''), POSN[p.pos] || p.pos));
-      b.addEventListener('click', function () { draft.xi[slotIdx] = p.num; $('sheet').hidden = true; draft.open = null; renderPane(); });
-      list.appendChild(b);
-    });
-    var tools = el('div', 'row'); tools.style.flexWrap = 'wrap';
-    if (cur != null) {
-      var cp = el('button', 'btn ghost', draft.sc === cur ? 'شيل توقع التسجيل' : 'توقعه يسجّل (+2)'); cp.type = 'button';
-      cp.addEventListener('click', function () { draft.sc = draft.sc === cur ? null : cur; $('sheet').hidden = true; renderPane(); });
-      var ap = el('button', 'btn ghost', draft.as === cur ? 'شيل توقع الأسيست' : 'توقعه يعمل أسيست (+1)'); ap.type = 'button';
-      ap.addEventListener('click', function () { draft.as = draft.as === cur ? null : cur; $('sheet').hidden = true; renderPane(); });
-      var rm = el('button', 'btn ghost', 'شيل اللاعب'); rm.type = 'button';
-      rm.addEventListener('click', function () { if (draft.sc === cur) draft.sc = null; if (draft.as === cur) draft.as = null; draft.xi[slotIdx] = null; $('sheet').hidden = true; renderPane(); });
-      tools.appendChild(cp); tools.appendChild(ap); tools.appendChild(rm);
-    }
-    var x = el('button', 'btn ghost', 'إغلاق'); x.type = 'button'; x.addEventListener('click', function () { $('sheet').hidden = true; });
-    put(box, el('div', 'h2', 'اختر لاعب (' + (POSN[grp] || '') + ')'), tools, list, x); $('sheet').hidden = false;
+  function tapSlot(i) {
+    if (draft.sel == null) { draft.sel = i; }
+    else if (draft.sel === i) { draft.sel = null; }
+    else { var t = draft.xi[i]; draft.xi[i] = draft.xi[draft.sel]; draft.xi[draft.sel] = t; draft.sel = null; }
+    renderPane();
   }
+  function tapPlayer(p, slots) {
+    var idx = draft.xi.indexOf(p.num), sel = draft.sel;
+    if (sel != null) {
+      if (idx >= 0) { var t = draft.xi[sel]; draft.xi[sel] = p.num; draft.xi[idx] = t; }
+      else { var old = draft.xi[sel]; if (old != null) { if (draft.sc === old) draft.sc = null; if (draft.as === old) draft.as = null; } draft.xi[sel] = p.num; }
+      draft.sel = null;
+    } else if (idx >= 0) { draft.sel = idx; }
+    else {
+      var free = -1; slots.forEach(function (s, i) { if (free < 0 && draft.xi[i] == null && s.g === p.pos) free = i; });
+      if (free < 0) slots.forEach(function (s, i) { if (free < 0 && draft.xi[i] == null) free = i; });
+      if (free < 0) { toastMsg('التشكيل مكتمل. اضغط على لاعب في الملعب الأول علشان تبدّله.'); return; }
+      draft.xi[free] = p.num;
+    }
+    renderPane();
+  }
+  function toastMsg(t) { var e = $('dmsg'); if (e) { e.textContent = t; e.hidden = false; } }
   $('sheet').addEventListener('click', function (e) { if (e.target === $('sheet')) $('sheet').hidden = true; });
 
   /* ---------- data ---------- */
@@ -309,7 +308,7 @@ textarea { min-height: 110px; resize: vertical; }
   /* ---------- tabs ---------- */
   function drawTabs() {
     var nav = $('tabs'); nav.replaceChildren();
-    var tl = TABS.slice(); if (isEditor()) tl.push(['adm', 'الإدارة']);
+    var tl = TABS.slice();
     tl.forEach(function (t) {
       var b = el('button', 'tab', t[1]); b.type = 'button'; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(t[0] === tab));
       b.addEventListener('click', function () { setTab(t[0]); }); nav.appendChild(b);
@@ -340,6 +339,7 @@ textarea { min-height: 110px; resize: vertical; }
     var ms = favMatches().filter(function (m) { return mstate(m) !== 'scored' || st.mylu[m.id]; }).slice(0, 4);
     if (ms.length) { p.appendChild(el('div', 'h2', 'مبارياتك')); var l = el('div', 'mrow'); ms.forEach(function (m) { l.appendChild(matchCard(m)); }); p.appendChild(l); }
     if (st.lprof && st.lprof.pts) p.appendChild(el('div', 'muted', 'نقاط اختر تشكيلك: ' + st.lprof.pts));
+    if (isEditor()) { var ad = el('button', 'btn ghost', 'أدوات المحرر: نتائج المباريات وحساب النقاط'); ad.type = 'button'; ad.addEventListener('click', function () { setTab('adm'); }); p.appendChild(ad); }
     var out = el('button', 'btn ghost', 'تسجيل الخروج'); out.type = 'button'; out.addEventListener('click', function () { auth.signOut(); }); p.appendChild(out);
   }
   function matchCard(m) {
@@ -357,7 +357,7 @@ textarea { min-height: 110px; resize: vertical; }
   }
   function startDraft(m) {
     var mine = st.mylu[m.id];
-    draft = { m: m, side: sideFor(m), form: mine ? mine.form : '4-3-3', xi: mine ? mine.xi.slice() : new Array(11).fill(null), sc: mine && mine.sc != null ? mine.sc : null, as: mine && mine.as != null ? mine.as : null, open: null };
+    draft = { flt: 'ALL', sel: null, m: m, side: sideFor(m), form: mine ? mine.form : '4-3-3', xi: mine ? mine.xi.slice() : new Array(11).fill(null), sc: mine && mine.sc != null ? mine.sc : null, as: mine && mine.as != null ? mine.as : null };
     renderPane(); window.scrollTo(0, 0);
   }
   function panePlay(p) {
@@ -375,11 +375,41 @@ textarea { min-height: 110px; resize: vertical; }
     p.appendChild(back);
     var h = el('div', 'card'); h.appendChild(el('div', 'h2', m.home + ' × ' + m.away));
     var cd = el('div', 'row'); cd.appendChild(el('span', 'muted', editable ? 'تقفل بعد' : 'اتقفلت')); if (editable) { var c = el('span', 'cd'); c.dataset.until = m.lock; c.textContent = hms(m.lock - Date.now()); cd.appendChild(c); } h.appendChild(cd); p.appendChild(h);
-    var fm = el('div', 'forms'); Object.keys(FORMS).forEach(function (f) { var b = el('button', null, f); b.type = 'button'; b.setAttribute('aria-pressed', String(draft.form === f)); b.disabled = !editable; b.addEventListener('click', function () { draft.form = f; draft.xi = new Array(11).fill(null); draft.sc = null; draft.as = null; renderPane(); }); fm.appendChild(b); });
+    var fm = el('div', 'forms'); Object.keys(FORMS).forEach(function (f) { var b = el('button', null, f); b.type = 'button'; b.setAttribute('aria-pressed', String(draft.form === f)); b.disabled = !editable; b.addEventListener('click', function () { draft.form = f; draft.xi = new Array(11).fill(null); draft.sc = null; draft.as = null; draft.sel = null; renderPane(); }); fm.appendChild(b); });
     p.appendChild(fm);
     p.appendChild(pitchEl(m, draft.side, editable));
+    var sq = draft.side === 'h' ? m.sqH : m.sqA, slots = slotsFor(draft.form);
+    if (editable) {
+      var cur = draft.sel != null ? draft.xi[draft.sel] : null, cp = cur != null ? sq.filter(function (x) { return x.num === cur; })[0] : null;
+      var bar = el('div', 'card');
+      if (draft.sel == null) bar.appendChild(el('div', 'muted', 'اضغط على لاعب من القايمة تحت علشان يتحط في الملعب. اضغط على لاعب في الملعب ولاعب تاني علشان تبدّلهم.'));
+      else if (!cp) bar.appendChild(el('div', 'muted', 'المكان ده فاضي. اضغط على اسم لاعب من القايمة تحت.'));
+      else {
+        bar.appendChild(el('div', 'h2', cp.n)); bar.appendChild(el('div', 'muted', 'اضغط على لاعب تاني في الملعب علشان تبدّله، أو اختار توقع:'));
+        var br = el('div', 'row'); br.style.flexWrap = 'wrap';
+        function ab(t, f) { var b = el('button', 'btn ghost', t); b.type = 'button'; b.style.minHeight = '42px'; b.addEventListener('click', function () { f(); renderPane(); }); br.appendChild(b); }
+        ab(draft.sc === cur ? 'شيل توقع التسجيل' : 'توقعه يسجّل (+2)', function () { draft.sc = draft.sc === cur ? null : cur; });
+        ab(draft.as === cur ? 'شيل توقع الأسيست' : 'توقعه يعمل أسيست (+1)', function () { draft.as = draft.as === cur ? null : cur; });
+        ab('شيله من التشكيل', function () { if (draft.sc === cur) draft.sc = null; if (draft.as === cur) draft.as = null; draft.xi[draft.sel] = null; draft.sel = null; });
+        bar.appendChild(br);
+      }
+      p.appendChild(bar);
+      var fl = el('div', 'forms'); fl.style.direction = 'rtl';
+      [['ALL', 'الكل'], ['GK', 'حراس'], ['DF', 'دفاع'], ['MF', 'وسط'], ['FW', 'هجوم']].forEach(function (x) { var b = el('button', null, x[1]); b.type = 'button'; b.style.fontFamily = 'var(--body)'; b.style.fontStyle = 'normal'; b.style.fontSize = '.95rem'; b.setAttribute('aria-pressed', String(draft.flt === x[0])); b.addEventListener('click', function () { draft.flt = x[0]; renderPane(); }); fl.appendChild(b); });
+      p.appendChild(fl);
+      var pl = el('div', 'plist'), ord = { GK: 0, DF: 1, MF: 2, FW: 3 };
+      sq.slice().sort(function (a, b) { return ord[a.pos] - ord[b.pos] || a.num - b.num; }).filter(function (x) { return draft.flt === 'ALL' || x.pos === draft.flt; }).forEach(function (x) {
+        var inx = draft.xi.indexOf(x.num) >= 0, b = el('button', 'pl'); b.type = 'button'; if (inx) b.style.borderColor = 'var(--accent)';
+        b.appendChild(el('span', 'n', String(x.num))); b.appendChild(el('span', 'sp', x.n));
+        if (draft.sc === x.num) b.appendChild(el('span', 'pill hot', '⚽ +2')); if (draft.as === x.num) b.appendChild(el('span', 'pill on', 'A +1'));
+        b.appendChild(el('span', 'pill' + (inx ? ' on' : ''), inx ? 'في التشكيل' : POSN[x.pos]));
+        b.addEventListener('click', function () { tapPlayer(x, slots); }); pl.appendChild(b);
+      });
+      p.appendChild(pl);
+      var dm = el('div', 'msg'); dm.id = 'dmsg'; dm.hidden = true; p.appendChild(dm);
+    }
     var filled = draft.xi.filter(function (x) { return x != null; }).length;
-    p.appendChild(el('div', 'muted', filled + ' / 11 لاعب' + ' · اضغط على لاعب علشان توقعه يسجّل أو يعمل أسيست (اختياري)'));
+    p.appendChild(el('div', 'muted', filled + ' / 11 لاعب'));
     var mine = st.mylu[m.id];
     if (mine && mine.pts != null) p.appendChild(el('div', 'msg ok', 'نقاطك في المباراة: ' + mine.pts));
     if (editable) {
@@ -488,7 +518,8 @@ textarea { min-height: 110px; resize: vertical; }
       st.fixtures.forEach(function (m) {
         if (m.time < Date.now() || m.time > Date.now() + 4 * 86400000) return;
         var sh = SQ[m.home] || [], sa = SQ[m.away] || []; if (!sh.length && !sa.length) return;
-        var id = mid(m.time, m.home, m.away); if (have[id]) return;
+        var id = mid(m.time, m.home, m.away), ex = st.matches.filter(function (x) { return x.id === id; })[0];
+        if (ex) { if (!ex.scored && Date.now() < ex.lock && (JSON.stringify(ex.sqH || []) !== JSON.stringify(sh) || JSON.stringify(ex.sqA || []) !== JSON.stringify(sa))) jobs.push(db.collection('match_lineups').doc(id).update({ sqH: sh, sqA: sa, by: user.email })); return; }
         jobs.push(db.collection('match_lineups').doc(id).set({ home: m.home, away: m.away, comp: m.comp, time: m.time, open: T.fromMillis(m.time - 48 * 3600000), lock: T.fromMillis(m.time - 10 * 3600000), sqH: sh, sqA: sa, by: user.email }));
       });
       return Promise.all(jobs).then(function () { return jobs.length; });
