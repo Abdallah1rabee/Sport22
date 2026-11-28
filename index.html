@@ -849,7 +849,7 @@ figure.inl img { display: block; width: 100%; height: auto; max-height: 560px; o
   }
   function renderNav() {
     var r = route(), cur = r.name === 'cat' ? r.slug : (r.name === 'home' ? 'home' : '');
-    var links = [h('a', { class: 'quizlink', href: 'me/' }, 'me'), h('a', { href: '#home', 'aria-current': cur === 'home' ? 'page' : null }, 'الرئيسية')];
+    var links = [h('a', { class: 'quizlink', href: 'me/' }, 'ملعبي'), h('a', { href: '#home', 'aria-current': cur === 'home' ? 'page' : null }, 'الرئيسية')];
     CATS.forEach(function (c) { links.push(h('a', { href: '#c-' + c.slug, 'aria-current': cur === c.slug ? 'page' : null }, c.name)); });
     if (fbOn()) links.push(h('a', { href: '#predict', 'aria-current': r.name === 'predict' ? 'page' : null }, 'توقّع النتيجة'));
     links.push(h('a', { href: '#about', 'aria-current': r.name === 'about' ? 'page' : null }, 'عن الموقع'));
