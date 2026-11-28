@@ -93,6 +93,18 @@ a { color: inherit; }
 .pl { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface2); text-align: right; width: 100%; }
 .pl .n { width: 30px; font-family: var(--logo); font-style: italic; font-weight: 800; font-size: 1.2rem; color: var(--accent); }
 .pl[disabled] { opacity: .4; }
+.drawer { position: absolute; left: 0; top: 0; bottom: 0; width: 66%; z-index: 5; background: var(--surface); border-right: 3px solid #7FD6B0; box-shadow: 8px 0 24px rgba(0,0,0,.5); display: flex; flex-direction: column; min-height: 0; }
+.dh { display: flex; align-items: center; gap: 6px; padding: 8px 10px; background: #7FD6B0; color: #08130E; font-size: .95rem; }
+.dx { width: 36px; height: 36px; border: 0; background: none; font-size: 1.6rem; line-height: 1; color: #08130E; }
+.dq { margin: 6px 8px; width: calc(100% - 16px); box-sizing: border-box; min-height: 40px; font-size: .9rem; }
+.dopt { margin: 0 8px 4px; font-size: .85rem; }
+.dopt summary { min-height: 36px; display: flex; align-items: center; color: var(--muted); }
+.dl { flex: 1; overflow: auto; padding: 0 8px 8px; }
+.ds { font-size: .78rem; color: var(--muted); padding: 8px 2px 4px; }
+.dp { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 0 8px; border: 0; border-bottom: 1px solid var(--line); background: none; color: var(--ink); text-align: right; font: inherit; font-size: .9rem; }
+.dp[hidden] { display: none; }
+.dp .n { width: 26px; font-family: var(--logo); font-style: italic; font-weight: 800; color: var(--accent); }
+.dp small { color: var(--muted); font-size: .72rem; }
 .lb { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
 .lb li { display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px; border-bottom: 1px solid var(--line); }
 .lb li:last-child { border-bottom: 0; }
@@ -224,9 +236,7 @@ textarea { min-height: 110px; resize: vertical; }
   function shortN(n) { var q = /«([^»]+)»/.exec(n); return q ? q[1] : n.split(' ').slice(-1)[0]; }
   var POSN = { GK: 'حارس', DF: 'مدافع', MF: 'وسط', FW: 'مهاجم' };
   function tapSlot(i) {
-    if (draft.sel == null) { draft.sel = i; }
-    else if (draft.sel === i) { draft.sel = null; }
-    else { var t = draft.xi[i]; draft.xi[i] = draft.xi[draft.sel]; draft.xi[draft.sel] = t; draft.sel = null; }
+    draft.sel = draft.sel === i ? null : i;
     renderPane();
   }
   function tapPlayer(p, slots) {
@@ -387,41 +397,40 @@ textarea { min-height: 110px; resize: vertical; }
     var i = draft.sel, g = slots[i].g, cur = draft.xi[i], ord = { GK: 0, DF: 1, MF: 2, FW: 3 };
     var cp = cur != null ? sq.filter(function (x) { return x.num === cur; })[0] : null;
     function close() { draft.sel = null; renderPane(); }
-    var sh = el('div', 'sheet'); sh.addEventListener('click', function (e) { if (e.target === sh) close(); });
-    var box = el('div', 'in'), hd = el('div', 'row');
-    hd.appendChild(el('div', 'h2 sp', cp ? 'بدّل ' + cp.n + ' (' + POSN[g] + ')' : 'اختار ' + POSN[g]));
-    var x = el('button', 'btn ghost', '×'); x.type = 'button'; x.style.minHeight = '40px'; x.setAttribute('aria-label', 'إغلاق'); x.addEventListener('click', close); hd.appendChild(x); box.appendChild(hd);
+    var dr = el('div', 'drawer'), hd = el('div', 'dh');
+    hd.appendChild(el('b', 'sp', cp ? 'بدّل ' + shortN(cp.n) : 'اختار ' + POSN[g]));
+    var x = el('button', 'dx', '×'); x.type = 'button'; x.setAttribute('aria-label', 'إغلاق'); x.addEventListener('click', close); hd.appendChild(x); dr.appendChild(hd);
+    var q = document.createElement('input'); q.type = 'text'; q.placeholder = 'دوّر باسم اللاعب'; q.className = 'dq'; dr.appendChild(q);
     if (cp) {
-      var br = el('div', 'row'); br.style.flexWrap = 'wrap';
-      var ab = function (t, f) { var b = el('button', 'btn ghost', t); b.type = 'button'; b.style.minHeight = '42px'; b.addEventListener('click', function () { f(); renderPane(); }); br.appendChild(b); };
+      var det = el('details', 'dopt'); det.appendChild(el('summary', null, 'توقعات / شيله'));
+      var ab = function (t, f) { var bt = el('button', 'btn ghost', t); bt.type = 'button'; bt.style.minHeight = '40px'; bt.style.marginTop = '6px'; bt.addEventListener('click', function () { f(); renderPane(); }); det.appendChild(bt); };
       ab(draft.sc === cur ? 'شيل توقع التسجيل' : 'توقعه يسجّل (+2)', function () { draft.sc = draft.sc === cur ? null : cur; });
       ab(draft.as === cur ? 'شيل توقع الأسيست' : 'توقعه يعمل أسيست (+1)', function () { draft.as = draft.as === cur ? null : cur; });
       ab('شيله من التشكيل', function () { if (draft.sc === cur) draft.sc = null; if (draft.as === cur) draft.as = null; draft.xi[i] = null; draft.sel = null; });
-      box.appendChild(br);
+      dr.appendChild(det);
     }
+    var list = el('div', 'dl'), items = [];
     var byOrd = function (a, b) { return ord[a.pos] - ord[b.pos] || a.num - b.num; };
-    var inX = function (q) { return draft.xi.indexOf(q.num) >= 0; };
+    var inX = function (z) { return draft.xi.indexOf(z.num) >= 0; };
     function sec(title, arr) {
       if (!arr.length) return;
-      box.appendChild(el('div', 'muted', title));
-      var pl = el('div', 'plist');
-      arr.forEach(function (q) {
-        var b = el('button', 'pl'); b.type = 'button';
-        b.appendChild(el('span', 'n', String(q.num))); b.appendChild(el('span', 'sp', q.n));
-        b.appendChild(el('span', 'pill' + (inX(q) ? ' on' : ''), inX(q) ? 'في التشكيل (تبديل)' : POSN[q.pos]));
-        b.addEventListener('click', function () { tapPlayer(q, slots); }); pl.appendChild(b);
+      list.appendChild(el('div', 'ds', title));
+      arr.forEach(function (z) {
+        var bt = el('button', 'dp'); bt.type = 'button'; bt.dataset.t = z.n;
+        bt.appendChild(el('span', 'n', String(z.num))); bt.appendChild(el('span', 'sp', z.n));
+        if (z.pos !== g || inX(z)) bt.appendChild(el('small', null, inX(z) ? 'تبديل' : POSN[z.pos]));
+        bt.addEventListener('click', function () { tapPlayer(z, slots); }); list.appendChild(bt); items.push(bt);
       });
-      box.appendChild(pl);
     }
-    sec('متاحين في نفس المركز (' + POSN[g] + ')', sq.filter(function (q) { return q.pos === g && !inX(q); }).sort(byOrd));
-    sec('لاعيبة تانيين', sq.filter(function (q) { return q.pos !== g && !inX(q); }).sort(byOrd));
-    sec('لاعيبة في التشكيل (بدّل مكانهم)', sq.filter(function (q) { return inX(q) && q.num !== cur; }).sort(byOrd));
-    sh.appendChild(box); return sh;
+    sec('متاحين في نفس المركز', sq.filter(function (z) { return z.pos === g && !inX(z); }).sort(byOrd));
+    sec('لاعيبة تانيين', sq.filter(function (z) { return z.pos !== g && !inX(z); }).sort(byOrd));
+    sec('في التشكيل (بدّل مكانهم)', sq.filter(function (z) { return inX(z) && z.num !== cur; }).sort(byOrd));
+    q.addEventListener('input', function () { var t = q.value.trim(); items.forEach(function (bt) { bt.hidden = t && bt.dataset.t.indexOf(t) < 0; }); });
+    dr.appendChild(list); return dr;
   }
   function startDraft(m) {
     var mine = st.mylu[m.id];
     draft = { flt: 'ALL', sel: null, m: m, side: sideFor(m), form: mine ? mine.form : '4-3-3', xi: mine ? mine.xi.slice() : new Array(11).fill(null), sc: mine && mine.sc != null ? mine.sc : null, as: mine && mine.as != null ? mine.as : null };
-    if (!mine) autoFill();
     renderPane(); window.scrollTo(0, 0);
   }
   function panePlay(p) {
@@ -439,14 +448,14 @@ textarea { min-height: 110px; resize: vertical; }
     p.appendChild(back);
     var h = el('div', 'card'); h.appendChild(el('div', 'h2', m.home + ' × ' + m.away));
     var cd = el('div', 'row'); cd.appendChild(el('span', 'muted', m.trial ? (editable ? 'تجريبي: عدّل براحتك لحد بداية المباراة' : 'المباراة بدأت') : editable ? 'تقفل بعد' : 'اتقفلت')); if (editable && !m.trial) { var c = el('span', 'cd'); c.dataset.until = m.lock; c.textContent = hms(m.lock - Date.now()); cd.appendChild(c); } h.appendChild(cd); p.appendChild(h);
-    var fm = el('div', 'forms'); Object.keys(FORMS).forEach(function (f) { var b = el('button', null, f); b.type = 'button'; b.setAttribute('aria-pressed', String(draft.form === f)); b.disabled = !editable; b.addEventListener('click', function () { draft.form = f; autoFill(); renderPane(); }); fm.appendChild(b); });
+    var fm = el('div', 'forms'); Object.keys(FORMS).forEach(function (f) { var b = el('button', null, f); b.type = 'button'; b.setAttribute('aria-pressed', String(draft.form === f)); b.disabled = !editable; b.addEventListener('click', function () { draft.form = f; draft.xi = new Array(11).fill(null); draft.sc = null; draft.as = null; draft.sel = null; renderPane(); }); fm.appendChild(b); });
     p.appendChild(fm);
-    p.appendChild(pitchEl(m, draft.side, editable));
+    var pe = pitchEl(m, draft.side, editable); p.appendChild(pe);
     var sq = draft.side === 'h' ? m.sqH : m.sqA, slots = slotsFor(draft.form);
     if (editable) {
-      var hint = el('div', 'card'); hint.appendChild(el('div', 'muted', 'ده تشكيل مقترح. اضغط على أي لاعب في الملعب علشان تبدّله، أو على مكان فاضي علشان تختار.'));
-      var ar = el('button', 'btn ghost', 'اقتراح تلقائي'); ar.type = 'button'; ar.style.minHeight = '42px'; ar.addEventListener('click', function () { autoFill(); renderPane(); }); hint.appendChild(ar); p.appendChild(hint);
-      if (draft.sel != null) p.appendChild(swapSheet(sq, slots));
+      var hint = el('div', 'card'); hint.appendChild(el('div', 'muted', 'دوس على + في الملعب علشان تختار لاعب للمركز ده، أو على أي لاعب علشان تبدّله.'));
+      var ar = el('button', 'btn ghost', 'املى تلقائي (اقتراح)'); ar.type = 'button'; ar.style.minHeight = '42px'; ar.addEventListener('click', function () { autoFill(); renderPane(); }); hint.appendChild(ar); p.appendChild(hint);
+      if (draft.sel != null) pe.appendChild(swapSheet(sq, slots));
       var dm = el('div', 'msg'); dm.id = 'dmsg'; dm.hidden = true; p.appendChild(dm);
     }
     var filled = draft.xi.filter(function (x) { return x != null; }).length;
