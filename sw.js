@@ -1,5 +1,5 @@
 /* SPORT 22 service worker: الشبكة أولًا عشان الأخبار دايمًا تبقى أحدث نسخة، والكاش بس لما النت يقطع */
-var CACHE = 's22-v1';
+var CACHE = 's22-v2';
 var SHELL = ['offline.html', 'icons/icon-192.png'];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(SHELL); }).then(function () { return self.skipWaiting(); }));
@@ -15,7 +15,7 @@ self.addEventListener('fetch', function (e) {
   var u = new URL(r.url);
   if (u.origin !== location.origin) return;
   e.respondWith(
-    fetch(r).then(function (res) {
+    fetch(r.mode === 'navigate' ? new Request(r, { cache: 'no-cache' }) : r).then(function (res) {
       if (res && res.ok && res.type === 'basic') { var copy = res.clone(); caches.open(CACHE).then(function (c) { c.put(r, copy); }); }
       return res;
     }).catch(function () {
