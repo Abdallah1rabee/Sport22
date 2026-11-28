@@ -123,6 +123,7 @@ textarea { min-height: 110px; resize: vertical; }
   </div>
 </header>
 
+<div class="msg" id="trial" style="margin-top:6px"><b>افتتاح تجريبي</b><br>اللعبة في فترة التجربة. كل المباريات مفتوحة من غير مواعيد، والتشكيلات والنقاط تجريبية ومش بتتحسب في الترتيب. جرّب كل حاجة وقولنا لو لقيت أي غلطة.</div>
 <details class="rules" id="rules">
   <summary>القوانين وطريقة اللعب</summary>
   <div class="rb">
@@ -130,6 +131,7 @@ textarea { min-height: 110px; resize: vertical; }
       <ul><li>أسئلة جديدة كل يوم. جاوب قبل منتصف الليل بتوقيت القاهرة.</li><li>الإجابة المتتالية يوم بعد يوم بتبني لك سلسلة أيام (streak).</li></ul></div>
     <div><h3>اختر تشكيلك</h3>
       <ul>
+        <li><b>الافتتاح تجريبي:</b> التوقيتات (48 ساعة/10 ساعات) مقفولة مؤقتًا، وكل المباريات مفتوحة. الشغل الحقيقي هيبدأ من مباراة هنعلنها.</li>
         <li>اللعبة بتفتح قبل المباراة بـ 48 ساعة وبتقفل قبلها بـ 10 ساعات، وقبل ما التشكيل الرسمي يتعلن.</li>
         <li>اختار الفريق اللي هتتوقع تشكيله، وطريقة اللعب، و11 لاعب من قائمة الفريق. تقدر تعدّل لحد وقت القفل.</li>
         <li>بعد التشكيل الرسمي: كل لاعب من اختيارك شارك أساسيًا = 1 نقطة.</li>
@@ -162,6 +164,8 @@ textarea { min-height: 110px; resize: vertical; }
 <script src="../firebase-config.js"></script>
 <script>
 (function () {
+  /* الافتتاح التجريبي: كل المباريات قبل REAL_FROM تجريبية (مفتوحة طول الوقت ومبتتسجلش على السيرفر). لبدء اللعب الحقيقي حط هنا توقيت ركلة بداية أول مباراة حقيقية بالميلي ثانية. */
+  var REAL_FROM = 9e15;
   var TZ = 'Africa/Cairo', FBV = 'https://www.gstatic.com/firebasejs/10.12.2/';
   var EDITORS = ['abdallahrabee80@gmail.com', 'fatmayasein09@gmail.com', 'fatmayasein33@gmail.com', 'abdallahrabee212@gmail.com'];
   var FORMS = { '4-3-3': [4, 3, 3], '4-2-3-1': [4, 2, 3, 1], '4-4-2': [4, 4, 2], '3-5-2': [3, 5, 2], '3-4-3': [3, 4, 3], '5-3-2': [5, 3, 2] };
@@ -251,12 +255,21 @@ textarea { min-height: 110px; resize: vertical; }
       db.collection('quiz_users').doc(uid).get(), db.collection('quiz_days').doc(today + '_' + uid).get(), db.collection('lineup_users').doc(uid).get(),
       db.collection('match_lineups').where('time', '>', Date.now() - 4 * 86400000).get(),
       db.collection('lineups').where('uid', '==', uid).get(),
-      fetch('../today.json?v=' + today).then(function (r) { return r.json(); }).catch(function () { return { days: {} }; })
+      fetch('../today.json?v=' + today).then(function (r) { return r.json(); }).catch(function () { return { days: {} }; }),
+      fetch('../squads.json?v=' + today).then(function (r) { return r.json(); }).catch(function () { return {}; })
     ]).then(function (r) {
       st.qprof = r[0].exists ? r[0].data() : null; st.quizDone = r[1].exists && r[1].data().done ? r[1].data() : null; st.lprof = r[2].exists ? r[2].data() : null;
-      st.matches = []; r[3].forEach(function (d) { var x = d.data(); x.id = d.id; x.open = ts(x.open); x.lock = ts(x.lock); st.matches.push(x); });
-      st.matches.sort(function (a, b) { return a.time - b.time; });
+      st.matches = []; r[3].forEach(function (d) { var x = d.data(); x.id = d.id; x.open = ts(x.open); x.lock = ts(x.lock); if (x.time >= REAL_FROM) st.matches.push(x); });
       st.mylu = {}; r[4].forEach(function (d) { var x = d.data(); x.id = d.id; st.mylu[x.m] = x; });
+      var SQ = r[6] || {}, tdays = (r[5] && r[5].days) || {}, tl = lsGet('me-trial', {});
+      Object.keys(tdays).forEach(function (k) { tdays[k].forEach(function (f) {
+        if (f.time >= REAL_FROM || f.time < Date.now() - 4 * 3600000 || f.time > Date.now() + 10 * 86400000) return;
+        var sh = SQ[f.home] || [], sa = SQ[f.away] || []; if (!sh.length && !sa.length) return;
+        var id = 't' + mid(f.time, f.home, f.away);
+        st.matches.push({ id: id, trial: true, home: f.home, away: f.away, comp: f.comp, time: f.time, open: 0, lock: 9e15, sqH: sh, sqA: sa });
+        if (tl[id]) { tl[id].id = id; st.mylu[id] = tl[id]; }
+      }); });
+      st.matches.sort(function (a, b) { return a.time - b.time; });
       st.fixtures = []; var days = (r[5] && r[5].days) || {};
       Object.keys(days).forEach(function (k) { days[k].forEach(function (m) { if (m.time > Date.now() - 6 * 3600000 && m.time < Date.now() + 6 * 86400000) st.fixtures.push(m); }); });
       st.fixtures.sort(function (a, b) { return a.time - b.time; });
@@ -271,7 +284,7 @@ textarea { min-height: 110px; resize: vertical; }
     var c = el('div', 'card'); c.appendChild(el('div', 'h2', 'اختار فريقك المفضل')); c.appendChild(el('div', 'muted', 'هتعمل تشكيل فريقك وتتوقع لاعبيه في كل مباراة.'));
     var seg = el('div', 'seg'); FAVS.forEach(function (t) { var b = el('button', null, t); b.type = 'button'; b.addEventListener('click', function () { lsSet('me-team', t); after(); }); seg.appendChild(b); }); c.appendChild(seg); return c;
   }
-  function mstate(m) { var n = Date.now(); if (m.scored) return 'scored'; if (n < m.open) return 'soon'; if (n < m.lock) return 'open'; return 'locked'; }
+  function mstate(m) { var n = Date.now(); if (m.trial) return m.time > n - 4 * 3600000 ? 'open' : 'locked'; if (m.scored) return 'scored'; if (n < m.open) return 'soon'; if (n < m.lock) return 'open'; return 'locked'; }
 
   /* ---------- notifications (in-app) ---------- */
   function notifs() {
@@ -279,7 +292,7 @@ textarea { min-height: 110px; resize: vertical; }
     if (!st.quizDone) out.push({ id: 'q' + cairoDate(), t: 'تحدي اليوم مستنيك', d: 'أسئلة جديدة النهاردة. جاوب قبل منتصف الليل' + (st.qprof && st.qprof.streak ? ' وحافظ على سلسلة ' + st.qprof.streak + ' يوم.' : '.'), href: '../quiz/', a: 'ابدأ التحدي' });
     favMatches().forEach(function (m) {
       var s = mstate(m), mine = st.mylu[m.id], title = m.home + ' × ' + m.away;
-      if (s === 'open' && !mine) out.push({ id: 'o' + m.id, t: 'اختر تشكيلك: ' + title, d: 'تقفل بعد ' + dur(m.lock - n) + '.', tab: 'play', a: 'اختار التشكيل', hot: m.lock - n < 3 * 3600000 });
+      if (s === 'open' && !mine) out.push({ id: 'o' + m.id, t: 'اختر تشكيلك: ' + title, d: m.trial ? 'الافتتاح تجريبي. جرّب براحتك.' : 'تقفل بعد ' + dur(m.lock - n) + '.', tab: 'play', a: 'اختار التشكيل', hot: m.lock - n < 3 * 3600000 });
       if (s === 'open' && mine && m.lock - n < 2 * 3600000) out.push({ id: 'l' + m.id, t: 'آخر فرصة للتعديل', d: title + ' تقفل بعد ' + dur(m.lock - n) + '.', tab: 'play', a: 'عدّل' });
       if (s === 'soon' && m.open - n < 12 * 3600000) out.push({ id: 's' + m.id, t: 'هتفتح قريب: ' + title, d: 'تفتح بعد ' + dur(m.open - n) + '.', tab: 'play', a: 'التفاصيل' });
       if (s === 'scored' && mine && mine.pts != null) out.push({ id: 'p' + m.id, t: 'اتحسبت نقاطك: +' + mine.pts, d: title, tab: 'play', a: 'شوف التفاصيل' });
@@ -329,8 +342,7 @@ textarea { min-height: 110px; resize: vertical; }
       var c = el('div', 'card urgent'), mine = st.mylu[open.id];
       c.appendChild(el('div', 'h2', mine ? 'تشكيلك متسجل. تقدر تعدّله' : 'المطلوب منك دلوقتي'));
       c.appendChild(el('div', null, open.home + ' × ' + open.away));
-      var cd = el('div', 'cd'); cd.dataset.until = open.lock; cd.textContent = hms(open.lock - Date.now()); c.appendChild(cd);
-      c.appendChild(el('div', 'muted', 'الوقت المتبقي لقفل التشكيل'));
+      if (open.trial) c.appendChild(el('div', 'muted', 'تجريبي: مفتوحة لحد ركلة البداية. جرّب براحتك.')); else { var cd = el('div', 'cd'); cd.dataset.until = open.lock; cd.textContent = hms(open.lock - Date.now()); c.appendChild(cd); c.appendChild(el('div', 'muted', 'الوقت المتبقي لقفل التشكيل')); }
       var go = el('button', 'btn', mine ? 'عدّل تشكيلك' : 'اختر تشكيلك'); go.type = 'button'; go.addEventListener('click', function () { setTab('play'); startDraft(open); }); c.appendChild(go); p.appendChild(c);
     }
     var qc = el('div', 'card'); qc.appendChild(el('div', 'h2', 'تحدي اليوم'));
@@ -345,10 +357,11 @@ textarea { min-height: 110px; resize: vertical; }
   function matchCard(m) {
     var s = mstate(m), c = el('div', 'match'), t = el('div', 't'), mine = st.mylu[m.id];
     t.appendChild(el('span', null, m.home + ' × ' + m.away));
-    t.appendChild(el('span', 'pill ' + (s === 'open' ? 'hot' : ''), s === 'soon' ? 'لسه ما فتحتش' : s === 'open' ? 'مفتوحة' : s === 'locked' ? 'اتقفلت' : 'اتحسبت'));
+    t.appendChild(el('span', 'pill ' + (s === 'open' ? 'hot' : ''), s === 'soon' ? 'لسه ما فتحتش' : s === 'open' ? (m.trial ? 'تجريبي' : 'مفتوحة') : s === 'locked' ? 'اتقفلت' : 'اتحسبت'));
     c.appendChild(t); c.appendChild(el('div', 'muted', m.comp + ' · ' + when(m.time)));
     var info = el('div', 'muted');
-    if (s === 'soon') info.textContent = 'تفتح بعد ' + dur(m.open - Date.now()); else if (s === 'open') { info.textContent = (mine ? 'متسجل ✓ · ' : '') + 'تقفل بعد '; var sp = el('b'); sp.dataset.until = m.lock; sp.textContent = hms(m.lock - Date.now()); info.appendChild(sp); }
+    if (s === 'soon') info.textContent = 'تفتح بعد ' + dur(m.open - Date.now()); else if (s === 'open' && m.trial) { info.textContent = (mine ? 'متسجل ✓ · ' : '') + 'تجريبي · المباراة بعد ' + dur(m.time - Date.now()); }
+    else if (s === 'open') { info.textContent = (mine ? 'متسجل ✓ · ' : '') + 'تقفل بعد '; var sp = el('b'); sp.dataset.until = m.lock; sp.textContent = hms(m.lock - Date.now()); info.appendChild(sp); }
     else if (s === 'locked') info.textContent = mine ? 'تشكيلك متسجل. بانتظار التشكيل الرسمي.' : 'فاتك التسجيل في المباراة دي.';
     else info.textContent = mine && mine.pts != null ? 'جبت ' + mine.pts + ' نقطة' : 'اتحسبت المباراة';
     c.appendChild(info);
@@ -374,7 +387,7 @@ textarea { min-height: 110px; resize: vertical; }
     var back = el('button', 'btn ghost', '→ كل المباريات'); back.type = 'button'; back.addEventListener('click', function () { draft = null; renderPane(); });
     p.appendChild(back);
     var h = el('div', 'card'); h.appendChild(el('div', 'h2', m.home + ' × ' + m.away));
-    var cd = el('div', 'row'); cd.appendChild(el('span', 'muted', editable ? 'تقفل بعد' : 'اتقفلت')); if (editable) { var c = el('span', 'cd'); c.dataset.until = m.lock; c.textContent = hms(m.lock - Date.now()); cd.appendChild(c); } h.appendChild(cd); p.appendChild(h);
+    var cd = el('div', 'row'); cd.appendChild(el('span', 'muted', m.trial ? (editable ? 'تجريبي: عدّل براحتك لحد بداية المباراة' : 'المباراة بدأت') : editable ? 'تقفل بعد' : 'اتقفلت')); if (editable && !m.trial) { var c = el('span', 'cd'); c.dataset.until = m.lock; c.textContent = hms(m.lock - Date.now()); cd.appendChild(c); } h.appendChild(cd); p.appendChild(h);
     var fm = el('div', 'forms'); Object.keys(FORMS).forEach(function (f) { var b = el('button', null, f); b.type = 'button'; b.setAttribute('aria-pressed', String(draft.form === f)); b.disabled = !editable; b.addEventListener('click', function () { draft.form = f; draft.xi = new Array(11).fill(null); draft.sc = null; draft.as = null; draft.sel = null; renderPane(); }); fm.appendChild(b); });
     p.appendChild(fm);
     p.appendChild(pitchEl(m, draft.side, editable));
@@ -414,17 +427,18 @@ textarea { min-height: 110px; resize: vertical; }
     if (mine && mine.pts != null) p.appendChild(el('div', 'msg ok', 'نقاطك في المباراة: ' + mine.pts));
     if (editable) {
       var err = el('div', 'msg'); err.hidden = true;
-      var save = el('button', 'btn', mine ? 'حدّث تشكيلي' : 'ثبّت تشكيلي'); save.type = 'button';
+      var save = el('button', 'btn', (mine ? 'حدّث تشكيلي' : 'ثبّت تشكيلي') + (m.trial ? ' (تجريبي)' : '')); save.type = 'button';
       save.addEventListener('click', function () {
         if (filled !== 11) { err.textContent = 'كمّل 11 لاعب الأول.'; err.hidden = false; return; }
         save.disabled = true;
         var doc = { uid: user.uid, n: shortName(user), m: m.id, side: draft.side, form: draft.form, xi: draft.xi.slice(), t: Date.now() };
         if (draft.sc != null) doc.sc = draft.sc; if (draft.as != null) doc.as = draft.as;
+        if (m.trial) { var tl = lsGet('me-trial', {}); tl[m.id] = doc; lsSet('me-trial', tl); doc.id = m.id; st.mylu[m.id] = doc; err.className = 'msg ok'; err.textContent = 'اتسجل تشكيلك التجريبي على جهازك بس. مش هيتحسب في الترتيب.'; err.hidden = false; save.disabled = false; renderBell(); return; }
         db.collection('lineups').doc(m.id + '_' + user.uid).set(doc).then(function () { doc.id = m.id + '_' + user.uid; st.mylu[m.id] = doc; err.className = 'msg ok'; err.textContent = 'اتسجل تشكيلك. تقدر تعدّله لحد القفل.'; err.hidden = false; save.disabled = false; renderBell(); })
           .catch(function (e) { save.disabled = false; err.className = 'msg'; err.textContent = 'مقدرناش نسجّل التشكيل (' + (e.code || e.message) + '). ممكن الوقت خلص.'; err.hidden = false; });
       });
       p.appendChild(save); p.appendChild(err);
-      p.appendChild(el('div', 'muted', 'تقدر تعدّل لحد ' + when(m.lock) + '.'));
+      if (!m.trial) p.appendChild(el('div', 'muted', 'تقدر تعدّل لحد ' + when(m.lock) + '.'));
     }
   }
 
@@ -516,7 +530,7 @@ textarea { min-height: 110px; resize: vertical; }
     return fetch('../squads.json?v=' + Date.now()).then(function (r) { return r.json(); }).then(function (SQ) {
       var T = firebase.firestore.Timestamp, jobs = [], have = {}; st.matches.forEach(function (x) { have[x.id] = 1; });
       st.fixtures.forEach(function (m) {
-        if (m.time < Date.now() || m.time > Date.now() + 4 * 86400000) return;
+        if (m.time < REAL_FROM || m.time < Date.now() || m.time > Date.now() + 4 * 86400000) return;
         var sh = SQ[m.home] || [], sa = SQ[m.away] || []; if (!sh.length && !sa.length) return;
         var id = mid(m.time, m.home, m.away), ex = st.matches.filter(function (x) { return x.id === id; })[0];
         if (ex) { if (!ex.scored && Date.now() < ex.lock && (JSON.stringify(ex.sqH || []) !== JSON.stringify(sh) || JSON.stringify(ex.sqA || []) !== JSON.stringify(sa))) jobs.push(db.collection('match_lineups').doc(id).update({ sqH: sh, sqA: sa, by: user.email })); return; }
