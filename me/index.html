@@ -269,6 +269,11 @@ textarea { min-height: 110px; resize: vertical; }
         st.matches.push({ id: id, trial: true, home: f.home, away: f.away, comp: f.comp, time: f.time, open: 0, lock: 9e15, sqH: sh, sqA: sa });
         if (tl[id]) { tl[id].id = id; st.mylu[id] = tl[id]; }
       }); });
+      if (REAL_FROM > Date.now() + 86400000) [['الأهلي', 'الزمالك', 'tdemo1'], ['بيراميدز', 'الأهلي', 'tdemo2']].forEach(function (d) {
+        var tm = Math.ceil((Date.now() + 36 * 3600000) / 3600000) * 3600000;
+        st.matches.push({ id: d[2], trial: true, home: d[0], away: d[1], comp: 'مباراة تجريبية', time: tm, open: 0, lock: 9e15, sqH: SQ[d[0]] || [], sqA: SQ[d[1]] || [] });
+        if (tl[d[2]]) { tl[d[2]].id = d[2]; st.mylu[d[2]] = tl[d[2]]; }
+      });
       st.matches.sort(function (a, b) { return a.time - b.time; });
       st.fixtures = []; var days = (r[5] && r[5].days) || {};
       Object.keys(days).forEach(function (k) { days[k].forEach(function (m) { if (m.time > Date.now() - 6 * 3600000 && m.time < Date.now() + 6 * 86400000) st.fixtures.push(m); }); });
