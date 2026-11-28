@@ -56,6 +56,25 @@ textarea { min-height:240px; resize:vertical; }
 [dir=ltr] { direction:ltr; text-align:left; }
 .panel { border:1.5px solid var(--line); background:var(--bg); padding:14px; margin-top:14px; }
 .side { margin-top:4px; }
+
+.mtabs, .mbar { display:none; }
+@media (max-width:999px) {
+  .mtabs { display:flex; position:sticky; top:0; z-index:20; background:var(--bg); border-bottom:1.5px solid var(--line); margin-bottom:6px; }
+  .mtabs button { flex:1; font:inherit; font-weight:700; font-size:.9rem; padding:12px 2px; border:0; border-bottom:3px solid transparent; background:none; color:var(--muted); cursor:pointer; white-space:nowrap; }
+  .mtabs button.on { color:var(--accent); border-bottom-color:var(--accent); }
+  .mtabs .bd { display:inline-block; min-width:18px; padding:0 5px; border-radius:9px; font-size:.75rem; color:#fff; background:var(--muted); margin-inline-start:3px; }
+  .mtabs .bd:empty { display:none; }
+  .mtabs .bd.bad { background:#B3261E; } .mtabs .bd.mid { background:#B76A00; } .mtabs .bd.ok { background:#0B7A4B; }
+  #vApp .side { display:none; }
+  #vApp[data-tab="check"] .main, #vApp[data-tab="seo"] .main { display:none; }
+  #vApp[data-tab="check"] .side, #vApp[data-tab="seo"] .side { display:block; }
+  #vApp[data-tab="check"] #pSeo, #vApp[data-tab="seo"] #pQuick { display:none; }
+  #vApp:not([hidden]) { padding-bottom:84px; }
+  .mbar { position:fixed; left:0; right:0; bottom:0; z-index:25; background:var(--bg); border-top:1.5px solid var(--line); padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px)); gap:10px; }
+  #vApp:not([hidden]) .mbar { display:flex; }
+  .mbar .btn { flex:1; }
+  .mbar .btn:last-child { flex:2; }
+}
 @media (min-width:1000px) {
   .wrap { max-width:1140px; }
   #vApp:not([hidden]) { display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:20px; align-items:start; }
@@ -136,7 +155,13 @@ textarea { min-height:240px; resize:vertical; }
     <div id="loginMsg"></div>
   </section>
 
-  <section id="vApp" hidden>
+  <section id="vApp" hidden data-tab="write">
+   <div class="mtabs" id="mTabs">
+     <button type="button" data-t="write" class="on">الكتابة</button>
+     <button type="button" data-t="check">فحص <span class="bd" id="mbCheck"></span></button>
+     <button type="button" data-t="seo">SEO <span class="bd" id="mbSeo"></span></button>
+     <button type="button" data-t="prev">معاينة</button>
+   </div>
    <div class="main">
     <div class="card">
       <h2 id="formTitle">خبر جديد</h2>
@@ -204,6 +229,7 @@ textarea { min-height:240px; resize:vertical; }
      <section class="panel" aria-live="polite" id="pQuick"></section>
      <section class="panel" aria-live="polite" id="pSeo"></section>
    </aside>
+   <div class="mbar" id="mBar"><button type="button" class="btn alt" id="mPrev">معاينة</button><button type="button" class="btn" id="mPub">انشر</button></div>
   </section>
 </div>
 
@@ -475,7 +501,20 @@ textarea { min-height:240px; resize:vertical; }
     s.appendChild(list(r.items, { good: '✓', ok: '~', bad: '!' }));
     var sn = el('div', 'snip'); sn.appendChild(el('div', 'u', 'abdallah1rabee.github.io › Sport22')); sn.appendChild(el('div', 't', r.snip.t || 'عنوان الخبر يظهر هنا')); sn.appendChild(el('div', 'd', r.snip.d || 'مقدمة الخبر تظهر هنا كوصف.'));
     var sh = el('p', 'hint', 'شكل الخبر المتوقع في نتايج جوجل:'); s.appendChild(sh); s.appendChild(sn);
+    var bc = $('#mbCheck'), bs = $('#mbSeo');
+    if (bc) { var nb = res ? res.filter(function (x) { return !x.ok; }).length : 0; bc.textContent = res ? (nb ? nb : '✓') : ''; bc.className = 'bd ' + (nb ? 'bad' : 'ok'); }
+    if (bs) { bs.textContent = r.score; bs.className = 'bd ' + (r.score >= 80 ? 'ok' : r.score >= 60 ? 'mid' : 'bad'); }
   }
+  (function () {
+    var app = $('#vApp'), tabs = $('#mTabs');
+    function go(t) {
+      if (t === 'prev') { $('#bPrev').click(); return; }
+      app.dataset.tab = t; [].forEach.call(tabs.children, function (b) { b.classList.toggle('on', b.dataset.t === t); }); window.scrollTo(0, 0);
+    }
+    tabs.addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) go(b.dataset.t); });
+    $('#mPrev').onclick = function () { go('write'); $('#bPrev').click(); };
+    $('#mPub').onclick = function () { go('write'); $('#bPub').click(); };
+  })();
   function schedule() { clearTimeout(runT); runT = setTimeout(runChecks, 150); }
   ['#fTitle', '#fBody', '#fKey', '#fCap', '#lnks'].forEach(function (x) { $(x).addEventListener('input', schedule); });
   runChecks();
